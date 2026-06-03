@@ -275,11 +275,9 @@
 
 <script>
 // ════════════════════════════════════════════════════
-//  CONFIG — troque GITHUB_USER e GITHUB_REPO
+//  CONFIG
 // ════════════════════════════════════════════════════
-const GITHUB_USER = 'SEU_USUARIO';
-const GITHUB_REPO = 'SEU_REPOSITORIO';
-const PALAVRAS_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/palavras.json`;
+const SHEETS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-iZqk5Q9ZAA_syRdr-dXve0iX4i_mCzhLTpRJneq7Qm5kuxO-eSKYfaYhTwJ-f5gIAWxUHd5LAyCZ/pub?output=csv';
 
 const DB = 'https://impostor-d4711-default-rtdb.firebaseio.com';
 
@@ -315,25 +313,63 @@ function clearErr(id)     { const el = $(id); el.textContent = ''; el.className 
 function gerarCodigo()    { return Math.random().toString(36).substring(2,6).toUpperCase(); }
 
 // ════════════════════════════════════════════════════
-//  PALAVRAS — busca do GitHub com fallback
+//  PALAVRAS — busca do Google Sheets (CSV público)
 // ════════════════════════════════════════════════════
+function parseCSV(text) {
+  // Separa linhas, ignora vazias
+  const linhas = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (linhas.length < 2) throw new Error('CSV vazio');
+
+  // Primeira linha = cabeçalho = nomes das categorias
+  // Suporta campos entre aspas (padrão do Sheets)
+  function parseLinha(linha) {
+    const cols = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < linha.length; i++) {
+      const c = linha[i];
+      if (c === '"') { inQuote = !inQuote; }
+      else if (c === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    return cols;
+  }
+
+  const categorias = parseLinha(linhas[0]);
+  const resultado = {};
+  categorias.forEach(cat => { if (cat) resultado[cat] = []; });
+
+  for (let r = 1; r < linhas.length; r++) {
+    const cols = parseLinha(linhas[r]);
+    cols.forEach((palavra, i) => {
+      const cat = categorias[i];
+      if (cat && palavra) resultado[cat].push(palavra);
+    });
+  }
+
+  // Remove categorias sem palavras
+  Object.keys(resultado).forEach(k => { if (!resultado[k].length) delete resultado[k]; });
+  if (!Object.keys(resultado).length) throw new Error('Nenhuma categoria encontrada');
+  return resultado;
+}
+
 async function carregarPalavras() {
   if (palavrasCache) return palavrasCache;
   const wsEl = $('words-status');
   try {
-    // Adiciona timestamp pra evitar cache agressivo do browser
-    const url = PALAVRAS_URL + '?t=' + Math.floor(Date.now() / 30000);
-    const res = await fetch(url);
+    // &dummy= evita cache agressivo do browser (não afeta o cache do Google ~1-2min)
+    const res = await fetch(SHEETS_CSV + '&dummy=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    palavrasCache = await res.json();
+    const csv = await res.text();
+    palavrasCache = parseCSV(csv);
     const total = Object.values(palavrasCache).reduce((s,a) => s + a.length, 0);
     const cats  = Object.keys(palavrasCache).length;
     wsEl.className = 'words-info ok';
-    wsEl.textContent = `✓ ${cats} categorias · ${total} palavras carregadas do GitHub`;
+    wsEl.textContent = `✓ ${cats} categorias · ${total} palavras carregadas da planilha`;
     return palavrasCache;
   } catch(e) {
     wsEl.className = 'words-info err';
-    wsEl.textContent = '⚠ Usando banco de palavras local (GitHub indisponível)';
+    wsEl.textContent = '⚠ Usando banco de palavras local (planilha indisponível)';
     palavrasCache = PALAVRAS_FALLBACK;
     return palavrasCache;
   }
