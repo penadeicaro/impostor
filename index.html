@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🕵️ Impostor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0D0D14;
+    --surface: #16161F;
+    --card:    #1E1E2C;
+    --accent:  #E8FF47;
+    --red:     #FF4757;
+    --muted:   #4A4A6A;
+    --text:    #F0F0FF;
+    --sub:     #8888AA;
+    --radius:  12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 460px;
+    padding: 24px 16px 64px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 2.2rem;
+    letter-spacing: -1px; text-align: center;
+    margin: 32px 0 6px;
+  }
+  .logo span { color: var(--accent); }
+  .tagline {
+    text-align: center; color: var(--sub);
+    font-size: 0.72rem; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 40px;
+  }
+
+  .screen { display: none; flex-direction: column; gap: 14px; }
+  .screen.active { display: flex; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius); padding: 22px;
+  }
+  .card-label {
+    font-size: 0.68rem; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--sub); margin-bottom: 12px;
+  }
+
+  input[type="text"] {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--muted); border-radius: 8px;
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 1rem; padding: 13px 16px; outline: none;
+    transition: border-color .2s;
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .row { display: flex; gap: 10px; }
+  .row input { flex: 1; }
+
+  .btn {
+    width: 100%; padding: 15px; border: none;
+    border-radius: 8px; font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1rem; letter-spacing: 1px;
+    cursor: pointer; transition: transform .1s, opacity .2s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-primary   { background: var(--accent); color: #0D0D14; }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--muted); }
+  .btn-danger    { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn-ghost     { background: rgba(255,255,255,0.04); color: var(--sub); font-size: .85rem; }
+
+  .sala-badge {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(232,255,71,.07);
+    border: 1px solid rgba(232,255,71,.2);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 4px;
+  }
+  .sala-code {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.8rem; letter-spacing: 6px; color: var(--accent);
+  }
+  .sala-copy {
+    background: none; border: none; cursor: pointer;
+    color: var(--sub); font-size: .75rem;
+    font-family: 'Space Mono', monospace;
+    padding: 4px 8px; border-radius: 4px; transition: color .2s;
+  }
+  .sala-copy:hover { color: var(--accent); }
+
+  .player-list { display: flex; flex-direction: column; gap: 8px; }
+  .player-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border-radius: 8px;
+    padding: 11px 14px; font-size: .88rem;
+    animation: slideIn .22s ease;
+  }
+  .player-chip.me { border: 1px solid rgba(232,255,71,.3); }
+  @keyframes slideIn { from { opacity:0; transform:translateY(5px); } }
+
+  .badge {
+    display: inline-block; padding: 3px 9px; border-radius: 20px;
+    font-size: .62rem; letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 700; margin-left: auto;
+  }
+  .badge-host { background: rgba(232,255,71,.14); color: var(--accent); }
+  .badge-you  { background: rgba(255,255,255,.07); color: var(--sub); }
+
+  .word-box { text-align: center; padding: 32px 16px; }
+  .cat-pill {
+    display: inline-block; background: rgba(232,255,71,.1);
+    color: var(--accent); border-radius: 20px; padding: 5px 14px;
+    font-size: .7rem; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .word-hidden {
+    font-family: 'Syne', sans-serif; font-size: 3.2rem;
+    font-weight: 800; letter-spacing: 6px; color: var(--muted);
+    cursor: pointer; user-select: none; transition: color .3s;
+  }
+  .word-revealed {
+    font-family: 'Syne', sans-serif; font-size: 2.6rem;
+    font-weight: 800; color: var(--accent);
+    animation: pop .3s cubic-bezier(.36,2,.6,1);
+  }
+  .word-revealed.impostor { color: var(--red); }
+  @keyframes pop { 0%{transform:scale(.8)} 100%{transform:scale(1)} }
+  .word-hint { font-size: .7rem; color: var(--sub); margin-top: 10px; letter-spacing: 1px; }
+
+  .reveal-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px; display: flex; align-items: center; gap: 14px;
+    border: 1px solid rgba(255,255,255,0.06); animation: slideIn .22s ease;
+  }
+  .reveal-card .av {
+    width: 42px; height: 42px; background: var(--surface);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .reveal-card .info { flex: 1; }
+  .reveal-card .pname { font-weight: 700; font-size: .92rem; }
+  .reveal-card .pword { color: var(--sub); font-size: .78rem; margin-top: 2px; }
+  .reveal-card.imp { border-color: var(--red); background: rgba(255,71,87,.07); }
+  .reveal-card.imp .pname { color: var(--red); }
+  .imp-badge {
+    background: var(--red); color: #fff; border-radius: 6px;
+    padding: 3px 8px; font-size: .62rem; letter-spacing: 1px;
+    text-transform: uppercase; font-weight: 700;
+  }
+
+  .status { text-align: center; font-size: .74rem; color: var(--sub); padding: 6px; min-height: 24px; }
+  .status.err { color: var(--red); }
+
+  .dot {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--accent);
+    margin-right: 6px; animation: pulse 1.4s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  #loader {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; color: var(--sub);
+    letter-spacing: 3px; text-transform: uppercase;
+    transition: opacity .4s;
+  }
+  #loader.hide { opacity: 0; pointer-events: none; }
+
+  .words-info {
+    font-size: .68rem; color: var(--sub);
+    text-align: center; padding: 4px 0;
+  }
+  .words-info.ok  { color: #4CAF50; }
+  .words-info.err { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div id="loader">carregando…</div>
+
+<div class="wrap">
+  <div class="logo">🕵️ <span>IMPOSTOR</span></div>
+  <div class="tagline">Dois têm a mesma palavra · Um é diferente</div>
+
+  <!-- LOGIN -->
+  <div id="s-login" class="screen">
+    <div class="card">
+      <div class="card-label">Seu nome</div>
+      <input id="inp-nome" type="text" placeholder="Como te chamam?" maxlength="20" autocomplete="off">
+    </div>
+    <div class="card">
+      <div class="card-label">Sala</div>
+      <div class="row">
+        <input id="inp-sala" type="text" placeholder="Código (vazio = criar nova)" maxlength="6" autocomplete="off" style="text-transform:uppercase">
+        <button class="btn btn-primary" style="width:auto;padding:13px 20px;" onclick="entrar()">→</button>
+      </div>
+    </div>
+    <div class="status err" id="st-login"></div>
+    <div class="words-info" id="words-status"></div>
+  </div>
+
+  <!-- LOBBY -->
+  <div id="s-lobby" class="screen">
+    <div class="card">
+      <div class="card-label">Código da sala</div>
+      <div class="sala-badge">
+        <span class="sala-code" id="lobby-code">—</span>
+        <button class="sala-copy" id="btn-copiar" onclick="copiarCodigo()">copiar</button>
+      </div>
+      <div style="font-size:.7rem;color:var(--sub)">Compartilhe este código com os amigos</div>
+    </div>
+    <div class="card">
+      <div class="card-label"><span class="dot"></span>Jogadores na sala</div>
+      <div class="player-list" id="lobby-players"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
+    <button class="btn btn-ghost" onclick="sair()">Sair da sala</button>
+    <div class="status err" id="st-lobby"></div>
+  </div>
+
+  <!-- PALAVRA -->
+  <div id="s-palavra" class="screen">
+    <div class="card word-box">
+      <div class="cat-pill" id="word-cat">—</div>
+      <div id="word-el" class="word-hidden" onclick="toggleWord()">● ● ●</div>
+      <div class="word-hint" id="word-hint">toque para revelar</div>
+    </div>
+    <div class="card" style="padding:16px">
+      <div class="card-label">Regras</div>
+      <div style="color:var(--sub);font-size:.77rem;line-height:1.7">
+        Todos têm a <strong style="color:var(--text)">mesma palavra</strong>, exceto o Impostor.<br>
+        Dê dicas sem falar a palavra. Vote em quem é o Impostor!
+      </div>
+    </div>
+    <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
+    <button class="btn btn-ghost" onclick="sair()">Sair da sala</button>
+    <div class="status err" id="st-palavra"></div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="s-resultado" class="screen">
+    <div class="card">
+      <div class="card-label">🔍 Resultado da rodada</div>
+      <div id="res-list" style="display:flex;flex-direction:column;gap:10px;margin-top:6px"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
+    <button class="btn btn-ghost" onclick="sair()">Sair da sala</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  CONFIG — troque GITHUB_USER e GITHUB_REPO
+// ════════════════════════════════════════════════════
+const GITHUB_USER = 'SEU_USUARIO';
+const GITHUB_REPO = 'SEU_REPOSITORIO';
+const PALAVRAS_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/palavras.json`;
+
+const DB = 'https://impostor-d4711-default-rtdb.firebaseio.com';
+
+// Fallback caso o fetch do GitHub falhe
+const PALAVRAS_FALLBACK = {
+  "Comidas": ["Lasanha","Coxinha","Pizza","Feijoada","Hambúrguer","Brigadeiro","Estrogonofe","Pastel","Sushi","Macarronada","Panqueca","Risoto","Pão de queijo","Churrasco","Salpicão","Pudim","Tapioca","Farofa","Batata frita","Guacamole"],
+  "Animais": ["Cachorro","Gato","Elefante","Leão","Tigre","Girafa","Urso","Panda","Golfinho","Águia","Cavalo","Lobo","Raposa","Canguru","Pinguim","Macaco","Jacaré","Tubarão","Coruja","Esquilo"],
+  "Programas de TV": ["Big Brother Brasil","Fantástico","Globo Repórter","MasterChef","Jornal Nacional","Roda Viva","Caldeirão","Altas Horas","Programa do Ratinho","Domingo Legal","Casos de Família","Globo Esporte","The Voice Brasil","Conversa com Bial","Domingo Espetacular","Encontro","Mais Você","Show do Milhão","No Limite","De Frente com Gabi"],
+  "Filmes": ["Matrix","Titanic","Inception","Interestelar","Gladiator","Avatar","Shrek","Coringa","Jaws","Whiplash","Amélie","Parasita","Ratatouille","Seven","Psicose","Casablanca","Vertigo","Up","Coco","Memento"],
+  "Séries": ["Breaking Bad","Succession","Chernobyl","Sherlock","Dark","Fleabag","Mindhunter","Fargo","Lost","Dexter","Severance","Hannibal","Friends","House","Mad Men","Narcos","Sopranos","Outlander","Supernatural","Billions"],
+  "Desenhos Animados": ["Simpsons","Bob Esponja","Pokémon","Dragon Ball","Naruto","Scooby-Doo","Tom e Jerry","Futurama","Avatar","Ben 10","Pokoyo","Thundercats","Flintstones","Jetsons","Popeye","Garfield","Digimon","Bakugan","Animaniacs","Beyblade"],
+  "Profissões": ["Médico","Engenheiro","Professor","Advogado","Arquiteto","Psicólogo","Jornalista","Dentista","Programador","Enfermeiro","Veterinário","Designer","Biólogo","Contador","Fotógrafo","Eletricista","Mecânico","Cozinheiro","Bombeiro","Policial"],
+  "Países": ["Brasil","Argentina","Canadá","Japão","Itália","França","Alemanha","Portugal","Austrália","México","Espanha","Egito","Índia","China","Grécia","Irlanda","Holanda","Chile","Peru","Tailândia"],
+  "Instrumentos Musicais": ["Violão","Piano","Bateria","Violino","Flauta","Saxofone","Trompete","Baixo","Violoncelo","Teclado","Ukulele","Sanfona","Harpa","Pandeiro","Clarinete","Berimbau","Triângulo","Xilofone","Contrabaixo","Gaita"]
+};
+
+// ════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════
+let ME = '', SALA = '', myWord = '', wordShown = false, pollTimer = null, lastPhase = '';
+let palavrasCache = null;
+
+// ════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function setErr(id, msg)  { const el = $(id); el.textContent = msg; el.className = 'status err'; }
+function clearErr(id)     { const el = $(id); el.textContent = ''; el.className = 'status'; }
+function gerarCodigo()    { return Math.random().toString(36).substring(2,6).toUpperCase(); }
+
+// ════════════════════════════════════════════════════
+//  PALAVRAS — busca do GitHub com fallback
+// ════════════════════════════════════════════════════
+async function carregarPalavras() {
+  if (palavrasCache) return palavrasCache;
+  const wsEl = $('words-status');
+  try {
+    // Adiciona timestamp pra evitar cache agressivo do browser
+    const url = PALAVRAS_URL + '?t=' + Math.floor(Date.now() / 30000);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    palavrasCache = await res.json();
+    const total = Object.values(palavrasCache).reduce((s,a) => s + a.length, 0);
+    const cats  = Object.keys(palavrasCache).length;
+    wsEl.className = 'words-info ok';
+    wsEl.textContent = `✓ ${cats} categorias · ${total} palavras carregadas do GitHub`;
+    return palavrasCache;
+  } catch(e) {
+    wsEl.className = 'words-info err';
+    wsEl.textContent = '⚠ Usando banco de palavras local (GitHub indisponível)';
+    palavrasCache = PALAVRAS_FALLBACK;
+    return palavrasCache;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  FIREBASE — helpers
+// ════════════════════════════════════════════════════
+async function dbGet(path) {
+  const r = await fetch(`${DB}/${path}.json`);
+  if (!r.ok) throw new Error('Erro ao ler banco');
+  return r.json();
+}
+async function dbSet(path, data) {
+  const r = await fetch(`${DB}/${path}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error('Erro ao salvar');
+  return r.json();
+}
+async function dbPatch(path, data) {
+  const r = await fetch(`${DB}/${path}.json`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error('Erro ao atualizar');
+  return r.json();
+}
+async function dbDel(path) {
+  await fetch(`${DB}/${path}.json`, { method: 'DELETE' });
+}
+
+function nomeKey(nome) { return nome.replace(/[.#$\[\]]/g, '_'); }
+
+// ════════════════════════════════════════════════════
+//  LOGIN / CRIAR / ENTRAR
+// ════════════════════════════════════════════════════
+$('inp-nome').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('inp-sala').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('inp-sala').addEventListener('input',   e => { e.target.value = e.target.value.toUpperCase(); });
+
+async function entrar() {
+  const nome = $('inp-nome').value.trim();
+  const cod  = $('inp-sala').value.trim().toUpperCase();
+  if (!nome) return setErr('st-login', 'Digite seu nome.');
+  clearErr('st-login');
+  try {
+    if (!cod) await criarSala(nome);
+    else      await entrarSala(nome, cod);
+  } catch(e) { setErr('st-login', e.message); }
+}
+
+async function criarSala(nome) {
+  let cod = gerarCodigo();
+  while (await dbGet(`salas/${cod}`)) { cod = gerarCodigo(); }
+  await dbSet(`salas/${cod}`, {
+    fase: 'lobby', host: nome,
+    categoria: '', palavra: '', impostor: '', assignments: null,
+    criadoEm: Date.now()
+  });
+  await dbSet(`salas/${cod}/jogadores/${nomeKey(nome)}`, { nome, ts: Date.now() });
+  ME = nome; SALA = cod;
+  abrirLobby();
+}
+
+async function entrarSala(nome, cod) {
+  const sala = await dbGet(`salas/${cod}`);
+  if (!sala) throw new Error('Sala não encontrada.');
+  if (sala.fase !== 'lobby') throw new Error('Jogo em andamento nessa sala.');
+  await dbSet(`salas/${cod}/jogadores/${nomeKey(nome)}`, { nome, ts: Date.now() });
+  ME = nome; SALA = cod;
+  abrirLobby();
+}
+
+function abrirLobby() {
+  $('lobby-code').textContent = SALA;
+  startPoll();
+  showScreen('s-lobby');
+}
+
+function copiarCodigo() {
+  navigator.clipboard.writeText(SALA).then(() => {
+    $('btn-copiar').textContent = 'copiado!';
+    setTimeout(() => { $('btn-copiar').textContent = 'copiar'; }, 2000);
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  LOBBY
+// ════════════════════════════════════════════════════
+function renderLobby(sala) {
+  const lista = Object.values(sala.jogadores || {}).sort((a,b) => a.ts - b.ts);
+  const container = $('lobby-players');
+  container.innerHTML = '';
+  lista.forEach(j => {
+    const chip = document.createElement('div');
+    chip.className = 'player-chip' + (j.nome === ME ? ' me' : '');
+    const icon = j.nome === sala.host ? '👑' : '👤';
+    let badges = '';
+    if (j.nome === sala.host) badges += '<span class="badge badge-host">Host</span>';
+    if (j.nome === ME)        badges += '<span class="badge badge-you">Você</span>';
+    chip.innerHTML = `<span>${icon} ${j.nome}</span>${badges}`;
+    container.appendChild(chip);
+  });
+  const podeSort = ME === sala.host && sala.fase === 'lobby' && lista.length >= 2;
+  $('btn-sortear').style.display = podeSort ? '' : 'none';
+}
+
+// ════════════════════════════════════════════════════
+//  SORTEAR
+// ════════════════════════════════════════════════════
+async function sortear() {
+  $('btn-sortear').disabled = true;
+  clearErr('st-lobby');
+  try {
+    const sala = await dbGet(`salas/${SALA}`);
+    if (sala.host !== ME) throw new Error('Só o host pode sortear.');
+    const jogadores = Object.values(sala.jogadores || {}).map(j => j.nome);
+    if (jogadores.length < 2) throw new Error('Precisa de pelo menos 2 jogadores.');
+
+    const categorias = await carregarPalavras();
+    const cats   = Object.keys(categorias);
+    const cat    = cats[Math.floor(Math.random() * cats.length)];
+    const words  = categorias[cat];
+    const palavra = words[Math.floor(Math.random() * words.length)];
+
+    const impostorIdx = Math.floor(Math.random() * jogadores.length);
+    const assignments = {};
+    jogadores.forEach((j, i) => {
+      assignments[nomeKey(j)] = (i === impostorIdx) ? 'IMPOSTOR' : palavra;
+    });
+
+    await dbPatch(`salas/${SALA}`, {
+      fase: 'playing', categoria: cat,
+      palavra, impostor: jogadores[impostorIdx], assignments
+    });
+  } catch(e) {
+    setErr('st-lobby', e.message);
+    $('btn-sortear').disabled = false;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  PALAVRA
+// ════════════════════════════════════════════════════
+async function fetchMyWord() {
+  const sala = await dbGet(`salas/${SALA}`);
+  if (!sala || sala.fase !== 'playing') return;
+  const word = sala.assignments ? sala.assignments[nomeKey(ME)] : null;
+  if (!word) return;
+
+  myWord = word; wordShown = false;
+  $('word-cat').textContent = sala.categoria || '—';
+  const el = $('word-el');
+  el.className = 'word-hidden';
+  el.textContent = '● ● ●';
+  $('word-hint').textContent = 'toque para revelar';
+  $('btn-revelar').style.display = (ME === sala.host) ? '' : 'none';
+  showScreen('s-palavra');
+}
+
+function toggleWord() {
+  const el = $('word-el');
+  const hint = $('word-hint');
+  if (!wordShown) {
+    const isImp = myWord === 'IMPOSTOR';
+    el.className = 'word-revealed' + (isImp ? ' impostor' : '');
+    el.textContent = isImp ? '🕵️ IMPOSTOR' : myWord;
+    hint.textContent = 'toque para esconder';
+    wordShown = true;
+    setTimeout(() => {
+      if (wordShown) {
+        el.className = 'word-hidden';
+        el.textContent = '● ● ●';
+        hint.textContent = 'toque para revelar';
+        wordShown = false;
+      }
+    }, 4000);
+  } else {
+    el.className = 'word-hidden';
+    el.textContent = '● ● ●';
+    hint.textContent = 'toque para revelar';
+    wordShown = false;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  REVELAR / RESULTADO
+// ════════════════════════════════════════════════════
+async function revelarImpostor() {
+  try {
+    const sala = await dbGet(`salas/${SALA}`);
+    if (sala.host !== ME) return setErr('st-palavra', 'Só o host pode revelar.');
+    await dbPatch(`salas/${SALA}`, { fase: 'revealed' });
+  } catch(e) { setErr('st-palavra', e.message); }
+}
+
+function renderResultado(sala) {
+  const assignments = sala.assignments || {};
+  const impostor    = sala.impostor;
+  const nomes = Object.values(sala.jogadores || {}).map(j => j.nome).sort();
+  const list  = $('res-list');
+  list.innerHTML = '';
+  nomes.forEach(nome => {
+    const word  = assignments[nomeKey(nome)] || '?';
+    const isImp = nome === impostor;
+    const card  = document.createElement('div');
+    card.className = 'reveal-card' + (isImp ? ' imp' : '');
+    card.innerHTML = `
+      <div class="av">${isImp ? '🕵️' : '👤'}</div>
+      <div class="info">
+        <div class="pname">${nome}${nome === ME ? ' <small style="color:var(--sub)">(você)</small>' : ''}</div>
+        <div class="pword">${isImp ? 'Era o Impostor' : word}</div>
+      </div>
+      ${isImp ? '<span class="imp-badge">Impostor</span>' : ''}
+    `;
+    list.appendChild(card);
+  });
+  $('btn-nova').style.display = (ME === sala.host) ? '' : 'none';
+  showScreen('s-resultado');
+}
+
+// ════════════════════════════════════════════════════
+//  NOVA RODADA / SAIR
+// ════════════════════════════════════════════════════
+async function novaRodada() {
+  try {
+    await dbPatch(`salas/${SALA}`, {
+      fase: 'lobby', categoria: '', palavra: '', impostor: '', assignments: null
+    });
+    // invalida cache de palavras pra pegar versão nova do GitHub
+    palavrasCache = null;
+    lastPhase = 'lobby';
+  } catch(e) {}
+}
+
+async function sair() {
+  stopPoll();
+  try {
+    const sala = await dbGet(`salas/${SALA}`);
+    await dbDel(`salas/${SALA}/jogadores/${nomeKey(ME)}`);
+    if (sala && sala.host === ME) {
+      const restantes = Object.values(sala.jogadores || {}).filter(j => j.nome !== ME);
+      if (restantes.length > 0) {
+        restantes.sort((a,b) => a.ts - b.ts);
+        await dbPatch(`salas/${SALA}`, { host: restantes[0].nome });
+      } else {
+        await dbDel(`salas/${SALA}`);
+      }
+    }
+  } catch(e) {}
+  ME = ''; SALA = ''; myWord = ''; lastPhase = ''; palavrasCache = null;
+  $('inp-nome').value = '';
+  $('inp-sala').value = '';
+  clearErr('st-login');
+  showScreen('s-login');
+}
+
+// ════════════════════════════════════════════════════
+//  POLLING
+// ════════════════════════════════════════════════════
+function startPoll() { if (!pollTimer) pollTimer = setInterval(poll, 2500); }
+function stopPoll()  { clearInterval(pollTimer); pollTimer = null; }
+
+async function poll() {
+  if (!SALA) return;
+  try {
+    const sala = await dbGet(`salas/${SALA}`);
+    if (!sala) { await sair(); return; }
+    const screen = document.querySelector('.screen.active')?.id;
+
+    if (sala.fase === 'lobby') {
+      if (screen !== 's-lobby') { lastPhase = 'lobby'; showScreen('s-lobby'); }
+      renderLobby(sala);
+    } else if (sala.fase === 'playing') {
+      if (screen === 's-lobby' || lastPhase !== 'playing') {
+        lastPhase = 'playing';
+        fetchMyWord();
+      }
+      if (screen === 's-palavra') {
+        $('btn-revelar').style.display = (ME === sala.host) ? '' : 'none';
+      }
+    } else if (sala.fase === 'revealed') {
+      if (screen !== 's-resultado') renderResultado(sala);
+      else $('btn-nova').style.display = (ME === sala.host) ? '' : 'none';
+    }
+    lastPhase = sala.fase;
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════
+window.addEventListener('load', async () => {
+  // Pré-carrega palavras já na tela de login
+  await carregarPalavras();
+  setTimeout(() => {
+    $('loader').classList.add('hide');
+    showScreen('s-login');
+    $('inp-nome').focus();
+  }, 400);
+});
+</script>
+</body>
+</html>

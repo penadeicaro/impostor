@@ -1,0 +1,11 @@
+{
+  "Comidas": ["Lasanha","Coxinha","Pizza","Feijoada","Hambúrguer","Brigadeiro","Estrogonofe","Pastel","Sushi","Macarronada","Panqueca","Risoto","Pão de queijo","Churrasco","Salpicão","Pudim","Tapioca","Farofa","Batata frita","Guacamole"],
+  "Animais": ["Cachorro","Gato","Elefante","Leão","Tigre","Girafa","Urso","Panda","Golfinho","Águia","Cavalo","Lobo","Raposa","Canguru","Pinguim","Macaco","Jacaré","Tubarão","Coruja","Esquilo"],
+  "Programas de TV": ["Big Brother Brasil","Fantástico","Globo Repórter","MasterChef","Jornal Nacional","Roda Viva","Caldeirão","Altas Horas","Programa do Ratinho","Domingo Legal","Casos de Família","Globo Esporte","The Voice Brasil","Conversa com Bial","Domingo Espetacular","Encontro","Mais Você","Show do Milhão","No Limite","De Frente com Gabi"],
+  "Filmes": ["Matrix","Titanic","Inception","Interestelar","Gladiator","Avatar","Shrek","Coringa","Jaws","Whiplash","Amélie","Parasita","Ratatouille","Seven","Psicose","Casablanca","Vertigo","Up","Coco","Memento"],
+  "Séries": ["Breaking Bad","Succession","Chernobyl","Sherlock","Dark","Fleabag","Mindhunter","Fargo","Lost","Dexter","Severance","Hannibal","Friends","House","Mad Men","Narcos","Sopranos","Outlander","Supernatural","Billions"],
+  "Desenhos Animados": ["Simpsons","Bob Esponja","Pokémon","Dragon Ball","Naruto","Scooby-Doo","Tom e Jerry","Futurama","Avatar","Ben 10","Pokoyo","Thundercats","Flintstones","Jetsons","Popeye","Garfield","Digimon","Bakugan","Animaniacs","Beyblade"],
+  "Profissões": ["Médico","Engenheiro","Professor","Advogado","Arquiteto","Psicólogo","Jornalista","Dentista","Programador","Enfermeiro","Veterinário","Designer","Biólogo","Contador","Fotógrafo","Eletricista","Mecânico","Cozinheiro","Bombeiro","Policial"],
+  "Países": ["Brasil","Argentina","Canadá","Japão","Itália","França","Alemanha","Portugal","Austrália","México","Espanha","Egito","Índia","China","Grécia","Irlanda","Holanda","Chile","Peru","Tailândia"],
+  "Instrumentos Musicais": ["Violão","Piano","Bateria","Violino","Flauta","Saxofone","Trompete","Baixo","Violoncelo","Teclado","Ukulele","Sanfona","Harpa","Pandeiro","Clarinete","Berimbau","Triângulo","Xilofone","Contrabaixo","Gaita"]
+}
