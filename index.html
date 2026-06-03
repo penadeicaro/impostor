@@ -460,7 +460,7 @@ async function entrar(){
       await criarSala(nome, 'Sala de '+nome, null);
     } else {
       // Tenta entrar se existir sala com esse identificador
-      const existing = await get(\`salas/\${raw}/info\`);
+      const existing = await get(`salas/${raw}/info`);
       if(existing){
         await entrarSala(nome, raw);
       } else {
