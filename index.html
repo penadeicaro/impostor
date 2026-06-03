@@ -44,9 +44,7 @@
   .btn-secondary{background:transparent;color:var(--text);border:1px solid var(--muted);}
   .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);}
   .btn-ghost{background:rgba(255,255,255,.04);color:var(--sub);font-size:.85rem;}
-  .btn-small{width:auto;padding:8px 14px;font-size:.8rem;}
 
-  /* sala badge */
   .sala-badge{display:flex;align-items:center;justify-content:space-between;
     background:rgba(232,255,71,.07);border:1px solid rgba(232,255,71,.2);
     border-radius:8px;padding:12px 16px;margin-bottom:4px;}
@@ -57,7 +55,6 @@
     border-radius:4px;transition:color .2s;}
   .sala-copy:hover{color:var(--accent);}
 
-  /* players */
   .player-list{display:flex;flex-direction:column;gap:7px;}
   .player-chip{display:flex;align-items:center;gap:10px;background:var(--surface);
     border-radius:8px;padding:10px 13px;font-size:.86rem;animation:slideIn .22s ease;
@@ -74,12 +71,9 @@
   .kick-btn{background:none;border:none;color:var(--muted);cursor:pointer;
     font-size:.75rem;padding:2px 5px;border-radius:4px;transition:color .2s;}
   .kick-btn:hover{color:var(--red);}
-
-  /* placar chip */
   .score-pill{background:rgba(232,255,71,.1);color:var(--accent);
     border-radius:12px;padding:2px 8px;font-size:.7rem;font-weight:700;}
 
-  /* word */
   .word-box{text-align:center;padding:28px 16px;}
   .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
     border-radius:20px;padding:5px 14px;font-size:.7rem;letter-spacing:2px;
@@ -96,20 +90,18 @@
     border-radius:8px;padding:12px 16px;text-align:center;color:var(--blue);
     font-size:.8rem;line-height:1.6;}
 
-  /* votação */
   .vote-grid{display:flex;flex-direction:column;gap:8px;}
   .vote-row{display:flex;align-items:center;gap:10px;background:var(--surface);
     border-radius:8px;padding:10px 13px;cursor:pointer;
-    border:1px solid transparent;transition:border-color .2s,background .2s;}
-  .vote-row:hover{border-color:var(--muted);}
-  .vote-row.voted{border-color:var(--accent);background:rgba(232,255,71,.05);}
-  .vote-row.cant-vote{opacity:.4;cursor:not-allowed;}
+    border:2px solid transparent;transition:border-color .15s,background .15s;}
+  .vote-row:hover:not(.already-voted){border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.04);}
+  .vote-row.voted-by-me{border-color:var(--accent);background:rgba(232,255,71,.06);}
+  .vote-row.already-voted{cursor:not-allowed;}
   .vote-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
   .vote-bar{height:100%;background:var(--accent);border-radius:2px;
-    transition:width .4s ease;}
+    transition:width .35s ease;}
   .vote-count{font-size:.72rem;color:var(--sub);min-width:18px;text-align:right;}
 
-  /* resultado */
   .reveal-card{background:var(--card);border-radius:var(--radius);padding:16px;
     display:flex;align-items:center;gap:13px;
     border:1px solid rgba(255,255,255,.06);animation:slideIn .22s ease;}
@@ -123,7 +115,6 @@
   .imp-badge{background:var(--red);color:#fff;border-radius:6px;padding:3px 8px;
     font-size:.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
 
-  /* histórico */
   .hist-item{background:var(--surface);border-radius:8px;padding:12px 14px;
     font-size:.8rem;border-left:3px solid var(--muted);}
   .hist-item.win{border-color:var(--green);}
@@ -132,7 +123,6 @@
   .hist-palavra{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:2px;}
   .hist-detalhe{color:var(--sub);font-size:.75rem;}
 
-  /* placar geral */
   .placar-row{display:flex;align-items:center;gap:12px;padding:9px 0;
     border-bottom:1px solid rgba(255,255,255,.05);}
   .placar-row:last-child{border:none;}
@@ -142,7 +132,6 @@
   .placar-nome{flex:1;font-size:.88rem;}
   .placar-pts{font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);}
 
-  /* status */
   .status{text-align:center;font-size:.73rem;color:var(--sub);padding:5px;min-height:22px;}
   .status.err{color:var(--red);}
   .words-info{font-size:.67rem;color:var(--sub);text-align:center;padding:3px 0;}
@@ -157,7 +146,6 @@
     letter-spacing:3px;text-transform:uppercase;transition:opacity .4s;}
   #loader.hide{opacity:0;pointer-events:none;}
 
-  /* tabs histórico/placar */
   .tabs{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:4px;}
   .tab{flex:1;padding:8px;border:none;border-radius:6px;cursor:pointer;
     font-family:'Space Mono',monospace;font-size:.75rem;color:var(--sub);
@@ -165,6 +153,10 @@
   .tab.active{background:var(--card);color:var(--text);}
   .tab-content{display:none;flex-direction:column;gap:8px;}
   .tab-content.active{display:flex;}
+
+  .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);
+    display:inline-block;margin-right:6px;transition:background .3s;}
+  .conn-dot.online{background:var(--green);}
 </style>
 </head>
 <body>
@@ -203,7 +195,7 @@
       <div style="font-size:.68rem;color:var(--sub)">Compartilhe o código com os amigos</div>
     </div>
     <div class="card">
-      <div class="card-label"><span class="dot"></span>Jogadores</div>
+      <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online" id="conn-dot" title="conectado"></span></div>
       <div class="player-list" id="lobby-players"></div>
     </div>
     <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
@@ -211,7 +203,7 @@
     <div class="status err" id="st-lobby"></div>
   </div>
 
-  <!-- PALAVRA (jogador ativo) -->
+  <!-- PALAVRA -->
   <div id="s-palavra" class="screen">
     <div class="card word-box">
       <div class="cat-pill" id="word-cat">—</div>
@@ -226,7 +218,6 @@
         Depois do debate, vote em quem você acha que é o Impostor!
       </div>
     </div>
-    <!-- Votação -->
     <div class="card" id="card-votacao" style="display:none">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="vote-grid"></div>
@@ -264,7 +255,6 @@
       <div class="card-label">🔍 Resultado da rodada</div>
       <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
     </div>
-    <!-- Histórico + Placar -->
     <div class="card">
       <div class="tabs" style="margin-bottom:12px">
         <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
@@ -282,16 +272,29 @@
   </div>
 </div>
 
+<!-- Firebase SDK (modular, via compat para simplicidade em single-file) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
 // ══════════════════════════════════════════════════════
-//  CONFIG
+//  FIREBASE CONFIG
 // ══════════════════════════════════════════════════════
-const SHEETS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-iZqk5Q9ZAA_syRdr-dXve0iX4i_mCzhLTpRJneq7Qm5kuxO-eSKYfaYhTwJ-f5gIAWxUHd5LAyCZ/pub?output=csv';
-const DB = 'https://impostor-d4711-default-rtdb.firebaseio.com';
-const TIMEOUT_MS = 30000; // 30s sem ping = inativo
+const firebaseConfig = {
+  apiKey: "AIzaSyDemo-substitua-pela-sua-chave",
+  authDomain: "impostor-d4711.firebaseapp.com",
+  databaseURL: "https://impostor-d4711-default-rtdb.firebaseio.com",
+  projectId: "impostor-d4711",
+  storageBucket: "impostor-d4711.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:000000000000000000000000"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 // ══════════════════════════════════════════════════════
-//  FALLBACK DE PALAVRAS
+//  PALAVRAS FALLBACK
 // ══════════════════════════════════════════════════════
 const PALAVRAS_FALLBACK = {
   "Comidas":["Lasanha","Coxinha","Pizza","Feijoada","Hambúrguer","Brigadeiro","Estrogonofe","Pastel","Sushi","Macarronada","Panqueca","Risoto","Pão de queijo","Churrasco","Salpicão","Pudim","Tapioca","Farofa","Batata frita","Guacamole"],
@@ -305,6 +308,8 @@ const PALAVRAS_FALLBACK = {
   "Instrumentos Musicais":["Violão","Piano","Bateria","Violino","Flauta","Saxofone","Trompete","Baixo","Violoncelo","Teclado","Ukulele","Sanfona","Harpa","Pandeiro","Clarinete","Berimbau","Triângulo","Xilofone","Contrabaixo","Gaita"]
 };
 
+const SHEETS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-iZqk5Q9ZAA_syRdr-dXve0iX4i_mCzhLTpRJneq7Qm5kuxO-eSKYfaYhTwJ-f5gIAWxUHd5LAyCZ/pub?output=csv';
+
 // ══════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════
@@ -314,11 +319,10 @@ let SALA    = '';
 let meuVoto = null;
 let myWord  = '';
 let wordShown = false;
-let pollTimer = null;
-let pingTimer = null;
-let lastPhase = '';
 let palavrasCache = null;
-let tabAtiva = 'hist';
+
+// listeners ativos — guardamos as refs para desligar ao sair
+let listeners = {}; // { key: ref }
 
 localStorage.setItem('impostor_id', ME_ID);
 
@@ -340,15 +344,35 @@ function gerarUUID(){
 }
 function gerarCodigo(){return Math.random().toString(36).substring(2,6).toUpperCase();}
 function idKey(id){return id.replace(/-/g,'_');}
-
 function switchTab(tab){
-  tabAtiva=tab;
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='hist'?0:1)));
   document.querySelectorAll('.tab-content').forEach((t,i)=>t.classList.toggle('active',i===(tab==='hist'?0:1)));
 }
 
 // ══════════════════════════════════════════════════════
-//  PALAVRAS — Google Sheets CSV
+//  FIREBASE helpers (SDK)
+// ══════════════════════════════════════════════════════
+const ref  = path => db.ref(path);
+const get  = path => db.ref(path).get().then(s=>s.val());
+const set  = (path,val) => db.ref(path).set(val);
+const upd  = (path,val) => db.ref(path).update(val);
+const del  = path => db.ref(path).remove();
+
+// Adiciona listener e registra para cleanup
+function listen(key, path, cb){
+  if(listeners[key]) listeners[key].off('value');
+  listeners[key] = db.ref(path);
+  listeners[key].on('value', snap => cb(snap.val()));
+}
+
+// Remove todos os listeners
+function stopListeners(){
+  Object.values(listeners).forEach(r => r.off());
+  listeners = {};
+}
+
+// ══════════════════════════════════════════════════════
+//  PALAVRAS
 // ══════════════════════════════════════════════════════
 function parseCSV(text){
   const linhas=text.split('\n').map(l=>l.trim()).filter(Boolean);
@@ -385,34 +409,30 @@ async function carregarPalavras(){
     const total=Object.values(palavrasCache).reduce((s,a)=>s+a.length,0);
     wsEl.className='words-info ok';
     wsEl.textContent=`✓ ${Object.keys(palavrasCache).length} categorias · ${total} palavras`;
-    return palavrasCache;
   }catch(e){
     wsEl.className='words-info err';
     wsEl.textContent='⚠ Usando banco local (planilha indisponível)';
     palavrasCache=PALAVRAS_FALLBACK;
-    return palavrasCache;
   }
+  return palavrasCache;
 }
 
 // ══════════════════════════════════════════════════════
-//  FIREBASE helpers
+//  PRESENÇA — onDisconnect remove o jogador automaticamente
 // ══════════════════════════════════════════════════════
-async function dbGet(path){
-  const r=await fetch(`${DB}/${path}.json`);
-  if(!r.ok) throw new Error('Erro leitura');
-  return r.json();
+function configurarPresenca(){
+  if(!SALA) return;
+  const playerRef = db.ref(`salas/${SALA}/jogadores/${idKey(ME_ID)}`);
+  // Quando desconectar, remove o jogador
+  playerRef.onDisconnect().remove();
+  // Marca online
+  db.ref('.info/connected').on('value', snap => {
+    if(snap.val()){
+      playerRef.onDisconnect().remove();
+      playerRef.update({online:true, ultimoPing: Date.now()});
+    }
+  });
 }
-async function dbSet(path,data){
-  const r=await fetch(`${DB}/${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!r.ok) throw new Error('Erro escrita');
-  return r.json();
-}
-async function dbPatch(path,data){
-  const r=await fetch(`${DB}/${path}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!r.ok) throw new Error('Erro update');
-  return r.json();
-}
-async function dbDel(path){await fetch(`${DB}/${path}.json`,{method:'DELETE'});}
 
 // ══════════════════════════════════════════════════════
 //  LOGIN
@@ -420,8 +440,6 @@ async function dbDel(path){await fetch(`${DB}/${path}.json`,{method:'DELETE'});}
 $('inp-nome').addEventListener('keydown',e=>{if(e.key==='Enter')entrar();});
 $('inp-codigo').addEventListener('keydown',e=>{if(e.key==='Enter')entrar();});
 $('inp-codigo').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
-
-// Preenche nome salvo
 if(ME_NOME) $('inp-nome').value=ME_NOME;
 
 async function entrar(){
@@ -433,43 +451,41 @@ async function entrar(){
   ME_NOME=nome;
   localStorage.setItem('impostor_nome',nome);
   try{
-    if(!cod) await criarSala(nome,nomeSala||'Sala de '+nome);
-    else     await entrarSala(nome,cod);
+    if(!cod) await criarSala(nome, nomeSala||'Sala de '+nome);
+    else     await entrarSala(nome, cod);
   }catch(e){setErr('st-login',e.message);}
 }
 
-async function criarSala(nome,nomeSala){
-  let cod=gerarCodigo();
-  while(await dbGet(`salas/${cod}/info`)){cod=gerarCodigo();}
-  await dbSet(`salas/${cod}/info`,{
-    fase:'lobby',host:ME_ID,hostNome:nome,
-    nomeSala,categoria:'',palavra:'',
-    impostorId:'',impostorNome:'',
-    votacaoAberta:false,criadoEm:Date.now(),rodada:0
+async function criarSala(nome, nomeSala){
+  let cod = gerarCodigo();
+  // Garante código único
+  let snap = await get(`salas/${cod}/info`);
+  while(snap){ cod=gerarCodigo(); snap=await get(`salas/${cod}/info`); }
+
+  await set(`salas/${cod}/info`,{
+    fase:'lobby', host:ME_ID, hostNome:nome,
+    nomeSala, categoria:'', palavra:'',
+    impostorId:'', impostorNome:'',
+    votacaoAberta:false, criadoEm:Date.now(), rodada:0
   });
-  await dbSet(`salas/${cod}/jogadores/${idKey(ME_ID)}`,{
-    id:ME_ID,nome,ts:Date.now(),ultimoPing:Date.now(),
-    placar:0,espectador:false
+  await set(`salas/${cod}/jogadores/${idKey(ME_ID)}`,{
+    id:ME_ID, nome, ts:Date.now(), placar:0, espectador:false, online:true
   });
   SALA=cod;
-  iniciarSessao();
+  configurarPresenca();
+  iniciarListeners();
 }
 
-async function entrarSala(nome,cod){
-  const info=await dbGet(`salas/${cod}/info`);
+async function entrarSala(nome, cod){
+  const info = await get(`salas/${cod}/info`);
   if(!info) throw new Error('Sala não encontrada.');
-  const espectador=info.fase!=='lobby';
-  await dbSet(`salas/${cod}/jogadores/${idKey(ME_ID)}`,{
-    id:ME_ID,nome,ts:Date.now(),ultimoPing:Date.now(),
-    placar:0,espectador
+  const espectador = info.fase !== 'lobby';
+  await set(`salas/${cod}/jogadores/${idKey(ME_ID)}`,{
+    id:ME_ID, nome, ts:Date.now(), placar:0, espectador, online:true
   });
   SALA=cod;
-  iniciarSessao();
-}
-
-function iniciarSessao(){
-  startPoll();
-  startPing();
+  configurarPresenca();
+  iniciarListeners();
 }
 
 function copiarCodigo(){
@@ -481,199 +497,189 @@ function copiarCodigo(){
 }
 
 // ══════════════════════════════════════════════════════
-//  PING — mantém jogador "vivo" no Firebase
+//  LISTENERS PRINCIPAIS (WebSocket, sem polling!)
 // ══════════════════════════════════════════════════════
-function startPing(){
-  if(pingTimer) clearInterval(pingTimer);
-  pingTimer=setInterval(async()=>{
-    if(!SALA) return;
-    try{
-      await dbPatch(`salas/${SALA}/jogadores/${idKey(ME_ID)}`,{ultimoPing:Date.now()});
-    }catch(e){}
-  },8000);
-}
-function stopPing(){clearInterval(pingTimer);pingTimer=null;}
+function iniciarListeners(){
+  // 1. Ouve info da sala (fase, impostor, categoria…)
+  listen('info', `salas/${SALA}/info`, onInfoChanged);
 
-// ══════════════════════════════════════════════════════
-//  CLEANUP — remove jogadores inativos (só o host faz)
-// ══════════════════════════════════════════════════════
-async function limparInativos(sala,info){
-  if(info.host!==ME_ID) return;
-  const jogadores=sala.jogadores||{};
-  const agora=Date.now();
-  for(const[key,j] of Object.entries(jogadores)){
-    if(agora-j.ultimoPing>TIMEOUT_MS && j.id!==ME_ID){
-      await dbDel(`salas/${SALA}/jogadores/${key}`);
-      // se era o host passa adiante (não deve acontecer mas por segurança)
-    }
+  // 2. Ouve jogadores
+  listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
+
+  // 3. Ouve votos
+  listen('votos', `salas/${SALA}/votos`, onVotosChanged);
+
+  showScreen('s-lobby');
+}
+
+// ─── Estado local cacheado dos listeners ───
+let _info = null;
+let _jogadores = {};
+let _votos = {};
+let _assignments = null;
+let _fase = '';
+
+function onInfoChanged(info){
+  if(!info){ sair(); return; }
+  _info = info;
+  const fase = info.fase;
+
+  // Busca assignments na primeira vez que entra em playing/voting
+  if((fase==='playing'||fase==='voting') && !_assignments){
+    get(`salas/${SALA}/assignments`).then(a=>{ _assignments=a; renderFase(); });
+  } else {
+    renderFase();
+  }
+
+  // Ouve histórico só no resultado
+  if(fase==='revealed'){
+    listen('historico', `salas/${SALA}/historico`, onHistoricoChanged);
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  LOBBY
-// ══════════════════════════════════════════════════════
-function renderLobby(sala,info){
-  $('lobby-nome-sala').textContent=info.nomeSala||SALA;
-  $('lobby-code').textContent=SALA;
+function onJogadoresChanged(jogadores){
+  _jogadores = jogadores||{};
+  renderFase();
+}
 
-  const jogadores=Object.values(sala.jogadores||{}).sort((a,b)=>a.ts-b.ts);
-  const ativos=jogadores.filter(j=>!j.espectador);
-  const specs=jogadores.filter(j=>j.espectador);
+function onVotosChanged(votos){
+  _votos = votos||{};
+  // Verifica se EU já votei nesta lista
+  const meuRegistro = _votos[idKey(ME_ID)];
+  meuVoto = meuRegistro ? meuRegistro.votadoId : null;
+  renderFase();
+}
 
-  const container=$('lobby-players');
+let _historico = {};
+function onHistoricoChanged(hist){
+  _historico = hist||{};
+  renderHistorico();
+}
+
+// ── Despacha para o render correto com base na fase ──
+function renderFase(){
+  if(!_info) return;
+  const fase = _info.fase;
+  const eu = _jogadores[idKey(ME_ID)];
+  const euSouEspectador = eu?.espectador === true;
+
+  if(euSouEspectador){
+    if(fase==='revealed') renderResultado();
+    else renderEspectador();
+    return;
+  }
+
+  if(fase==='lobby')    renderLobby();
+  else if(fase==='playing') renderPlaying();
+  else if(fase==='voting')  renderVoting();
+  else if(fase==='revealed') renderResultado();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER — LOBBY
+// ══════════════════════════════════════════════════════
+function renderLobby(){
+  if(document.querySelector('.screen.active')?.id !== 's-lobby') showScreen('s-lobby');
+  $('lobby-nome-sala').textContent = _info.nomeSala||SALA;
+  $('lobby-code').textContent = SALA;
+
+  const lista = Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
+  const ativos = lista.filter(j=>!j.espectador);
+  const specs  = lista.filter(j=>j.espectador);
+
+  const container = $('lobby-players');
   container.innerHTML='';
-
   [...ativos,...specs].forEach(j=>{
     const chip=document.createElement('div');
     chip.className='player-chip'+(j.id===ME_ID?' me':'')+(j.espectador?' espectador':'');
-    const icon=j.id===info.host?'👑':'👤';
     let badges='<div class="badges-right">';
     if(j.espectador) badges+='<span class="badge badge-spec">Espectador</span>';
-    if(j.id===info.host) badges+='<span class="badge badge-host">Host</span>';
+    if(j.id===_info.host) badges+='<span class="badge badge-host">Host</span>';
     if(j.id===ME_ID) badges+='<span class="badge badge-you">Você</span>';
     if(j.placar>0) badges+=`<span class="score-pill">${j.placar}pt</span>`;
-    // kick button — só host vê, não pode kickar a si mesmo
-    if(info.host===ME_ID && j.id!==ME_ID){
+    if(_info.host===ME_ID && j.id!==ME_ID){
       badges+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     }
     badges+='</div>';
+    const icon = j.id===_info.host?'👑':'👤';
     chip.innerHTML=`<span>${icon} ${j.nome}</span>${badges}`;
     container.appendChild(chip);
   });
 
-  const podeSort=info.host===ME_ID&&info.fase==='lobby'&&ativos.length>=2;
-  $('btn-sortear').style.display=podeSort?'':'none';
-}
-
-async function kickar(playerId){
-  try{
-    await dbDel(`salas/${SALA}/jogadores/${idKey(playerId)}`);
-  }catch(e){}
+  const podeSort = _info.host===ME_ID && ativos.length>=2;
+  $('btn-sortear').style.display = podeSort?'':'none';
 }
 
 // ══════════════════════════════════════════════════════
-//  SORTEAR
+//  RENDER — PLAYING (palavra)
 // ══════════════════════════════════════════════════════
-async function sortear(){
-  $('btn-sortear').disabled=true;
-  clearErr('st-lobby');
-  try{
-    const sala=await dbGet(`salas/${SALA}`);
-    const info=sala.info;
-    if(info.host!==ME_ID) throw new Error('Só o host pode sortear.');
-
-    const ativos=Object.values(sala.jogadores||{}).filter(j=>!j.espectador);
-    if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
-
-    const cats=await carregarPalavras();
-    const catNames=Object.keys(cats);
-    const cat=catNames[Math.floor(Math.random()*catNames.length)];
-    const words=cats[cat];
-    const palavra=words[Math.floor(Math.random()*words.length)];
-
-    const impostorIdx=Math.floor(Math.random()*ativos.length);
-    const impostorJ=ativos[impostorIdx];
-
-    const assignments={};
-    ativos.forEach((j,i)=>{
-      assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
-    });
-
-    // Zera votos da rodada anterior
-    await dbDel(`salas/${SALA}/votos`);
-
-    await dbPatch(`salas/${SALA}/info`,{
-      fase:'playing',categoria:cat,palavra,
-      impostorId:impostorJ.id,impostorNome:impostorJ.nome,
-      votacaoAberta:false,
-      rodada:(info.rodada||0)+1
-    });
-    await dbSet(`salas/${SALA}/assignments`,assignments);
-
-  }catch(e){
-    setErr('st-lobby',e.message);
-    $('btn-sortear').disabled=false;
+function renderPlaying(){
+  const cur = document.querySelector('.screen.active')?.id;
+  if(cur !== 's-palavra'){
+    // Primeira vez nessa fase: busca minha palavra e mostra tela
+    myWord=''; wordShown=false;
+    if(_assignments){
+      myWord = _assignments[idKey(ME_ID)]||'';
+    }
+    $('word-cat').textContent = _info.categoria||'—';
+    const el=$('word-el');
+    el.className='word-hidden'; el.textContent='● ● ●';
+    $('word-hint').textContent='toque para revelar';
+    $('card-votacao').style.display='none';
+    showScreen('s-palavra');
   }
+  $('btn-revelar').style.display   = (_info.host===ME_ID)?'':'none';
+  $('btn-abrir-voto').style.display = (_info.host===ME_ID)?'':'none';
+  $('card-votacao').style.display  = 'none';
 }
 
 // ══════════════════════════════════════════════════════
-//  MINHA PALAVRA
+//  RENDER — VOTING
 // ══════════════════════════════════════════════════════
-async function fetchMyWord(info){
-  const assignments=await dbGet(`salas/${SALA}/assignments`);
-  if(!assignments) return;
-  const word=assignments[idKey(ME_ID)];
-  if(!word) return; // espectador não tem assignment
-
-  myWord=word; wordShown=false;
-  $('word-cat').textContent=info.categoria||'—';
-  const el=$('word-el');
-  el.className='word-hidden';el.textContent='● ● ●';
-  $('word-hint').textContent='toque para revelar';
-  $('card-votacao').style.display='none';
-  $('btn-revelar').style.display=(ME_ID===info.host)?'':'none';
-  $('btn-abrir-voto').style.display=(ME_ID===info.host)?'':'none';
-  showScreen('s-palavra');
-}
-
-function toggleWord(){
-  const el=$('word-el'),hint=$('word-hint');
-  if(!wordShown){
-    const isImp=myWord==='IMPOSTOR';
-    el.className='word-revealed'+(isImp?' impostor':'');
-    el.textContent=isImp?'🕵️ IMPOSTOR':myWord;
-    hint.textContent='toque para esconder';
-    wordShown=true;
-    setTimeout(()=>{
-      if(wordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;}
-    },4000);
-  }else{
-    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;
+function renderVoting(){
+  const cur = document.querySelector('.screen.active')?.id;
+  if(cur !== 's-palavra'){
+    myWord = _assignments ? (_assignments[idKey(ME_ID)]||'') : '';
+    wordShown=false;
+    $('word-cat').textContent = _info.categoria||'—';
+    const el=$('word-el');
+    el.className='word-hidden'; el.textContent='● ● ●';
+    $('word-hint').textContent='toque para revelar';
+    showScreen('s-palavra');
   }
+  $('btn-abrir-voto').style.display='none';
+  $('btn-revelar').style.display = (_info.host===ME_ID)?'':'none';
+  $('card-votacao').style.display='';
+  renderVoteGrid('vote-grid', false);
 }
 
 // ══════════════════════════════════════════════════════
-//  VOTAÇÃO
+//  RENDER — VOTE GRID (jogador ativo e espectador)
 // ══════════════════════════════════════════════════════
-async function abrirVotacao(){
-  await dbPatch(`salas/${SALA}/info`,{votacaoAberta:true,fase:'voting'});
-}
+function renderVoteGrid(gridId, isEspectador){
+  const ativos = Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const totalVotos = Object.keys(_votos).length;
 
-async function votar(votadoId,votadoNome){
-  if(meuVoto) return; // já votou
-  meuVoto=votadoId;
-  await dbSet(`salas/${SALA}/votos/${idKey(ME_ID)}`,{votadoId,votadoNome,ts:Date.now()});
-}
-
-function renderVotacao(sala,info,isEspectador){
-  const jogadores=Object.values(sala.jogadores||{}).filter(j=>!j.espectador);
-  const votos=sala.votos||{};
-  const totalVotos=Object.keys(votos).length;
-  const totalVotantes=jogadores.length;
-
-  // conta votos por jogador
+  // Conta votos por jogador
   const contagem={};
-  Object.values(votos).forEach(v=>{
-    contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;
-  });
+  Object.values(_votos).forEach(v=>{ contagem[v.votadoId]=(contagem[v.votadoId]||0)+1; });
 
-  const gridId=isEspectador?'spec-vote-grid':'vote-grid';
   const grid=$(gridId);
   grid.innerHTML='';
 
-  jogadores.forEach(j=>{
-    const qtd=contagem[j.id]||0;
-    const pct=totalVotos>0?Math.round(qtd/totalVotos*100):0;
-    const jáVotei=meuVoto!==null;
-    const éEu=j.id===ME_ID;
+  ativos.forEach(j=>{
+    const qtd = contagem[j.id]||0;
+    const pct = totalVotos>0 ? Math.round(qtd/totalVotos*100) : 0;
+    const jaVotei = meuVoto !== null;
 
-    const row=document.createElement('div');
-    row.className='vote-row'+(meuVoto===j.id?' voted':'')+(isEspectador||éEu||jáVotei?' cant-vote':'');
-    if(!isEspectador&&!éEu&&!jáVotei){
-      row.onclick=()=>votar(j.id,j.nome);
+    const row = document.createElement('div');
+    // Pode votar em si mesmo — sem restrição
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(jaVotei||isEspectador?' already-voted':'');
+    if(!isEspectador && !jaVotei){
+      row.onclick = ()=>votar(j.id, j.nome);
     }
     row.innerHTML=`
-      <span style="font-size:.85rem;flex-shrink:0">${j.nome}${éEu?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span style="font-size:.85rem;flex-shrink:0;min-width:90px">${j.nome}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</span>
       <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%"></div></div>
       <span class="vote-count">${qtd}</span>
     `;
@@ -681,80 +687,52 @@ function renderVotacao(sala,info,isEspectador){
   });
 
   if(!isEspectador){
-    $('vote-status-txt').textContent=`${totalVotos} de ${totalVotantes} votos`;
-    $('card-votacao').style.display='';
-    $('btn-abrir-voto').style.display='none';
-    // host pode revelar após votação
-    $('btn-revelar').style.display=(ME_ID===info.host)?'':'none';
-  }else{
-    $('spec-voto-card').style.display='';
+    $('vote-status-txt').textContent=`${totalVotos} de ${ativos.length} votos`;
   }
 }
 
 // ══════════════════════════════════════════════════════
-//  REVELAR
+//  RENDER — ESPECTADOR
 // ══════════════════════════════════════════════════════
-async function revelarImpostor(){
-  const info=await dbGet(`salas/${SALA}/info`);
-  if(info.host!==ME_ID) return setErr('st-palavra','Só o host pode revelar.');
-
-  // Calcula pontos:
-  // - Acertou o impostor = +2pts
-  // - Impostor sobreviveu (menos de metade dos votos) = +3pts pro impostor
-  const sala=await dbGet(`salas/${SALA}`);
-  const votos=sala.votos||{};
-  const jogadores=Object.values(sala.jogadores||{}).filter(j=>!j.espectador);
-  const contagem={};
-  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-
-  const impostorVotos=contagem[info.impostorId]||0;
-  const maioria=Math.floor(jogadores.length/2)+1;
-  const impostorPegou=impostorVotos>=maioria;
-
-  // Atualiza placar
-  for(const j of jogadores){
-    const voto=Object.values(votos).find(v=>v.votadoId===info.impostorId&&
-      Object.keys(sala.votos||{}).some(k=>k===idKey(j.id)&&sala.votos[k].votadoId===info.impostorId));
-    let pts=0;
-    if(j.id!==info.impostorId && contagem[info.impostorId] && sala.votos&&sala.votos[idKey(j.id)]?.votadoId===info.impostorId) pts=2;
-    if(j.id===info.impostorId && !impostorPegou) pts=3;
-    if(pts>0){
-      const novoScore=(j.placar||0)+pts;
-      await dbPatch(`salas/${SALA}/jogadores/${idKey(j.id)}`,{placar:novoScore});
-    }
-  }
-
-  // Salva histórico
-  const rodadaKey=`r${info.rodada||1}`;
-  const assignments=sala.assignments||{};
-  await dbSet(`salas/${SALA}/historico/${rodadaKey}`,{
-    rodada:info.rodada||1,
-    categoria:info.categoria,
-    palavra:info.palavra,
-    impostorNome:info.impostorNome,
-    impostorPegou,
-    ts:Date.now()
+function renderEspectador(){
+  if(document.querySelector('.screen.active')?.id !== 's-espectador') showScreen('s-espectador');
+  const ativos = Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const container=$('spec-players');
+  container.innerHTML='';
+  ativos.forEach(j=>{
+    const chip=document.createElement('div');
+    chip.className='player-chip';
+    chip.innerHTML=`<span>${j.id===_info.host?'👑':'👤'} ${j.nome}</span>
+      <div class="badges-right">${j.placar>0?`<span class="score-pill">${j.placar}pt</span>`:''}
+      ${j.id===_info.host?'<span class="badge badge-host">Host</span>':''}</div>`;
+    container.appendChild(chip);
   });
 
-  await dbPatch(`salas/${SALA}/info`,{fase:'revealed'});
+  if(_info.fase==='voting'||_info.fase==='playing'){
+    $('spec-voto-card').style.display='';
+    renderVoteGrid('spec-vote-grid', true);
+  } else {
+    $('spec-voto-card').style.display='none';
+  }
 }
 
 // ══════════════════════════════════════════════════════
-//  RESULTADO
+//  RENDER — RESULTADO
 // ══════════════════════════════════════════════════════
-async function renderResultado(sala,info){
-  const assignments=sala.assignments||{};
-  const jogadores=Object.values(sala.jogadores||{}).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-  const votos=sala.votos||{};
+function renderResultado(){
+  if(document.querySelector('.screen.active')?.id !== 's-resultado') showScreen('s-resultado');
+
+  const assignments = _assignments||{};
+  const ativos = Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
   const contagem={};
-  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+  Object.values(_votos).forEach(v=>{ contagem[v.votadoId]=(contagem[v.votadoId]||0)+1; });
 
   const list=$('res-list');
   list.innerHTML='';
-  jogadores.forEach(j=>{
-    const word=assignments[idKey(j.id)]||'?';
-    const isImp=j.id===info.impostorId;
-    const meuVotoAqui=sala.votos&&sala.votos[idKey(ME_ID)]?.votadoId===j.id;
+  ativos.forEach(j=>{
+    const word = assignments[idKey(j.id)]||'?';
+    const isImp = j.id===_info.impostorId;
+    const meuVotoAqui = _votos[idKey(ME_ID)]?.votadoId===j.id;
     const card=document.createElement('div');
     card.className='reveal-card'+(isImp?' imp':'');
     const votosQtd=contagem[j.id]||0;
@@ -762,7 +740,7 @@ async function renderResultado(sala,info){
       <div class="av">${isImp?'🕵️':'👤'}</div>
       <div class="info">
         <div class="pname">${j.nome}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</div>
-        <div class="pword">${isImp?'Era o Impostor · '+info.palavra:word}${votosQtd>0?' · '+votosQtd+' voto'+(votosQtd>1?'s':''):''}</div>
+        <div class="pword">${isImp?'Era o Impostor · '+_info.palavra:word}${votosQtd>0?' · '+votosQtd+' voto'+(votosQtd>1?'s':''):''}</div>
       </div>
       ${isImp?'<span class="imp-badge">Impostor</span>':''}
       ${meuVotoAqui&&!isImp?'<span style="font-size:.7rem;color:var(--red)">seu voto</span>':''}
@@ -771,15 +749,13 @@ async function renderResultado(sala,info){
     list.appendChild(card);
   });
 
-  renderHistorico(sala);
-  renderPlacar(sala);
-  $('btn-nova').style.display=(ME_ID===info.host)?'':'none';
-  showScreen('s-resultado');
+  renderHistorico();
+  renderPlacar();
+  $('btn-nova').style.display=(ME_ID===_info.host)?'':'none';
 }
 
-function renderHistorico(sala){
-  const hist=sala.historico||{};
-  const rodadas=Object.values(hist).sort((a,b)=>b.rodada-a.rodada);
+function renderHistorico(){
+  const rodadas=Object.values(_historico).sort((a,b)=>b.rodada-a.rodada);
   const container=$('hist-list');
   container.innerHTML='';
   if(!rodadas.length){
@@ -798,12 +774,12 @@ function renderHistorico(sala){
   });
 }
 
-function renderPlacar(sala){
-  const jogadores=Object.values(sala.jogadores||{}).sort((a,b)=>(b.placar||0)-(a.placar||0));
+function renderPlacar(){
+  const lista=Object.values(_jogadores).sort((a,b)=>(b.placar||0)-(a.placar||0));
   const container=$('placar-list');
   container.innerHTML='';
-  if(!jogadores.length){container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';return;}
-  jogadores.forEach((j,i)=>{
+  if(!lista.length){container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';return;}
+  lista.forEach((j,i)=>{
     const div=document.createElement('div');
     div.className='placar-row';
     div.innerHTML=`
@@ -816,143 +792,178 @@ function renderPlacar(sala){
 }
 
 // ══════════════════════════════════════════════════════
-//  NOVA RODADA / SAIR
+//  PALAVRA — toggle
+// ══════════════════════════════════════════════════════
+function toggleWord(){
+  const el=$('word-el'),hint=$('word-hint');
+  if(!wordShown){
+    const isImp=myWord==='IMPOSTOR';
+    el.className='word-revealed'+(isImp?' impostor':'');
+    el.textContent=isImp?'🕵️ IMPOSTOR':myWord;
+    hint.textContent='toque para esconder';
+    wordShown=true;
+    setTimeout(()=>{
+      if(wordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;}
+    },4000);
+  }else{
+    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  SORTEAR
+// ══════════════════════════════════════════════════════
+async function sortear(){
+  $('btn-sortear').disabled=true;
+  clearErr('st-lobby');
+  try{
+    if(_info.host!==ME_ID) throw new Error('Só o host pode sortear.');
+    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+    if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
+
+    const cats=await carregarPalavras();
+    const catNames=Object.keys(cats);
+    const cat=catNames[Math.floor(Math.random()*catNames.length)];
+    const words=cats[cat];
+    const palavra=words[Math.floor(Math.random()*words.length)];
+    const impostorIdx=Math.floor(Math.random()*ativos.length);
+    const impostorJ=ativos[impostorIdx];
+
+    const assignments={};
+    ativos.forEach((j,i)=>{
+      assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
+    });
+
+    // Limpa votos anteriores e grava assignments atomicamente
+    await del(`salas/${SALA}/votos`);
+    await set(`salas/${SALA}/assignments`, assignments);
+    _assignments = assignments; // atualiza cache local imediatamente
+
+    await upd(`salas/${SALA}/info`,{
+      fase:'playing', categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      votacaoAberta:false,
+      rodada:(_info.rodada||0)+1
+    });
+    // O listener onInfoChanged vai disparar e renderizar automaticamente
+  }catch(e){
+    setErr('st-lobby',e.message);
+    $('btn-sortear').disabled=false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  VOTAÇÃO
+// ══════════════════════════════════════════════════════
+async function abrirVotacao(){
+  await upd(`salas/${SALA}/info`,{votacaoAberta:true, fase:'voting'});
+}
+
+async function votar(votadoId, votadoNome){
+  if(meuVoto) return;
+  meuVoto = votadoId; // otimista: atualiza localmente antes do write
+  await set(`salas/${SALA}/votos/${idKey(ME_ID)}`,{votadoId, votadoNome, ts:Date.now()});
+  // O listener onVotosChanged confirma e re-render
+}
+
+// ══════════════════════════════════════════════════════
+//  REVELAR
+// ══════════════════════════════════════════════════════
+async function revelarImpostor(){
+  if(_info.host!==ME_ID) return setErr('st-palavra','Só o host pode revelar.');
+
+  const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+  const contagem={};
+  Object.values(_votos).forEach(v=>{ contagem[v.votadoId]=(contagem[v.votadoId]||0)+1; });
+
+  const impostorVotos=contagem[_info.impostorId]||0;
+  const maioria=Math.floor(ativos.length/2)+1;
+  const impostorPegou=impostorVotos>=maioria;
+
+  // Pontuação
+  const updates={};
+  for(const j of ativos){
+    let pts=0;
+    if(j.id!==_info.impostorId && _votos[idKey(j.id)]?.votadoId===_info.impostorId) pts=2;
+    if(j.id===_info.impostorId && !impostorPegou) pts=3;
+    if(pts>0){
+      updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=(j.placar||0)+pts;
+    }
+  }
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  // Histórico
+  const rodadaKey=`r${_info.rodada||1}`;
+  await set(`salas/${SALA}/historico/${rodadaKey}`,{
+    rodada:_info.rodada||1,
+    categoria:_info.categoria,
+    palavra:_info.palavra,
+    impostorNome:_info.impostorNome,
+    impostorPegou,
+    ts:Date.now()
+  });
+
+  await upd(`salas/${SALA}/info`,{fase:'revealed'});
+}
+
+// ══════════════════════════════════════════════════════
+//  NOVA RODADA / SAIR / KICK
 // ══════════════════════════════════════════════════════
 async function novaRodada(){
-  meuVoto=null;
-  palavrasCache=null;
-  // Espectadores que entraram durante o jogo viram jogadores ativos
-  const sala=await dbGet(`salas/${SALA}`);
-  const jogadores=sala.jogadores||{};
-  for(const[key,j] of Object.entries(jogadores)){
-    if(j.espectador) await dbPatch(`salas/${SALA}/jogadores/${key}`,{espectador:false});
-  }
-  await dbDel(`salas/${SALA}/votos`);
-  await dbDel(`salas/${SALA}/assignments`);
-  await dbPatch(`salas/${SALA}/info`,{
-    fase:'lobby',categoria:'',palavra:'',
-    impostorId:'',impostorNome:'',votacaoAberta:false
+  meuVoto=null; _assignments=null; palavrasCache=null;
+
+  // Espectadores viram jogadores ativos
+  const updates={};
+  Object.values(_jogadores).forEach(j=>{
+    if(j.espectador) updates[`salas/${SALA}/jogadores/${idKey(j.id)}/espectador`]=false;
   });
-  lastPhase='lobby';
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await upd(`salas/${SALA}/info`,{
+    fase:'lobby', categoria:'', palavra:'',
+    impostorId:'', impostorNome:'', votacaoAberta:false
+  });
+}
+
+async function kickar(playerId){
+  // Cancela onDisconnect do kickado para evitar conflito (best effort)
+  await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
 }
 
 async function sair(){
-  stopPoll(); stopPing();
+  stopListeners();
+  if(!SALA) { showScreen('s-login'); return; }
+
   try{
-    const sala=await dbGet(`salas/${SALA}`);
-    await dbDel(`salas/${SALA}/jogadores/${idKey(ME_ID)}`);
-    if(sala&&sala.info&&sala.info.host===ME_ID){
-      const restantes=Object.values(sala.jogadores||{}).filter(j=>j.id!==ME_ID);
+    // Cancela onDisconnect antes de remover manualmente
+    await db.ref(`salas/${SALA}/jogadores/${idKey(ME_ID)}`).onDisconnect().cancel();
+    await del(`salas/${SALA}/jogadores/${idKey(ME_ID)}`);
+
+    // Se era o host, passa pra outro
+    if(_info && _info.host===ME_ID){
+      const restantes=Object.values(_jogadores).filter(j=>j.id!==ME_ID);
       if(restantes.length>0){
         restantes.sort((a,b)=>a.ts-b.ts);
-        await dbPatch(`salas/${SALA}/info`,{host:restantes[0].id,hostNome:restantes[0].nome});
+        await upd(`salas/${SALA}/info`,{host:restantes[0].id, hostNome:restantes[0].nome});
       }else{
-        await dbDel(`salas/${SALA}`);
+        await del(`salas/${SALA}`);
       }
     }
   }catch(e){}
-  SALA=''; myWord=''; meuVoto=null; lastPhase=''; palavrasCache=null;
+
+  SALA=''; myWord=''; meuVoto=null;
+  _info=null; _jogadores={}; _votos={}; _assignments=null; _historico={};
   $('inp-codigo').value='';
   clearErr('st-login');
   showScreen('s-login');
 }
 
 // ══════════════════════════════════════════════════════
-//  ESPECTADOR
+//  INIT
 // ══════════════════════════════════════════════════════
-function renderEspectador(sala,info){
-  const jogadores=Object.values(sala.jogadores||{}).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-  const container=$('spec-players');
-  container.innerHTML='';
-  jogadores.forEach(j=>{
-    const chip=document.createElement('div');
-    chip.className='player-chip';
-    chip.innerHTML=`<span>${j.id===info.host?'👑':'👤'} ${j.nome}</span>
-      <div class="badges-right">${j.placar>0?`<span class="score-pill">${j.placar}pt</span>`:''}
-      ${j.id===info.host?'<span class="badge badge-host">Host</span>':''}</div>`;
-    container.appendChild(chip);
-  });
-
-  if(info.fase==='voting'||info.fase==='playing'){
-    renderVotacao(sala,info,true);
-  }else{
-    $('spec-voto-card').style.display='none';
-  }
-  showScreen('s-espectador');
-}
-
-// ══════════════════════════════════════════════════════
-//  POLLING
-// ══════════════════════════════════════════════════════
-function startPoll(){if(!pollTimer)pollTimer=setInterval(poll,2500);}
-function stopPoll(){clearInterval(pollTimer);pollTimer=null;}
-
-async function poll(){
-  if(!SALA) return;
-  try{
-    const sala=await dbGet(`salas/${SALA}`);
-    if(!sala||!sala.info){await sair();return;}
-    const info=sala.info;
-
-    // cleanup de inativos
-    await limparInativos(sala,info);
-
-    const screen=document.querySelector('.screen.active')?.id;
-    const euSouEspectador=sala.jogadores?.[idKey(ME_ID)]?.espectador===true;
-
-    if(euSouEspectador){
-      if(info.fase==='revealed'){
-        await renderResultado(sala,info);
-      }else{
-        renderEspectador(sala,info);
-      }
-      lastPhase=info.fase;
-      return;
-    }
-
-    if(info.fase==='lobby'){
-      if(screen!=='s-lobby'){lastPhase='lobby';showScreen('s-lobby');}
-      renderLobby(sala,info);
-
-    }else if(info.fase==='playing'){
-      if(screen==='s-lobby'||lastPhase!=='playing'){
-        lastPhase='playing';
-        await fetchMyWord(info);
-      }
-      if(screen==='s-palavra'){
-        $('btn-revelar').style.display=(ME_ID===info.host)?'':'none';
-        $('btn-abrir-voto').style.display=(ME_ID===info.host&&!info.votacaoAberta)?'':'none';
-        $('card-votacao').style.display='none';
-      }
-
-    }else if(info.fase==='voting'){
-      if(screen==='s-lobby'||lastPhase==='lobby'){
-        await fetchMyWord(info);
-      }
-      if(screen==='s-palavra'||lastPhase==='playing'||lastPhase==='voting'){
-        renderVotacao(sala,info,false);
-      }
-      lastPhase='voting';
-
-    }else if(info.fase==='revealed'){
-      if(screen!=='s-resultado'){
-        await renderResultado(sala,info);
-      }else{
-        $('btn-nova').style.display=(ME_ID===info.host)?'':'none';
-        renderHistorico(sala);
-        renderPlacar(sala);
-      }
-    }
-
-    lastPhase=info.fase;
-  }catch(e){}
-}
-
-// ══════════════════════════════════════════════════════
-//  INIT — pré-carrega sala se vier via link
-// ══════════════════════════════════════════════════════
-window.addEventListener('load',async()=>{
-  // Pré-preenche código se vier via ?sala=XXXX
+window.addEventListener('load', async()=>{
   const params=new URLSearchParams(location.search);
   const salaParam=params.get('sala');
   if(salaParam) $('inp-codigo').value=salaParam.toUpperCase();
