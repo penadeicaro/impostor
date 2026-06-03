@@ -83,7 +83,7 @@
     transition:color .3s;}
   .word-revealed{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;
     color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
-  .word-revealed.impostor{color:var(--red);}
+  .word-revealed.impostor{color:var(--accent);}
   @keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
   .word-hint{font-size:.7rem;color:var(--sub);margin-top:10px;letter-spacing:1px;}
   .spec-banner{background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.2);
@@ -173,9 +173,11 @@
     </div>
     <div class="card">
       <div class="card-label">Sala</div>
-      <input id="inp-sala-nome" type="text" placeholder="Nome da sala (opcional)" maxlength="30" autocomplete="off" style="margin-bottom:10px">
+      <div style="color:var(--sub);font-size:.7rem;line-height:1.6;margin-bottom:12px">
+        Digite um <strong style="color:var(--text)">código existente</strong> para entrar, um <strong style="color:var(--text)">nome</strong> para criar sua sala, ou deixe <strong style="color:var(--text)">vazio</strong> para código aleatório.
+      </div>
       <div class="row">
-        <input id="inp-codigo" type="text" placeholder="Código pra entrar (ou vazio = criar)" maxlength="6" autocomplete="off" style="text-transform:uppercase">
+        <input id="inp-codigo" type="text" placeholder="Código ou nome (opcional)" maxlength="30" autocomplete="off" style="text-transform:uppercase">
         <button class="btn btn-primary" style="width:auto;padding:13px 20px;" onclick="entrar()">→</button>
       </div>
     </div>
@@ -222,6 +224,7 @@
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="vote-grid"></div>
       <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="vote-status-txt"></div>
+      <div style="font-size:.65rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
     <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
     <button class="btn btn-secondary" id="btn-abrir-voto" onclick="abrirVotacao()" style="display:none">🗳️ ABRIR VOTAÇÃO</button>
@@ -444,23 +447,37 @@ if(ME_NOME) $('inp-nome').value=ME_NOME;
 
 async function entrar(){
   const nome=$('inp-nome').value.trim();
-  const nomeSala=$('inp-sala-nome').value.trim();
-  const cod=$('inp-codigo').value.trim().toUpperCase();
+  const raw=$('inp-codigo').value.trim().toUpperCase();
   if(!nome) return setErr('st-login','Digite seu nome.');
   clearErr('st-login');
   ME_NOME=nome;
   localStorage.setItem('impostor_nome',nome);
   try{
-    if(!cod) await criarSala(nome, nomeSala||'Sala de '+nome);
-    else     await entrarSala(nome, cod);
+    // Se vazio: cria com código aleatório
+    // Se parece código de sala existente (4 chars alfanum): tenta entrar primeiro
+    // Senão: usa como nome da sala ao criar
+    if(!raw){
+      await criarSala(nome, 'Sala de '+nome, null);
+    } else {
+      // Tenta entrar se existir sala com esse identificador
+      const existing = await get(\`salas/\${raw}/info\`);
+      if(existing){
+        await entrarSala(nome, raw);
+      } else {
+        // Não existe — cria com esse nome/código
+        await criarSala(nome, raw, raw.length<=6 ? raw : null);
+      }
+    }
   }catch(e){setErr('st-login',e.message);}
 }
 
-async function criarSala(nome, nomeSala){
-  let cod = gerarCodigo();
-  // Garante código único
-  let snap = await get(`salas/${cod}/info`);
-  while(snap){ cod=gerarCodigo(); snap=await get(`salas/${cod}/info`); }
+async function criarSala(nome, nomeSala, codCustom){
+  let cod = codCustom || gerarCodigo();
+  if(!codCustom){
+    // Garante código único
+    let snap = await get(`salas/${cod}/info`);
+    while(snap){ cod=gerarCodigo(); snap=await get(`salas/${cod}/info`); }
+  }
 
   await set(`salas/${cod}/info`,{
     fase:'lobby', host:ME_ID, hostNome:nome,
@@ -670,12 +687,11 @@ function renderVoteGrid(gridId, isEspectador){
   ativos.forEach(j=>{
     const qtd = contagem[j.id]||0;
     const pct = totalVotos>0 ? Math.round(qtd/totalVotos*100) : 0;
-    const jaVotei = meuVoto !== null;
 
     const row = document.createElement('div');
-    // Pode votar em si mesmo — sem restrição
-    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(jaVotei||isEspectador?' already-voted':'');
-    if(!isEspectador && !jaVotei){
+    // Pode votar e re-votar em qualquer pessoa (incluindo si mesmo)
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'');
+    if(!isEspectador){
       row.onclick = ()=>votar(j.id, j.nome);
     }
     row.innerHTML=`
@@ -799,7 +815,7 @@ function toggleWord(){
   if(!wordShown){
     const isImp=myWord==='IMPOSTOR';
     el.className='word-revealed'+(isImp?' impostor':'');
-    el.textContent=isImp?'🕵️ IMPOSTOR':myWord;
+    el.textContent=isImp?'IMPOSTOR':myWord;
     hint.textContent='toque para esconder';
     wordShown=true;
     setTimeout(()=>{
@@ -860,10 +876,9 @@ async function abrirVotacao(){
 }
 
 async function votar(votadoId, votadoNome){
-  if(meuVoto) return;
-  meuVoto = votadoId; // otimista: atualiza localmente antes do write
+  // Permite mudar voto enquanto a fase for 'voting' (não 'revealed')
+  meuVoto = votadoId; // otimista
   await set(`salas/${SALA}/votos/${idKey(ME_ID)}`,{votadoId, votadoNome, ts:Date.now()});
-  // O listener onVotosChanged confirma e re-render
 }
 
 // ══════════════════════════════════════════════════════
