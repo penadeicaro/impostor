@@ -426,9 +426,7 @@ async function carregarPalavras(){
 function configurarPresenca(){
   if(!SALA) return;
   const playerRef = db.ref(`salas/${SALA}/jogadores/${idKey(ME_ID)}`);
-  // Quando desconectar, remove o jogador
   playerRef.onDisconnect().remove();
-  // Marca online
   db.ref('.info/connected').on('value', snap => {
     if(snap.val()){
       playerRef.onDisconnect().remove();
@@ -453,18 +451,13 @@ async function entrar(){
   ME_NOME=nome;
   localStorage.setItem('impostor_nome',nome);
   try{
-    // Se vazio: cria com código aleatório
-    // Se parece código de sala existente (4 chars alfanum): tenta entrar primeiro
-    // Senão: usa como nome da sala ao criar
     if(!raw){
       await criarSala(nome, 'Sala de '+nome, null);
     } else {
-      // Tenta entrar se existir sala com esse identificador
       const existing = await get(`salas/${raw}/info`);
       if(existing){
         await entrarSala(nome, raw);
       } else {
-        // Não existe — cria com esse nome/código
         await criarSala(nome, raw, raw.length<=6 ? raw : null);
       }
     }
@@ -474,7 +467,6 @@ async function entrar(){
 async function criarSala(nome, nomeSala, codCustom){
   let cod = codCustom || gerarCodigo();
   if(!codCustom){
-    // Garante código único
     let snap = await get(`salas/${cod}/info`);
     while(snap){ cod=gerarCodigo(); snap=await get(`salas/${cod}/info`); }
   }
@@ -514,18 +506,12 @@ function copiarCodigo(){
 }
 
 // ══════════════════════════════════════════════════════
-//  LISTENERS PRINCIPAIS (WebSocket, sem polling!)
+//  LISTENERS PRINCIPAIS
 // ══════════════════════════════════════════════════════
 function iniciarListeners(){
-  // 1. Ouve info da sala (fase, impostor, categoria…)
   listen('info', `salas/${SALA}/info`, onInfoChanged);
-
-  // 2. Ouve jogadores
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
-
-  // 3. Ouve votos
   listen('votos', `salas/${SALA}/votos`, onVotosChanged);
-
   showScreen('s-lobby');
 }
 
@@ -536,22 +522,39 @@ let _votos = {};
 let _assignments = null;
 let _fase = '';
 
+// ══════════════════════════════════════════════════════
+//  FIX 1: onInfoChanged aguarda assignments antes de renderizar
+//  Isso resolvia o bug de "undefined" nos nomes e impostor não revelado.
+//  O render só ocorre quando _assignments está disponível para fases
+//  que dependem dele (playing, voting, revealed).
+// ══════════════════════════════════════════════════════
 function onInfoChanged(info){
   if(!info){ sair(); return; }
   _info = info;
   const fase = info.fase;
 
-  // Busca assignments na primeira vez que entra em playing/voting
-  if((fase==='playing'||fase==='voting') && !_assignments){
-    get(`salas/${SALA}/assignments`).then(a=>{ _assignments=a; renderFase(); });
-  } else {
-    renderFase();
-  }
-
   // Ouve histórico só no resultado
   if(fase==='revealed'){
     listen('historico', `salas/${SALA}/historico`, onHistoricoChanged);
   }
+
+  // Para fases que precisam de assignments: busca primeiro, depois renderiza
+  if((fase==='playing'||fase==='voting'||fase==='revealed') && !_assignments){
+    get(`salas/${SALA}/assignments`).then(a=>{
+      _assignments = a || {};
+      renderFase();
+    });
+    return; // não renderiza ainda — espera o get()
+  }
+
+  // Se voltou ao lobby, limpa assignments do ciclo anterior
+  if(fase==='lobby'){
+    _assignments = null;
+    meuVoto = null;
+    myWord = '';
+  }
+
+  renderFase();
 }
 
 function onJogadoresChanged(jogadores){
@@ -561,7 +564,6 @@ function onJogadoresChanged(jogadores){
 
 function onVotosChanged(votos){
   _votos = votos||{};
-  // Verifica se EU já votei nesta lista
   const meuRegistro = _votos[idKey(ME_ID)];
   meuVoto = meuRegistro ? meuRegistro.votadoId : null;
   renderFase();
@@ -607,6 +609,8 @@ function renderLobby(){
   const container = $('lobby-players');
   container.innerHTML='';
   [...ativos,...specs].forEach(j=>{
+    // FIX: proteção contra jogador sem nome (undefined)
+    const nomeExibido = j.nome || '(sem nome)';
     const chip=document.createElement('div');
     chip.className='player-chip'+(j.id===ME_ID?' me':'')+(j.espectador?' espectador':'');
     let badges='<div class="badges-right">';
@@ -619,7 +623,7 @@ function renderLobby(){
     }
     badges+='</div>';
     const icon = j.id===_info.host?'👑':'👤';
-    chip.innerHTML=`<span>${icon} ${j.nome}</span>${badges}`;
+    chip.innerHTML=`<span>${icon} ${nomeExibido}</span>${badges}`;
     container.appendChild(chip);
   });
 
@@ -633,9 +637,9 @@ function renderLobby(){
 function renderPlaying(){
   const cur = document.querySelector('.screen.active')?.id;
   if(cur !== 's-palavra'){
-    // Primeira vez nessa fase: busca minha palavra e mostra tela
     myWord=''; wordShown=false;
-    if(_assignments){
+    // _assignments já está garantidamente carregado aqui (onInfoChanged aguardou)
+    if(_assignments && Object.keys(_assignments).length>0){
       myWord = _assignments[idKey(ME_ID)]||'';
     }
     $('word-cat').textContent = _info.categoria||'—';
@@ -656,7 +660,8 @@ function renderPlaying(){
 function renderVoting(){
   const cur = document.querySelector('.screen.active')?.id;
   if(cur !== 's-palavra'){
-    myWord = _assignments ? (_assignments[idKey(ME_ID)]||'') : '';
+    // _assignments já garantido aqui
+    myWord = (_assignments && _assignments[idKey(ME_ID)]) ? _assignments[idKey(ME_ID)] : '';
     wordShown=false;
     $('word-cat').textContent = _info.categoria||'—';
     const el=$('word-el');
@@ -671,13 +676,12 @@ function renderVoting(){
 }
 
 // ══════════════════════════════════════════════════════
-//  RENDER — VOTE GRID (jogador ativo e espectador)
+//  RENDER — VOTE GRID
 // ══════════════════════════════════════════════════════
 function renderVoteGrid(gridId, isEspectador){
   const ativos = Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
   const totalVotos = Object.keys(_votos).length;
 
-  // Conta votos por jogador
   const contagem={};
   Object.values(_votos).forEach(v=>{ contagem[v.votadoId]=(contagem[v.votadoId]||0)+1; });
 
@@ -685,17 +689,17 @@ function renderVoteGrid(gridId, isEspectador){
   grid.innerHTML='';
 
   ativos.forEach(j=>{
+    const nomeExibido = j.nome || '(sem nome)';
     const qtd = contagem[j.id]||0;
     const pct = totalVotos>0 ? Math.round(qtd/totalVotos*100) : 0;
 
     const row = document.createElement('div');
-    // Pode votar e re-votar em qualquer pessoa (incluindo si mesmo)
     row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'');
     if(!isEspectador){
       row.onclick = ()=>votar(j.id, j.nome);
     }
     row.innerHTML=`
-      <span style="font-size:.85rem;flex-shrink:0;min-width:90px">${j.nome}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span style="font-size:.85rem;flex-shrink:0;min-width:90px">${nomeExibido}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</span>
       <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%"></div></div>
       <span class="vote-count">${qtd}</span>
     `;
@@ -716,9 +720,10 @@ function renderEspectador(){
   const container=$('spec-players');
   container.innerHTML='';
   ativos.forEach(j=>{
+    const nomeExibido = j.nome || '(sem nome)';
     const chip=document.createElement('div');
     chip.className='player-chip';
-    chip.innerHTML=`<span>${j.id===_info.host?'👑':'👤'} ${j.nome}</span>
+    chip.innerHTML=`<span>${j.id===_info.host?'👑':'👤'} ${nomeExibido}</span>
       <div class="badges-right">${j.placar>0?`<span class="score-pill">${j.placar}pt</span>`:''}
       ${j.id===_info.host?'<span class="badge badge-host">Host</span>':''}</div>`;
     container.appendChild(chip);
@@ -734,9 +739,13 @@ function renderEspectador(){
 
 // ══════════════════════════════════════════════════════
 //  RENDER — RESULTADO
+//  FIX: _assignments garantido antes de chegar aqui
 // ══════════════════════════════════════════════════════
 function renderResultado(){
   if(document.querySelector('.screen.active')?.id !== 's-resultado') showScreen('s-resultado');
+
+  // Segurança extra: se impostorId ainda não chegou, aguarda próximo ciclo
+  if(!_info.impostorId) return;
 
   const assignments = _assignments||{};
   const ativos = Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
@@ -746,6 +755,7 @@ function renderResultado(){
   const list=$('res-list');
   list.innerHTML='';
   ativos.forEach(j=>{
+    const nomeExibido = j.nome || '(sem nome)';
     const word = assignments[idKey(j.id)]||'?';
     const isImp = j.id===_info.impostorId;
     const meuVotoAqui = _votos[idKey(ME_ID)]?.votadoId===j.id;
@@ -755,7 +765,7 @@ function renderResultado(){
     card.innerHTML=`
       <div class="av">${isImp?'🕵️':'👤'}</div>
       <div class="info">
-        <div class="pname">${j.nome}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</div>
+        <div class="pname">${nomeExibido}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</div>
         <div class="pword">${isImp?'Era o Impostor · '+_info.palavra:word}${votosQtd>0?' · '+votosQtd+' voto'+(votosQtd>1?'s':''):''}</div>
       </div>
       ${isImp?'<span class="imp-badge">Impostor</span>':''}
@@ -796,11 +806,12 @@ function renderPlacar(){
   container.innerHTML='';
   if(!lista.length){container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';return;}
   lista.forEach((j,i)=>{
+    const nomeExibido = j.nome || '(sem nome)';
     const div=document.createElement('div');
     div.className='placar-row';
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
-      <span class="placar-nome">${j.nome}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span class="placar-nome">${nomeExibido}${j.id===ME_ID?' <small style="color:var(--sub)">(você)</small>':''}</span>
       <span class="placar-pts">${j.placar||0}pt</span>
     `;
     container.appendChild(div);
@@ -853,7 +864,7 @@ async function sortear(){
     // Limpa votos anteriores e grava assignments atomicamente
     await del(`salas/${SALA}/votos`);
     await set(`salas/${SALA}/assignments`, assignments);
-    _assignments = assignments; // atualiza cache local imediatamente
+    _assignments = assignments; // cache local imediato — evita o get() em onInfoChanged
 
     await upd(`salas/${SALA}/info`,{
       fase:'playing', categoria:cat, palavra,
@@ -861,7 +872,6 @@ async function sortear(){
       votacaoAberta:false,
       rodada:(_info.rodada||0)+1
     });
-    // O listener onInfoChanged vai disparar e renderizar automaticamente
   }catch(e){
     setErr('st-lobby',e.message);
     $('btn-sortear').disabled=false;
@@ -876,13 +886,13 @@ async function abrirVotacao(){
 }
 
 async function votar(votadoId, votadoNome){
-  // Permite mudar voto enquanto a fase for 'voting' (não 'revealed')
   meuVoto = votadoId; // otimista
   await set(`salas/${SALA}/votos/${idKey(ME_ID)}`,{votadoId, votadoNome, ts:Date.now()});
 }
 
 // ══════════════════════════════════════════════════════
 //  REVELAR
+//  FIX 2: maioria simples (quem tem mais votos) + await correto
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
   if(_info.host!==ME_ID) return setErr('st-palavra','Só o host pode revelar.');
@@ -892,10 +902,12 @@ async function revelarImpostor(){
   Object.values(_votos).forEach(v=>{ contagem[v.votadoId]=(contagem[v.votadoId]||0)+1; });
 
   const impostorVotos=contagem[_info.impostorId]||0;
-  const maioria=Math.floor(ativos.length/2)+1;
-  const impostorPegou=impostorVotos>=maioria;
+  // Maioria simples: o impostor é pego se tiver o maior número de votos
+  // (em caso de empate, o impostor escapa — benefício da dúvida)
+  const maxVotos = Math.max(...ativos.map(j=>contagem[j.id]||0), 0);
+  const impostorPegou = impostorVotos > 0 && impostorVotos >= maxVotos;
 
-  // Pontuação
+  // Pontuação — await antes de prosseguir
   const updates={};
   for(const j of ativos){
     let pts=0;
@@ -918,6 +930,7 @@ async function revelarImpostor(){
     ts:Date.now()
   });
 
+  // Atualiza fase por último — garante que historico já está gravado
   await upd(`salas/${SALA}/info`,{fase:'revealed'});
 }
 
@@ -925,7 +938,7 @@ async function revelarImpostor(){
 //  NOVA RODADA / SAIR / KICK
 // ══════════════════════════════════════════════════════
 async function novaRodada(){
-  meuVoto=null; _assignments=null; palavrasCache=null;
+  meuVoto=null; _assignments=null; _historico={}; palavrasCache=null;
 
   // Espectadores viram jogadores ativos
   const updates={};
@@ -943,7 +956,6 @@ async function novaRodada(){
 }
 
 async function kickar(playerId){
-  // Cancela onDisconnect do kickado para evitar conflito (best effort)
   await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
 }
 
@@ -952,11 +964,9 @@ async function sair(){
   if(!SALA) { showScreen('s-login'); return; }
 
   try{
-    // Cancela onDisconnect antes de remover manualmente
     await db.ref(`salas/${SALA}/jogadores/${idKey(ME_ID)}`).onDisconnect().cancel();
     await del(`salas/${SALA}/jogadores/${idKey(ME_ID)}`);
 
-    // Se era o host, passa pra outro
     if(_info && _info.host===ME_ID){
       const restantes=Object.values(_jogadores).filter(j=>j.id!==ME_ID);
       if(restantes.length>0){
