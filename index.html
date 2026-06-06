@@ -629,6 +629,7 @@ function renderLobby(){
 
   const podeSort = _info.host===ME_ID && ativos.length>=2;
   $('btn-sortear').style.display = podeSort?'':'none';
+  $('btn-sortear').disabled = false; // garante reset após nova rodada
 }
 
 // ══════════════════════════════════════════════════════
