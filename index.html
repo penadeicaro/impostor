@@ -534,6 +534,17 @@ const auth    = firebase.auth();
 const db      = firebase.database();
 const storage = firebase.storage();
 
+// Firefox Android limpa IndexedDB ao trocar de app, derrubando a sessão.
+// Forçamos SESSION persistence (sessionStorage, mais estável no mobile)
+// e mantemos um backup do UID no localStorage para relogar automaticamente.
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(()=>{});
+
+// Salva/limpa UID no localStorage para sobreviver a reloads
+auth.onIdTokenChanged(user=>{
+  if(user) localStorage.setItem('_imp_uid', user.uid);
+  else localStorage.removeItem('_imp_uid');
+});
+
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
 
 // ══════════════════════════════════════════════════════
@@ -974,12 +985,18 @@ async function carregarPerfil(uid){
     if(prof) break;
     if(i<2) await new Promise(r=>setTimeout(r, 800));
   }
+
+  const nomeFirebase = ME.displayName || ME.email?.split('@')[0] || '';
+
   if(!prof){
     // Só cria perfil novo se tiver nome — senão é falha de rede, não primeira vez
-    const nome = ME.displayName || ME.email?.split('@')[0] || '';
-    if(!nome) throw new Error('Sem conexão para carregar perfil');
-    prof = { nome, avatarUrl: ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
+    if(!nomeFirebase) throw new Error('Sem conexão para carregar perfil');
+    prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
     await set(`users/${uid}`, prof);
+  } else if(!prof.nome && nomeFirebase){
+    // Repara perfil com nome vazio (corrompido por bug anterior)
+    prof.nome = nomeFirebase;
+    await upd(`users/${uid}`, { nome: nomeFirebase });
   }
   return prof;
 }
@@ -1059,9 +1076,11 @@ function traduzirErroAuth(code){
 //  SETUP (após login)
 // ══════════════════════════════════════════════════════
 function mostrarSetup(){
-  const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
+  const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || '(sem nome)';
   const avatar = ME_PROFILE?.avatarUrl || ME.photoURL || '';
   const pts = ME_PROFILE?.placarTotal || 0;
+  // Log de diagnóstico — remover depois
+  console.log('[setup] ME.displayName=', ME.displayName, '| ME.email=', ME.email, '| ME_PROFILE=', JSON.stringify(ME_PROFILE));
   $('setup-nome-display').textContent = nome;
   $('setup-email-display').textContent = ME.email||'';
   $('inp-displayname').value = nome;
