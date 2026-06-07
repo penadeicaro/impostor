@@ -509,7 +509,18 @@ input::placeholder{color:var(--muted);}
       <div class="card-label" style="margin-bottom:8px">Fila de pares</div>
       <div class="pair-progress" id="q-pair-progress"></div>
     </div>
+    <div class="card" id="q-players-card">
+      <div class="card-label"><span class="dot"></span>Jogadores</div>
+      <div class="player-list" id="q-players-list"></div>
+    </div>
+    <div class="card" id="q-votacao-card" style="display:none">
+      <div class="card-label">🗳️ Votação</div>
+      <div class="vote-grid" id="q-vote-grid"></div>
+      <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="q-vote-status"></div>
+    </div>
     <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">⏭ PRÓXIMO PAR</button>
+    <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
+    <button class="btn btn-secondary" id="btn-abrir-voto-q" onclick="abrirVotacao()" style="display:none">🗳️ ABRIR VOTAÇÃO</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
@@ -1415,19 +1426,57 @@ let _fila = [];  // cache local da fila de pares
 
 function onQTimerChanged(data){
   if(!data) return;
+  const subFase=data.subFase||'pergunta';
   if(data.ts===lastQTimerTs && qTimerRunning) return;
   lastQTimerTs=data.ts;
+
+  if(subFase==='preparando'){
+    // Countdown de 5s visível, depois dispara pergunta automaticamente
+    pararQTimerLocal();
+    iniciarCountdownPreparando(data.ts);
+    atualizarQSubfase('pergunta'); // mostra UI de pergunta já
+    if(typeof data.parIdx==='number') renderParAtual(data.parIdx,'pergunta');
+    return;
+  }
+
   if(data.ativo){
-    iniciarQTimerLocal(data.ts, data.subFase);
+    iniciarQTimerLocal(data.ts, subFase);
   } else {
     pararQTimerLocal();
-    renderQProgressoTimer(20, 20, data.subFase||'pergunta');
+    renderQProgressoTimer(20, 20, subFase);
     $('q-timer-label').textContent='aguardando host…';
   }
   // Atualiza label de subfase
-  atualizarQSubfase(data.subFase||'pergunta');
+  atualizarQSubfase(subFase);
   // Re-renderiza par se parIdx mudou
-  if(typeof data.parIdx==='number') renderParAtual(data.parIdx, data.subFase||'pergunta');
+  if(typeof data.parIdx==='number') renderParAtual(data.parIdx, subFase);
+}
+
+// Countdown de 5s antes do primeiro timer de pergunta
+let _prepTimer=null;
+function iniciarCountdownPreparando(startTs){
+  if(_prepTimer) clearInterval(_prepTimer);
+  const PREP=5;
+  function tick(){
+    const elapsed=(Date.now()-startTs)/1000;
+    const restante=Math.max(0,PREP-elapsed);
+    const seg=Math.ceil(restante);
+    $('q-timer-display').textContent=seg||'—';
+    $('q-timer-label').textContent=`começando em ${seg}s…`;
+    $('q-timer-bar').style.width=(restante/PREP*100)+'%';
+    $('q-timer-bar').className='q-timer-bar';
+    $('q-timer-display').classList.remove('urgent');
+    if(restante<=0){
+      clearInterval(_prepTimer);
+      _prepTimer=null;
+      // Só o host dispara o timer no Firebase; os outros recebem via listener
+      if(_info&&_info.host===ME.uid){
+        set(`salas/${SALA}/qtimer`,{ts:Date.now(),ativo:true,subFase:'pergunta',parIdx:0});
+      }
+    }
+  }
+  tick();
+  _prepTimer=setInterval(tick,200);
 }
 
 function iniciarQTimerLocal(startTs, subFase){
@@ -1517,9 +1566,7 @@ function renderParAtual(parIdx, subFase){
     const nm=$(side==='left'?'q-name-left':'q-name-right');
     if(av){av.src=avatar||AVATAR_PLACEHOLDER; av.onerror=()=>av.src=AVATAR_PLACEHOLDER;}
     if(nm) nm.textContent=nome||'—';
-    // Destaca "você"
-    const nameEl=$(side==='left'?'q-name-left':'q-name-right');
-    if(nameEl) nameEl.style.color = id===ME.uid ? 'var(--accent)' : '';
+    // sem cor especial nos nomes durante o par
   };
   setPlayer('left',  par.pId, par.pNome, par.pAvatar);
   setPlayer('right', par.rId, par.rNome, par.rAvatar);
@@ -1560,16 +1607,49 @@ async function renderQuestioning(){
   }
   const isHost=_info.host===ME.uid;
   $('btn-prox-par').style.display=isHost?'':'none';
+  $('btn-revelar-q').style.display=isHost?'':'none';
+  $('btn-abrir-voto-q').style.display=isHost?'':'none';
+
+  // Lista de jogadores
+  const qList=$('q-players-list');
+  if(qList){
+    const ativos=Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+    qList.innerHTML='';
+    ativos.forEach(j=>{
+      const chip=document.createElement('div');
+      chip.className='player-chip'+(j.id===ME.uid?' me':'');
+      chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:32px;height:32px">
+        ${j.nome||'(sem nome)'}
+        <div class="badges-right">
+          ${(j.placar||0)>0?`<span class="score-pill">${j.placar}pt</span>`:''}
+          ${j.id===ME.uid?'<span class="badge badge-you">Você</span>':''}
+        </div>`;
+      qList.appendChild(chip);
+    });
+  }
+
+  // Votação (se aberta)
+  const votacaoAberta=_info.votacaoAberta||_info.fase==='voting';
+  $('q-votacao-card').style.display=votacaoAberta?'':'none';
+  if(votacaoAberta) renderVoteGrid('q-vote-grid', false);
+  const qVoteStatus=$('q-vote-status');
+  if(qVoteStatus){
+    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+    qVoteStatus.textContent=`${Object.keys(_votos).length} de ${ativos.length} votos`;
+  }
 
   // Sync com qtimer atual
   const qtdata=await get(`salas/${SALA}/qtimer`);
   if(qtdata){
     const parIdx=qtdata.parIdx||0;
     const subFase=qtdata.subFase||'pergunta';
-    renderParAtual(parIdx, subFase);
+    if(subFase!=='preparando') renderParAtual(parIdx, subFase);
     if(qtdata.ativo && qtdata.ts!==lastQTimerTs){
       lastQTimerTs=qtdata.ts;
       iniciarQTimerLocal(qtdata.ts, subFase);
+    } else if(subFase==='preparando' && !_prepTimer){
+      iniciarCountdownPreparando(qtdata.ts);
     }
   }
 }
@@ -1871,7 +1951,8 @@ async function sortear(){
     await set(`salas/${SALA}/assignments`, assignments);
     await set(`salas/${SALA}/snapshot`, snapshot);
     await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
-    await set(`salas/${SALA}/qtimer`,{ts:0, ativo:false, subFase:'pergunta', parIdx:0});
+    // qtimer começa como 'preparando' — autostart em 5s via onQTimerChanged
+    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'preparando', parIdx:0});
     await set(`salas/${SALA}/fila`, fila);
     _assignments=assignments;
     _snapshot=snapshot;
@@ -2074,6 +2155,7 @@ async function sairDaSala(){
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
   _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={}; _fila=[];
   pararQTimerLocal(); qWordShown=false;
+  if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
   $('inp-codigo').value='';
   mostrarSetup();
 }
