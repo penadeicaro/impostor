@@ -666,15 +666,22 @@ async function carregarPalavras(){
 //  AUTH
 // ══════════════════════════════════════════════════════
 auth.onAuthStateChanged(async user=>{
-  if(user){
-    ME=user;
-    ME_PROFILE = await carregarPerfil(user.uid);
-    $('loader').classList.add('hide');
-    mostrarSetup();
-  } else {
+  try{
+    if(user){
+      ME=user;
+      ME_PROFILE = await carregarPerfil(user.uid);
+      mostrarSetup();
+    } else {
+      ME=null; ME_PROFILE=null;
+      showScreen('s-auth');
+    }
+  }catch(e){
+    console.error('Erro ao inicializar sessão:', e);
+    // Mesmo com erro, esconde o loader e volta para login
     ME=null; ME_PROFILE=null;
-    $('loader').classList.add('hide');
     showScreen('s-auth');
+  }finally{
+    $('loader').classList.add('hide');
   }
 });
 
@@ -862,11 +869,14 @@ async function uploadAvatar(input){
 // ══════════════════════════════════════════════════════
 //  ENTRAR / CRIAR SALA
 // ══════════════════════════════════════════════════════
-$('inp-codigo').addEventListener('keydown',e=>{if(e.key==='Enter')entrarOuCriar();});
-$('inp-codigo').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
-$('li-email').addEventListener('keydown',e=>{if(e.key==='Enter')loginEmail();});
-$('li-senha').addEventListener('keydown',e=>{if(e.key==='Enter')loginEmail();});
-$('ca-senha').addEventListener('keydown',e=>{if(e.key==='Enter')cadastrar();});
+function _bindInputListeners(){
+  const bind=(id,ev,fn)=>{ const el=$(id); if(el) el.addEventListener(ev,fn); };
+  bind('inp-codigo','keydown',e=>{if(e.key==='Enter')entrarOuCriar();});
+  bind('inp-codigo','input',  e=>{e.target.value=e.target.value.toUpperCase();});
+  bind('li-email',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
+  bind('li-senha',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
+  bind('ca-senha',  'keydown',e=>{if(e.key==='Enter')cadastrar();});
+}
 
 async function entrarOuCriar(){
   const raw=$('inp-codigo').value.trim().toUpperCase();
@@ -1597,10 +1607,23 @@ async function sairDaSala(){
 //  INIT
 // ══════════════════════════════════════════════════════
 window.addEventListener('load', async()=>{
+  // Registra listeners de teclado aqui — garante que o DOM existe
+  _bindInputListeners();
+
   const params=new URLSearchParams(location.search);
   const salaParam=params.get('sala');
   if(salaParam) { try{ $('inp-codigo').value=salaParam.toUpperCase(); }catch(_){} }
   await carregarPalavras();
+
+  // Fallback: se o Firebase não responder em 8s, mostra tela de login mesmo assim
+  setTimeout(()=>{
+    const loader=$('loader');
+    if(loader && !loader.classList.contains('hide')){
+      console.warn('Firebase auth timeout — exibindo tela de login como fallback.');
+      loader.classList.add('hide');
+      showScreen('s-auth');
+    }
+  }, 8000);
   // loader esconde quando auth.onAuthStateChanged resolver
 });
 </script>
