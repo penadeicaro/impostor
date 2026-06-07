@@ -82,18 +82,23 @@ input::placeholder{color:var(--muted);}
 
 .player-list{display:flex;flex-direction:column;gap:7px;}
 .player-chip{display:flex;align-items:center;gap:10px;
-  border-radius:10px;padding:10px 13px;font-size:.86rem;
-  animation:slideIn .22s ease;border:1px solid transparent;
-  transition:border-color .3s,background .3s,box-shadow .3s;
-  min-height:52px;position:relative;overflow:hidden;}
+  border-radius:6px;padding:0 13px;font-size:.86rem;
+  animation:slideIn .22s ease;border:2px solid transparent;
+  transition:border-color .3s,box-shadow .3s;
+  /* ratio 130:35 → altura proporcional à largura, mas com mínimo usável */
+  min-height:64px;position:relative;overflow:hidden;
+  background:var(--surface);}
 .player-chip.espectador{opacity:.6;border-style:dashed!important;}
-.chip-bg{position:absolute;inset:0;pointer-events:none;z-index:0;}
+/* imagem pixel art como fundo — sem overlay, só a imagem */
+.chip-bg{position:absolute;top:0;right:0;bottom:0;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
 .player-chip img.avatar{flex-shrink:0;position:relative;z-index:1;}
-.chip-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;
-  min-width:0;position:relative;z-index:1;height:100%;}
+.chip-info{flex:1;display:flex;flex-direction:column;justify-content:center;
+  gap:3px;min-width:0;position:relative;z-index:1;padding:10px 0;}
 .chip-name{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:5px;}
-.chip-rank{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.chip-rank{display:flex;align-items:center;gap:5px;}
 .badges-right{position:relative;z-index:1;display:flex;align-items:center;gap:4px;flex-shrink:0;}
 @keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.6rem;
@@ -734,11 +739,11 @@ const PTS = {
 // ══════════════════════════════════════════════════════
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
-  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#7EAB6E'},
-  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  color:'#A0784A'},
-  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    color:'#C24B6E'},
-  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  color:'#6E8FD4'},
-  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      color:'#6ED49A'},
+  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
+  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  color:'#0072ff'},
+  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    color:'#ff0000'},
+  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  color:'#7b00ff'},
+  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      color:'#06ff00'},
 ];
 
 function getPrestige(pts){
@@ -776,30 +781,35 @@ function avatarTierStyle(pts){
   return `border-color:${s.color}!important;box-shadow:0 0 0 2px ${s.color}44!important;`;
 }
 
-// Aplica imagem pixel art como fundo do chip, com cor de rank na borda
+// Aplica imagem pixel art + borda colorida no chip. Sem overlay opaco.
 function applyChipStyle(el, pts, isMe){
   const s=getPrestigeStyle(pts||0);
-  const img=s.img;
-  // Fundo: imagem pixel art em nearest-neighbour, cobrindo o chip sem esticar
-  el.style.position='relative';
-  el.style.overflow='hidden';
-  el.style.borderColor=isMe?`#E8FF47`:`${s.color}88`;
-  el.style.boxShadow=isMe?`0 0 0 1px #E8FF4744`:`0 0 0 1px ${s.color}22`;
-  el.style.background=`var(--surface)`;
-  // Cria ou atualiza pseudo-elemento via div interno de fundo
+  const c=s.color;
+  // Borda colorida do rank
+  el.style.borderColor=c;
+  el.style.boxShadow=`0 0 6px ${c}44`;
+  el.style.background='var(--surface)';
+
+  // Imagem pixel art: usa <img> absolutamente posicionado à direita
+  // ratio original 130×35 → mantemos a altura do chip (auto) e largura proporcional
   let bg=el.querySelector('.chip-bg');
-  if(!bg){ bg=document.createElement('div'); bg.className='chip-bg'; el.insertBefore(bg,el.firstChild); }
-  bg.style.cssText=`position:absolute;inset:0;pointer-events:none;z-index:0;
-    background-image:url('${img}');
-    background-repeat:no-repeat;
-    background-position:right center;
-    background-size:auto 100%;
-    image-rendering:pixelated;
-    image-rendering:-moz-crisp-edges;
-    opacity:.18;`;
-  // Garante que conteúdo fica sobre o fundo
-  el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(c=>c.style.position='relative');
-  el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(c=>c.style.zIndex='1');
+  if(!bg){
+    bg=document.createElement('img');
+    bg.className='chip-bg';
+    bg.alt='';
+    el.insertBefore(bg, el.firstChild);
+  }
+  bg.src=s.img;
+  // Altura = 100% do chip, largura = auto (nearest-neighbour mantém ratio)
+  bg.style.cssText=`position:absolute;top:0;right:0;height:100%;width:auto;
+    pointer-events:none;z-index:0;
+    image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+    object-fit:none;object-position:right center;`;
+
+  // Conteúdo sobre a imagem
+  el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(c=>{
+    c.style.position='relative'; c.style.zIndex='1';
+  });
 }
 
 // Card de rank grande pro menu principal
@@ -810,11 +820,10 @@ function rankCardHTML(pts){
   const nextLabel=s.isMax?'Rank máximo atingido!':`${s.ptsParaProx}pt para ${nextTitle}`;
   return `
   <div style="position:relative;overflow:hidden;background:var(--card);border-radius:12px;
-    padding:16px 20px;border:1px solid ${c}66;box-shadow:0 0 12px ${c}22;">
-    <div style="position:absolute;inset:0;pointer-events:none;
-      background-image:url('${s.img}');background-repeat:no-repeat;
-      background-position:right center;background-size:auto 90%;
-      image-rendering:pixelated;image-rendering:-moz-crisp-edges;opacity:.12;"></div>
+    padding:16px 20px;border:2px solid ${c};box-shadow:0 0 14px ${c}44;">
+    <img src="${s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
+      pointer-events:none;z-index:0;
+      image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
       <div style="font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-bottom:6px">Seu rank</div>
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:${c}">${s.title}</div>
