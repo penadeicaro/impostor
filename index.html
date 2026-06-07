@@ -187,6 +187,30 @@ input::placeholder{color:var(--muted);}
 .pts-neg{background:rgba(255,71,87,.2);color:var(--red);}
 .pts-zero{background:rgba(255,255,255,.06);color:var(--sub);}
 
+/* Result — novo layout */
+.res-impostor-card{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(255,71,87,.07);border:2px solid var(--red);
+  border-radius:var(--radius);padding:20px 16px;
+  animation:slideIn .25s ease;
+}
+.res-impostor-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--red);}
+.res-impostor-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+  color:var(--red);text-align:center;}
+.res-players-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;
+}
+.res-player-tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:var(--surface);border-radius:10px;padding:12px 8px;
+  animation:slideIn .22s ease;
+}
+.res-player-tile img{width:48px;height:48px;border-radius:10px;object-fit:cover;}
+.res-player-name{font-size:.68rem;color:var(--sub);text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+.res-player-name.is-me{color:var(--text);}
+
 /* History / Leaderboard */
 .hist-item{background:var(--surface);border-radius:8px;padding:12px 14px;
   font-size:.8rem;border-left:3px solid var(--muted);}
@@ -833,13 +857,13 @@ function rankCardHTML(pts){
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
-      <div style="font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-bottom:6px">Seu rank</div>
+      <div style="font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:${c}">${s.title}</div>
-      <div style="font-size:.72rem;color:var(--sub);margin-top:2px;margin-bottom:14px">${pts||0} pontos totais</div>
+      <div style="font-size:.72rem;color:#fff;margin-top:2px;margin-bottom:14px">${pts||0} pontos totais</div>
       <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:6px">
         <div style="height:100%;width:${s.progressPct}%;background:${c};border-radius:3px;transition:width .5s ease;box-shadow:0 0 4px ${c}88"></div>
       </div>
-      <div style="font-size:.65rem;color:var(--sub)">${nextLabel}</div>
+      <div style="font-size:.65rem;color:#fff">${nextLabel}</div>
     </div>
   </div>`;
 }
@@ -1921,30 +1945,45 @@ function renderResultado(){
 
   const list=$('res-list');
   list.innerHTML='';
-  ativos.forEach(j=>{
-    const nome=j.nome||'(sem nome)';
-    const isImp=j.id===_info.impostorId;
-    const meuVotoAqui=_votos[idKey(ME.uid)]?.votadoId===j.id;
-    const votosQtd=contagem[j.id]||0;
-    const pts = isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]||{pts:0}).pts;
-    const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
-    const ptsLabel=pts>0?`+${pts}`:String(pts);
-    const card=document.createElement('div');
-    card.className='reveal-card'+(isImp?' imp':'');
-    card.innerHTML=`
-      <div class="av"><img src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'"></div>
-      <div class="info">
-        <div class="pname">${nome}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</div>
-        <div class="pword">${isImp?'Impostor · palavra: <strong style="color:var(--red)">'+_info.palavra+'</strong>':assignments[idKey(j.id)]||'?'}
-          ${votosQtd>0?' · '+votosQtd+' voto'+(votosQtd>1?'s':''):''}</div>
-      </div>
-      ${isImp?'<span class="imp-badge">Impostor</span>':''}
-      <span class="pts-badge ${ptsClass}">${ptsLabel}pt</span>
-      ${meuVotoAqui&&!isImp?'<span style="font-size:.65rem;color:var(--red)">seu voto</span>':''}
-      ${meuVotoAqui&&isImp?'<span style="font-size:.65rem;color:var(--green)">✓ acertou</span>':''}`;
-    list.appendChild(card);
-  });
+
+  // ── Impostor em destaque no topo
+  const imp=ativos.find(j=>j.id===_info.impostorId);
+  if(imp){
+    const impPts=cenarioImpostor.pts;
+    const impPtsClass=impPts>0?'pts-pos':impPts<0?'pts-neg':'pts-zero';
+    const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
+    const impCard=document.createElement('div');
+    impCard.className='res-impostor-card';
+    impCard.innerHTML=`
+      <span class="imp-badge">Impostor</span>
+      <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'">
+      <div class="res-impostor-name">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+      <span class="pts-badge ${impPtsClass}">${impPtsLabel}pt</span>`;
+    list.appendChild(impCard);
+  }
+
+  // ── Demais jogadores em grid de tiles
+  const outros=ativos.filter(j=>j.id!==_info.impostorId);
+  if(outros.length){
+    const grid=document.createElement('div');
+    grid.className='res-players-grid';
+    outros.forEach(j=>{
+      const pts=(cenarioJogadores[j.id]||{pts:0}).pts;
+      const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
+      const ptsLabel=pts>0?`+${pts}`:String(pts);
+      const isMe=j.id===ME.uid;
+      const tile=document.createElement('div');
+      tile.className='res-player-tile';
+      tile.innerHTML=`
+        <img src="${avatarImg(j.avatarUrl)}" alt=""
+          onerror="this.src='${AVATAR_PLACEHOLDER}'">
+        <div class="res-player-name${isMe?' is-me':''}">${j.nome||'(sem nome)'}</div>
+        <span class="pts-badge ${ptsClass}">${ptsLabel}pt</span>`;
+      grid.appendChild(tile);
+    });
+    list.appendChild(grid);
+  }
 
   renderHistorico();
   renderPlacar();
