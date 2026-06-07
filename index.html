@@ -223,6 +223,89 @@ input::placeholder{color:var(--muted);}
   font-family:'Space Mono',monospace;font-size:.72rem;text-decoration:underline;
   padding:0;}
 .link-btn:hover{color:var(--accent);}
+
+/* ── Par X → Y (fase questioning) ── */
+.questioning-wrap{display:flex;flex-direction:column;gap:16px;}
+.pair-stage{display:flex;align-items:center;justify-content:center;gap:12px;
+  background:var(--card);border-radius:var(--radius);padding:20px 16px;
+  border:1px solid rgba(255,255,255,.06);}
+.pair-player{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.pair-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--muted);transition:border-color .3s;}
+.pair-avatar.active-perguntador{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,255,71,.2);}
+.pair-avatar.active-respondedor{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,195,247,.2);}
+.pair-name{font-size:.75rem;text-align:center;max-width:72px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pair-role{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;
+  color:var(--sub);text-align:center;}
+.pair-role.role-pergunta{color:var(--accent);}
+.pair-role.role-responde{color:var(--blue);}
+.pair-arrow{font-size:1.8rem;color:var(--accent);flex-shrink:0;}
+.pair-phase-label{text-align:center;font-size:.7rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sub);padding:4px 0;}
+.pair-phase-label.phase-pergunta{color:var(--accent);}
+.pair-phase-label.phase-resposta{color:var(--blue);}
+.pair-progress{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:4px 0;}
+.pair-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;}
+.pair-dot.done{background:var(--green);}
+.pair-dot.current{background:var(--accent);}
+.q-timer-wrap{background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.q-timer-display{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;
+  color:var(--accent);min-width:44px;transition:color .3s;}
+.q-timer-display.urgent{color:var(--red);}
+.q-timer-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+.q-timer-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 1s linear,background .3s;}
+.q-timer-bar.resposta{background:var(--blue);}
+.q-timer-bar.urgent{background:var(--red);}
+.q-phase-pill{font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:12px;background:rgba(232,255,71,.12);color:var(--accent);}
+.q-phase-pill.resposta{background:rgba(79,195,247,.12);color:var(--blue);}
+
+/* ── Prestígio ── */
+.prestige-badge{display:inline-flex;align-items:center;gap:4px;
+  font-size:.58rem;letter-spacing:.5px;border-radius:10px;
+  padding:2px 7px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+
+/* Tier 1: Curioso – cinza */
+.pt1{background:rgba(136,136,170,.15);color:#8888AA;}
+/* Tier 2: Suspeito – azul */
+.pt2{background:rgba(79,195,247,.15);color:#4FC3F7;}
+/* Tier 3: Detetive – verde */
+.pt3{background:rgba(76,175,80,.18);color:#4CAF50;}
+/* Tier 4: Agente – laranja */
+.pt4{background:rgba(255,152,0,.18);color:#FF9800;}
+/* Tier 5: Infiltrado – roxo */
+.pt5{background:rgba(179,136,255,.18);color:#B388FF;}
+/* Tier 6: Espião – dourado */
+.pt6{background:rgba(255,215,0,.18);color:#FFD700;}
+/* Tier 7: Mestre – vermelho vivo */
+.pt7{background:rgba(255,71,87,.18);color:#FF4757;}
+/* Tier 8: Lenda – degradê animado */
+.pt8{background:linear-gradient(90deg,rgba(232,255,71,.2),rgba(79,195,247,.2));
+  color:#E8FF47;animation:pt8shimmer 2s linear infinite;}
+@keyframes pt8shimmer{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+/* Tier 9: GOAT – glow pulsante */
+.pt9{background:linear-gradient(90deg,#FFD700,#FF9800);color:#0D0D14;
+  font-weight:900;box-shadow:0 0 8px rgba(255,200,0,.5);
+  animation:goatglow 1.4s ease-in-out infinite;}
+@keyframes goatglow{0%,100%{box-shadow:0 0 6px rgba(255,200,0,.4)}50%{box-shadow:0 0 14px rgba(255,200,0,.9)}}
+
+/* Nome colorido por tier (lobby / placar) */
+.pname-t2{color:#4FC3F7!important;}
+.pname-t3{color:#4CAF50!important;}
+.pname-t4{color:#FF9800!important;}
+.pname-t5{color:#B388FF!important;}
+.pname-t6{color:#FFD700!important;}
+.pname-t7{color:#FF4757!important;}
+.pname-t8{background:linear-gradient(90deg,#E8FF47,#4FC3F7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:pt8shimmer 2s linear infinite;}
+.pname-t9{background:linear-gradient(90deg,#FFD700,#FF9800);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;
+  animation:goatglow2 1.4s ease-in-out infinite;}
+@keyframes goatglow2{0%,100%{filter:drop-shadow(0 0 3px rgba(255,200,0,.4))}
+  50%{filter:drop-shadow(0 0 8px rgba(255,200,0,.9))}}
 </style>
 </head>
 <body>
@@ -386,6 +469,50 @@ input::placeholder{color:var(--muted);}
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
+  <!-- ══ QUESTIONING (X pergunta Y) ══ -->
+  <div id="s-questioning" class="screen">
+    <div class="q-timer-wrap" id="q-timer-card">
+      <div class="q-timer-display" id="q-timer-display">20</div>
+      <div style="flex:1">
+        <div class="q-timer-bar-wrap"><div class="q-timer-bar" id="q-timer-bar" style="width:100%"></div></div>
+        <div style="font-size:.6rem;color:var(--sub);margin-top:4px;display:flex;gap:6px;align-items:center">
+          <span class="q-phase-pill" id="q-phase-pill">pergunta</span>
+          <span id="q-timer-label">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:10px">
+        <span id="q-pair-counter">Par 1 de —</span>
+      </div>
+      <div class="pair-stage" id="q-pair-stage">
+        <div class="pair-player" id="q-player-left">
+          <img class="pair-avatar" id="q-avatar-left" src="" alt="">
+          <span class="pair-name" id="q-name-left">—</span>
+          <span class="pair-role role-pergunta" id="q-role-left">pergunta</span>
+        </div>
+        <div class="pair-arrow">→</div>
+        <div class="pair-player" id="q-player-right">
+          <img class="pair-avatar" id="q-avatar-right" src="" alt="">
+          <span class="pair-name" id="q-name-right">—</span>
+          <span class="pair-role role-responde" id="q-role-right">responde</span>
+        </div>
+      </div>
+      <div class="pair-phase-label" id="q-phase-desc">Tempo de pergunta</div>
+    </div>
+    <div class="card word-box" id="q-word-box">
+      <div class="cat-pill" id="q-word-cat">—</div>
+      <div id="q-word-el" class="word-hidden" onclick="toggleWordQ()">● ● ●</div>
+      <div class="word-hint" id="q-word-hint">toque para revelar</div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div class="card-label" style="margin-bottom:8px">Fila de pares</div>
+      <div class="pair-progress" id="q-pair-progress"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">⏭ PRÓXIMO PAR</button>
+    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+  </div>
+
   <!-- ══ RESULTADO ══ -->
   <div id="s-resultado" class="screen">
     <div class="card">
@@ -531,6 +658,28 @@ const SFX = {
 
   // Sair da sala — swoosh descendente
   sair(){ playTone(600,'sine',.08,0.14); playTone(400,'sine',.12,0.12,0.08); playTone(250,'sine',.18,0.1,0.18); },
+
+  // Questioning tick na fase de PERGUNTA — tick neutro (880 Hz fixo)
+  tickPergunta(){ playTone(880,'sine',.04,0.05); },
+
+  // Questioning tick na fase de RESPOSTA — pitch sobe 6 semitons nos últimos 10s
+  // 880 Hz → 880*2^(6/12) = 1244 Hz. Nos primeiros 10s: tick normal 880 Hz.
+  tickResposta(restante){
+    if(restante>10){
+      playTone(880,'sine',.04,0.05);
+    } else {
+      const BASE=880, TOPO=880*Math.pow(2,6/12);
+      const t=Math.max(0,Math.min(1,(10-restante)/10));
+      const freq=BASE+(TOPO-BASE)*t;
+      playTone(freq,'sine',.05,0.06);
+    }
+  },
+
+  // Transição pergunta → resposta
+  transicaoPar(){ playTone(523,'sine',.06,0.12); playTone(659,'sine',.08,0.14,0.07); },
+
+  // Próximo par
+  proximoPar(){ playNoise(0.05,0.06); playTone(440,'sine',.06,0.1,0.04); },
 };
 
 // ══════════════════════════════════════════════════════
@@ -566,6 +715,12 @@ let timerSegs = 15;
 let timerRunning = false;
 let lastTimerTs = 0;  // timestamp do último reset (do Firebase)
 
+// timer de questioning
+let qTimerInterval = null;
+let qTimerRunning  = false;
+let lastQTimerTs   = 0;
+let qWordShown     = false;
+
 // ── cached state
 let _info      = null;
 let _jogadores = {};
@@ -574,6 +729,29 @@ let _assignments = null;
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
+
+// ── Prestígio
+const PRESTIGE_TIERS = [
+  {min:0,   max:9,   tier:1, title:'Curioso',    cls:'pt1', nameCls:''},
+  {min:10,  max:24,  tier:2, title:'Suspeito',   cls:'pt2', nameCls:'pname-t2'},
+  {min:25,  max:49,  tier:3, title:'Detetive',   cls:'pt3', nameCls:'pname-t3'},
+  {min:50,  max:99,  tier:4, title:'Agente',     cls:'pt4', nameCls:'pname-t4'},
+  {min:100, max:199, tier:5, title:'Infiltrado', cls:'pt5', nameCls:'pname-t5'},
+  {min:200, max:349, tier:6, title:'Espião',     cls:'pt6', nameCls:'pname-t6'},
+  {min:350, max:599, tier:7, title:'Mestre',     cls:'pt7', nameCls:'pname-t7'},
+  {min:600, max:999, tier:8, title:'Lenda',      cls:'pt8', nameCls:'pname-t8'},
+  {min:1000,max:Infinity,tier:9,title:'GOAT',   cls:'pt9', nameCls:'pname-t9'},
+];
+function getPrestige(pts){
+  return PRESTIGE_TIERS.find(t=>pts>=t.min&&pts<=t.max) || PRESTIGE_TIERS[0];
+}
+function prestigeBadgeHTML(pts){
+  const t=getPrestige(pts||0);
+  return `<span class="prestige-badge ${t.cls}">${t.title} · ${pts||0}pt</span>`;
+}
+function prestigeNameClass(pts){
+  return getPrestige(pts||0).nameCls;
+}
 
 // ══════════════════════════════════════════════════════
 //  UTILS
@@ -807,69 +985,84 @@ async function salvarNome(){
 }
 
 // ──── AVATAR UPLOAD ────
+// Converte o arquivo para blob JPEG 128x128 via canvas
+function comprimirImagem(file){
+  return new Promise((res,rej)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>rej(new Error('Falha ao ler o arquivo.'));
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error('Imagem inválida ou corrompida.'));
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const sz=128;
+        canvas.width=sz; canvas.height=sz;
+        const ctx=canvas.getContext('2d');
+        const s=Math.min(img.width,img.height);
+        const sx=(img.width-s)/2, sy=(img.height-s)/2;
+        ctx.drawImage(img,sx,sy,s,s,0,0,sz,sz);
+        canvas.toBlob(blob=>{
+          if(!blob) return rej(new Error('Falha ao comprimir imagem.'));
+          res(blob);
+        },'image/jpeg',0.72);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadAvatar(input){
   const file=input.files[0];
+  input.value=''; // reseta input imediatamente para permitir nova seleção
   if(!file) return;
-  if(file.size>3*1024*1024) return setErr('st-nome','Imagem muito grande (máx 3MB).');
-  $('avatar-status').textContent='Enviando…';
-  try{
-    const uid=ME.uid;
-    // Carrega histórico de avatares
-    const histRef=db.ref(`users/${uid}/avatares`);
-    let hist=(await histRef.get()).val()||[];
+  if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
 
+  const statusEl=$('avatar-status');
+  statusEl.textContent='Comprimindo…';
+
+  try{
+    // 1. Comprimir antes de qualquer chamada de rede
+    const blob=await comprimirImagem(file);
+
+    statusEl.textContent='Enviando…';
+    const uid=ME.uid;
     const ts=Date.now();
     const path=`avatares/${uid}/${ts}.jpg`;
-    const ref=storage.ref(path);
+    const storageRef=storage.ref(path);
 
-    // Redimensiona no canvas antes de enviar
-    const url=await new Promise((res,rej)=>{
-      const reader=new FileReader();
-      reader.onload=e=>{
-        const img=new Image();
-        img.onload=()=>{
-          const canvas=document.createElement('canvas');
-          const sz=128;
-          canvas.width=sz;canvas.height=sz;
-          const ctx=canvas.getContext('2d');
-          // crop quadrado centralizado
-          const s=Math.min(img.width,img.height);
-          const sx=(img.width-s)/2, sy=(img.height-s)/2;
-          ctx.drawImage(img,sx,sy,s,s,0,0,sz,sz);
-          canvas.toBlob(async blob=>{
-            await ref.put(blob,{contentType:'image/jpeg'});
-            const u=await ref.getDownloadURL();
-            res(u);
-          },'image/jpeg',0.72);
-        };
-        img.onerror=rej;
-        img.src=e.target.result;
-      };
-      reader.onerror=rej;
-      reader.readAsDataURL(file);
-    });
+    // 2. Upload com timeout de 20s
+    const url=await Promise.race([
+      (async()=>{
+        const snap=await storageRef.put(blob,{contentType:'image/jpeg'});
+        return await snap.ref.getDownloadURL();
+      })(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido. Verifique sua conexão.')),20000))
+    ]);
 
-    // Mantém só últimos 3 avatares, apaga os mais antigos
-    hist.push({path,url,ts});
-    if(hist.length>3){
-      const old=hist.shift();
-      try{ await storage.ref(old.path).delete(); }catch(_){}
-    }
-
-    await upd(`users/${uid}`,{avatarUrl:url, avatares:hist});
+    // 3. Atualiza perfil
+    await upd(`users/${uid}`,{avatarUrl:url});
     ME_PROFILE.avatarUrl=url;
     $('setup-avatar').src=url;
-    $('avatar-status').textContent='';
+    statusEl.textContent='';
+    setOk('st-nome','Avatar atualizado!');
+    setTimeout(()=>clearErr('st-nome'),2500);
 
-    // Atualiza avatar no jogador da sala ativa se existir
+    // 4. Atualiza avatar na sala ativa se existir
     if(SALA){
       await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
     }
   }catch(e){
-    $('avatar-status').textContent='Erro no upload.';
-    console.error(e);
+    console.error('uploadAvatar erro:',e);
+    // Traduz erros comuns do Firebase Storage
+    const msg=e.code==='storage/unauthorized'
+      ? 'Sem permissão. Configure as regras do Firebase Storage.'
+      : e.code==='storage/canceled'
+      ? 'Upload cancelado.'
+      : e.message||'Erro no upload.';
+    statusEl.textContent='';
+    setErr('st-nome', msg);
   }
-  input.value='';
 }
 
 // ══════════════════════════════════════════════════════
@@ -1008,8 +1201,14 @@ function onInfoChanged(info){
   }
 
   // Detecta transições para tocar sons para todos
-  if(prev?.fase==='lobby' && fase==='playing') SFX.sortear();
+  if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
+  if(prev?.fase==='questioning' && fase==='playing') SFX.palavra();
   if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
+
+  // Listener de questioning timer
+  if(fase==='questioning'){
+    listen('qtimer',`salas/${SALA}/qtimer`,onQTimerChanged);
+  }
 
   if((fase==='playing'||fase==='voting'||fase==='revealed') && !_assignments){
     Promise.all([
@@ -1138,10 +1337,11 @@ function renderFase(){
     else renderEspectador();
     return;
   }
-  if(fase==='lobby')     renderLobby();
-  else if(fase==='playing')  renderPlaying();
-  else if(fase==='voting')   renderVoting();
-  else if(fase==='revealed') renderResultado();
+  if(fase==='lobby')          renderLobby();
+  else if(fase==='questioning') renderQuestioning();
+  else if(fase==='playing')     renderPlaying();
+  else if(fase==='voting')      renderVoting();
+  else if(fase==='revealed')    renderResultado();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1170,8 +1370,12 @@ function renderLobby(){
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badges+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     badges+='</div>';
+    const pBadge=prestigeBadgeHTML(j.placarTotal||0);
+    const pNameCls=prestigeNameClass(j.placarTotal||0);
     chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-      onerror="this.src='${AVATAR_PLACEHOLDER}'">${j.id===_info.host?'👑':''} ${nome}${badges}`;
+      onerror="this.src='${AVATAR_PLACEHOLDER}'">
+      <span class="${pNameCls}" style="flex:1;font-size:.86rem">${j.id===_info.host?'👑':''} ${nome}</span>
+      ${pBadge}${badges}`;
     container.appendChild(chip);
   });
 
@@ -1202,6 +1406,217 @@ function renderPlaying(){
   $('btn-abrir-voto').style.display=isHost?'':'none';
   $('btn-timer-reset').style.display=isHost?'':'none';
   $('card-votacao').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+//  QUESTIONING — Timer sincronizado
+// ══════════════════════════════════════════════════════
+let _fila = [];  // cache local da fila de pares
+
+function onQTimerChanged(data){
+  if(!data) return;
+  if(data.ts===lastQTimerTs && qTimerRunning) return;
+  lastQTimerTs=data.ts;
+  if(data.ativo){
+    iniciarQTimerLocal(data.ts, data.subFase);
+  } else {
+    pararQTimerLocal();
+    renderQProgressoTimer(20, 20, data.subFase||'pergunta');
+    $('q-timer-label').textContent='aguardando host…';
+  }
+  // Atualiza label de subfase
+  atualizarQSubfase(data.subFase||'pergunta');
+  // Re-renderiza par se parIdx mudou
+  if(typeof data.parIdx==='number') renderParAtual(data.parIdx, data.subFase||'pergunta');
+}
+
+function iniciarQTimerLocal(startTs, subFase){
+  pararQTimerLocal();
+  qTimerRunning=true;
+  const DURACAO=20;
+  let lastSeg=-1;
+
+  function tick(){
+    const elapsed=(Date.now()-startTs)/1000;
+    const restante=Math.max(0, DURACAO-elapsed);
+    const segsDisplay=Math.ceil(restante);
+    const urgent=restante<=5;
+
+    renderQProgressoTimer(restante, DURACAO, subFase);
+    $('q-timer-display').classList.toggle('urgent', urgent);
+
+    // Flash nos últimos 5s
+    if(urgent && restante>0){
+      const ov=$('flash-overlay');
+      ov.classList.add('flash');
+      setTimeout(()=>ov.classList.remove('flash'),150);
+    }
+
+    // Tick sonoro a cada segundo
+    if(restante>0 && segsDisplay!==lastSeg){
+      lastSeg=segsDisplay;
+      if(subFase==='pergunta') SFX.tickPergunta();
+      else SFX.tickResposta(restante);
+    }
+
+    if(restante<=0){
+      pararQTimerLocal();
+      renderQProgressoTimer(0, DURACAO, subFase);
+      $('q-timer-label').textContent='tempo esgotado!';
+      return;
+    }
+    qTimerInterval=requestAnimationFrame(tick);
+  }
+  qTimerInterval=requestAnimationFrame(tick);
+}
+
+function pararQTimerLocal(){
+  if(qTimerInterval) cancelAnimationFrame(qTimerInterval);
+  qTimerInterval=null; qTimerRunning=false;
+}
+
+function renderQProgressoTimer(restante, duracao, subFase){
+  const pct=restante/duracao*100;
+  $('q-timer-display').textContent=Math.ceil(restante)||'0';
+  const bar=$('q-timer-bar');
+  bar.style.width=pct+'%';
+  bar.className='q-timer-bar'+(subFase==='resposta'?' resposta':'')+(restante<=5?' urgent':'');
+}
+
+function atualizarQSubfase(subFase){
+  const pill=$('q-phase-pill');
+  const desc=$('q-phase-desc');
+  if(!pill||!desc) return;
+  if(subFase==='pergunta'){
+    pill.textContent='pergunta'; pill.className='q-phase-pill';
+    desc.textContent='Tempo de pergunta'; desc.className='pair-phase-label phase-pergunta';
+    $('q-avatar-left')?.classList.add('active-perguntador');
+    $('q-avatar-left')?.classList.remove('active-respondedor');
+    $('q-avatar-right')?.classList.add('active-respondedor');
+    $('q-avatar-right')?.classList.remove('active-perguntador');
+  } else {
+    pill.textContent='resposta'; pill.className='q-phase-pill resposta';
+    desc.textContent='Tempo de resposta'; desc.className='pair-phase-label phase-resposta';
+    $('q-avatar-right')?.classList.add('active-perguntador');
+    $('q-avatar-right')?.classList.remove('active-respondedor');
+    $('q-avatar-left')?.classList.add('active-respondedor');
+    $('q-avatar-left')?.classList.remove('active-perguntador');
+  }
+}
+
+function renderParAtual(parIdx, subFase){
+  if(!_fila||!_fila.length) return;
+  const total=_fila.length;
+  const par=_fila[Math.min(parIdx, total-1)];
+  if(!par) return;
+
+  $('q-pair-counter').textContent=`Par ${Math.min(parIdx+1,total)} de ${total}`;
+
+  const setPlayer=(side, id, nome, avatar)=>{
+    const av=$(side==='left'?'q-avatar-left':'q-avatar-right');
+    const nm=$(side==='left'?'q-name-left':'q-name-right');
+    if(av){av.src=avatar||AVATAR_PLACEHOLDER; av.onerror=()=>av.src=AVATAR_PLACEHOLDER;}
+    if(nm) nm.textContent=nome||'—';
+    // Destaca "você"
+    const nameEl=$(side==='left'?'q-name-left':'q-name-right');
+    if(nameEl) nameEl.style.color = id===ME.uid ? 'var(--accent)' : '';
+  };
+  setPlayer('left',  par.pId, par.pNome, par.pAvatar);
+  setPlayer('right', par.rId, par.rNome, par.rAvatar);
+  atualizarQSubfase(subFase);
+
+  // Bolinha de progresso
+  const prog=$('q-pair-progress');
+  if(prog){
+    prog.innerHTML='';
+    _fila.forEach((_,i)=>{
+      const dot=document.createElement('div');
+      dot.className='pair-dot'+(i<parIdx?' done':i===parIdx?' current':'');
+      prog.appendChild(dot);
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER — QUESTIONING
+// ══════════════════════════════════════════════════════
+async function renderQuestioning(){
+  if(document.querySelector('.screen.active')?.id!=='s-questioning'){
+    qWordShown=false;
+    // Carrega fila do Firebase se não tiver local
+    if(!_fila||!_fila.length){
+      const f=await get(`salas/${SALA}/fila`);
+      _fila=f&&Array.isArray(f)?f:[];
+    }
+    // Carrega palavra se necessário
+    if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
+    const myW=_assignments[idKey(ME.uid)]||'';
+    myWord=myW;
+    $('q-word-cat').textContent=_info.categoria||'—';
+    const el=$('q-word-el');
+    el.className='word-hidden'; el.textContent='● ● ●';
+    $('q-word-hint').textContent='toque para revelar';
+    showScreen('s-questioning');
+  }
+  const isHost=_info.host===ME.uid;
+  $('btn-prox-par').style.display=isHost?'':'none';
+
+  // Sync com qtimer atual
+  const qtdata=await get(`salas/${SALA}/qtimer`);
+  if(qtdata){
+    const parIdx=qtdata.parIdx||0;
+    const subFase=qtdata.subFase||'pergunta';
+    renderParAtual(parIdx, subFase);
+    if(qtdata.ativo && qtdata.ts!==lastQTimerTs){
+      lastQTimerTs=qtdata.ts;
+      iniciarQTimerLocal(qtdata.ts, subFase);
+    }
+  }
+}
+
+function toggleWordQ(){
+  const el=$('q-word-el'), hint=$('q-word-hint');
+  if(!qWordShown){
+    SFX.palavra();
+    const isImp=myWord==='IMPOSTOR';
+    el.className='word-revealed';
+    el.textContent=isImp?'🕵️ IMPOSTOR':myWord;
+    hint.textContent='toque para esconder';
+    qWordShown=true;
+    setTimeout(()=>{
+      if(qWordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';qWordShown=false;}
+    },4000);
+  } else {
+    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';qWordShown=false;
+  }
+}
+
+// Host: avança para próximo par ou encerra fase
+async function proxPar(){
+  if(!_info||_info.host!==ME.uid) return;
+  const qtdata=await get(`salas/${SALA}/qtimer`);
+  const parIdx=qtdata?.parIdx||0;
+  const subFase=qtdata?.subFase||'pergunta';
+
+  if(subFase==='pergunta'){
+    // Vai para subfase resposta do mesmo par
+    SFX.transicaoPar();
+    pararQTimerLocal();
+    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:true, subFase:'resposta', parIdx});
+  } else {
+    // Fim da resposta — vai para próximo par
+    const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
+    SFX.proximoPar();
+    pararQTimerLocal();
+    if(parIdx+1>=total){
+      // Acabou todos os pares → vai para playing
+      await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
+      await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+      await upd(`salas/${SALA}/info`,{fase:'playing'});
+    } else {
+      await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:true, subFase:'pergunta', parIdx:parIdx+1});
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1363,8 +1778,15 @@ function renderHistorico(){
   });
 }
 
-function renderPlacar(){
-  const lista=Object.values(_jogadores).sort((a,b)=>(b.placar||0)-(a.placar||0));
+async function renderPlacar(){
+  const listaBase=Object.values(_jogadores).filter(j=>!j.espectador);
+  // Carrega placarTotal de cada jogador para mostrar prestígio real
+  await Promise.all(listaBase.map(async j=>{
+    if(j.placarTotal==null){
+      try{ j.placarTotal=(await get(`users/${j.id}/placarTotal`))||0; }catch(_){ j.placarTotal=0; }
+    }
+  }));
+  const lista=listaBase.sort((a,b)=>(b.placar||0)-(a.placar||0));
   const container=$('placar-list');
   container.innerHTML='';
   if(!lista.length){
@@ -1374,11 +1796,14 @@ function renderPlacar(){
   lista.forEach((j,i)=>{
     const div=document.createElement('div');
     div.className='placar-row';
+    const pBadgeP=prestigeBadgeHTML(j.placarTotal||0);
+    const pNmCls=prestigeNameClass(j.placarTotal||0);
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px">
-      <span class="placar-nome">${j.nome||'(sem nome)'}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span class="placar-nome ${pNmCls}">${j.nome||'(sem nome)'}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      ${pBadgeP}
       <span class="placar-pts">${j.placar||0}pt</span>`;
     container.appendChild(div);
   });
@@ -1432,15 +1857,27 @@ async function sortear(){
     const snapshot={};
     ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
 
+    // Gera fila aleatória de pares (todas as combinações A→B, exceto A→A)
+    const shuffled=[...ativos].sort(()=>Math.random()-.5);
+    const fila=[];
+    for(let i=0;i<shuffled.length;i++){
+      for(let j=0;j<shuffled.length;j++){
+        if(i!==j) fila.push({pId:shuffled[i].id,pNome:shuffled[i].nome,pAvatar:shuffled[i].avatarUrl||'',
+          rId:shuffled[j].id,rNome:shuffled[j].nome,rAvatar:shuffled[j].avatarUrl||''});
+      }
+    }
+
     await del(`salas/${SALA}/votos`);
     await set(`salas/${SALA}/assignments`, assignments);
     await set(`salas/${SALA}/snapshot`, snapshot);
     await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
+    await set(`salas/${SALA}/qtimer`,{ts:0, ativo:false, subFase:'pergunta', parIdx:0});
+    await set(`salas/${SALA}/fila`, fila);
     _assignments=assignments;
     _snapshot=snapshot;
 
     await upd(`salas/${SALA}/info`,{
-      fase:'playing', categoria:cat, palavra,
+      fase:'questioning', categoria:cat, palavra,
       impostorId:impostorJ.id, impostorNome:impostorJ.nome,
       votacaoAberta:false,
       rodada:(_info.rodada||0)+1
@@ -1602,7 +2039,9 @@ async function novaRodada(){
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
   await del(`salas/${SALA}/snapshot`);
+  await del(`salas/${SALA}/fila`);
   await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
   await upd(`salas/${SALA}/info`,{
     fase:'lobby', categoria:'', palavra:'',
     impostorId:'', impostorNome:'', votacaoAberta:false
@@ -1633,7 +2072,8 @@ async function sairDaSala(){
   }catch(e){}
 
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
-  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
+  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={}; _fila=[];
+  pararQTimerLocal(); qWordShown=false;
   $('inp-codigo').value='';
   mostrarSetup();
 }
