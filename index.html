@@ -81,13 +81,14 @@ input::placeholder{color:var(--muted);}
 .sala-copy:hover{color:var(--accent);}
 
 .player-list{display:flex;flex-direction:column;gap:7px;}
-.player-chip{display:flex;align-items:center;gap:10px;background:var(--surface);
-  border-radius:8px;padding:10px 13px;font-size:.86rem;animation:slideIn .22s ease;}
-.player-chip.me{border:1px solid rgba(232,255,71,.3);}
-.player-chip.espectador{opacity:.6;border-style:dashed;}
-.player-chip img.avatar{width:36px;height:36px;flex-shrink:0;}
-.chip-info{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
-.chip-name{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.player-chip{display:flex;align-items:center;gap:10px;
+  border-radius:10px;padding:10px 13px;font-size:.86rem;
+  animation:slideIn .22s ease;border:1px solid transparent;
+  transition:border-color .3s,background .3s,box-shadow .3s;}
+.player-chip.espectador{opacity:.6;border-style:dashed!important;}
+.player-chip img.avatar{flex-shrink:0;}
+.chip-info{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
+.chip-name{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px;}
 .chip-rank{display:flex;align-items:center;gap:5px;}
 @keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.6rem;
@@ -782,8 +783,8 @@ function getPrestigeStyle(pts){
   };
 }
 
-// HTML do nome com badge ao redor em todos os tiers
-function nomeHTML(nome, pts, extra=''){
+// HTML do nome — apenas texto colorido com bold/glow por tier
+function nomeHTML(nome, pts){
   const s=getPrestigeStyle(pts||0);
   const color=s.isGOAT?'#FFD700':(s.fontWhite?'#F0F0FF':s.color);
   const fw=s.bold?'700':'400';
@@ -791,26 +792,7 @@ function nomeHTML(nome, pts, extra=''){
   if(s.isGOAT) shadow=`0 0 8px rgba(255,200,0,.7),0 0 18px rgba(255,200,0,.4)`;
   else if(s.glowStrong) shadow=`0 0 6px ${s.color}99,0 0 14px ${s.color}55`;
   else if(s.glow) shadow=`0 0 5px ${s.color}77`;
-  const nameStyle=`color:${color};font-weight:${fw};${shadow?`text-shadow:${shadow};`:''}`;
-
-  // Badge ao redor do nome em todos os tiers — opacidade varia por tier
-  let bgAlpha, borderAlpha;
-  if(s.isGOAT){      bgAlpha='ee'; borderAlpha='ff'; }
-  else if(s.badgeOpaque){ bgAlpha='cc'; borderAlpha='cc'; }
-  else if(s.badge){  bgAlpha='44'; borderAlpha='88'; }
-  else if(s.tier>=3){ bgAlpha='22'; borderAlpha='55'; } // tiers 3-4: badge muito sutil
-  else if(s.tier===2){ bgAlpha='18'; borderAlpha='44'; } // tier 2: quase invisível
-  else {             bgAlpha='10'; borderAlpha='30'; } // tier 1: mínimo
-
-  const bgColor=s.isGOAT?'#FFD700':`${s.color}${bgAlpha}`;
-  const borderColor=s.isGOAT?'#FFD700':`${s.color}${borderAlpha}`;
-  const textColor=s.isGOAT?'#0D0D14':(s.fontWhite?'#F0F0FF':s.color);
-  const boxShadow=s.isGOAT?`box-shadow:0 0 8px rgba(255,200,0,.5);`:
-    s.glowStrong?`box-shadow:0 0 6px ${s.color}55;`:'';
-
-  return `<span style="display:inline-flex;align-items:center;padding:2px 8px 2px 8px;border-radius:20px;background:${bgColor};border:1px solid ${borderColor};${boxShadow}">
-    <span style="${nameStyle}">${nome}</span>
-  </span>${extra}`;
+  return `<span style="color:${color};font-weight:${fw};${shadow?`text-shadow:${shadow};`:''}">${nome}</span>`;
 }
 
 // HTML do rank box (painel lateral)
@@ -872,6 +854,40 @@ function rankCardHTML(pts){
     </div>
     <div style="font-size:.65rem;color:var(--sub);text-align:right">${nextLabel}</div>
   </div>`;
+}
+
+// Aplica o estilo de prestige na box inteira do chip
+function applyChipStyle(el, pts, isMe){
+  const s=getPrestigeStyle(pts||0);
+  const c=s.color;
+  if(s.isGOAT){
+    el.style.background=`linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,152,0,.12))`;
+    el.style.borderColor=`#FFD700`;
+    el.style.boxShadow=`0 0 12px rgba(255,200,0,.35),inset 0 0 20px rgba(255,200,0,.05)`;
+  } else if(s.badgeOpaque){
+    el.style.background=`linear-gradient(135deg,${c}22,${c}0a)`;
+    el.style.borderColor=`${c}bb`;
+    el.style.boxShadow=`0 0 8px ${c}44`;
+  } else if(s.badge){
+    el.style.background=`linear-gradient(135deg,${c}18,${c}08)`;
+    el.style.borderColor=`${c}77`;
+    el.style.boxShadow=`0 0 5px ${c}22`;
+  } else if(s.tier>=3){
+    el.style.background=`${c}0e`;
+    el.style.borderColor=`${c}55`;
+    el.style.boxShadow='';
+  } else if(s.tier===2){
+    el.style.background=`${c}0a`;
+    el.style.borderColor=`${c}44`;
+    el.style.boxShadow='';
+  } else {
+    el.style.background='var(--surface)';
+    el.style.borderColor=isMe?'rgba(232,255,71,.3)':'rgba(255,255,255,.06)';
+    el.style.boxShadow='';
+  }
+  if(isMe && !s.isGOAT && s.tier<5){
+    el.style.borderColor='rgba(232,255,71,.4)';
+  }
 }
 
 const $ = id => document.getElementById(id);
