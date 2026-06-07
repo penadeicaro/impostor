@@ -154,14 +154,17 @@ input::placeholder{color:var(--muted);}
 
 /* Vote */
 .vote-grid{display:flex;flex-direction:column;gap:8px;}
-/* Controle do recorte da imagem de rank no vote-row:
-   ajuste --vote-img-top para cortar mais do topo (ex: -20px) ou do fundo */
-:root{ --vote-img-top: -8px; }
+/* Controle do offset vertical da imagem de rank no vote-row.
+   --vote-img-top: 0px = centralizado; negativo = sobe (corta topo); positivo = desce (corta fundo) */
+:root{ --vote-img-top: 0px; }
 .vote-row{display:flex;align-items:center;gap:10px;background:var(--surface);
   border-radius:8px;padding:8px 12px;cursor:pointer;
   border:2px solid transparent;transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;}
-.vote-row-rankbg{position:absolute;left:0;top:var(--vote-img-top);height:calc(100% + 16px);width:auto;
+.vote-row-rankbg{
+  position:absolute;left:0;top:var(--vote-img-top);
+  width:auto;height:100%;
+  max-height:none;
   pointer-events:none;z-index:0;
   image-rendering:pixelated;image-rendering:-moz-crisp-edges;
   opacity:.5;}
@@ -287,45 +290,7 @@ input::placeholder{color:var(--muted);}
   padding:0;}
 .link-btn:hover{color:var(--accent);}
 
-/* ── Par X → Y (fase questioning) ── */
-.questioning-wrap{display:flex;flex-direction:column;gap:12px;}
-.pair-stage{display:flex;align-items:center;justify-content:center;gap:12px;
-  background:var(--card);border-radius:var(--radius);padding:16px;
-  border:1px solid rgba(255,255,255,.06);}
-.pair-player{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
-.pair-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;
-  border:3px solid var(--muted);transition:border-color .3s;}
-.pair-avatar.active-perguntador{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,255,71,.2);}
-.pair-avatar.active-respondedor{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,195,247,.2);}
-.pair-name{font-size:1rem;text-align:center;max-width:72px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pair-role{font-size:.85rem;letter-spacing:1px;text-transform:uppercase;
-  color:var(--sub);text-align:center;}
-.pair-role.role-pergunta{color:var(--accent);}
-.pair-role.role-responde{color:var(--blue);}
-.pair-arrow{font-size:1.8rem;color:var(--accent);flex-shrink:0;}
-.pair-phase-label{text-align:center;font-size:.9rem;letter-spacing:2px;
-  text-transform:uppercase;color:var(--sub);padding:2px 0;}
-.pair-phase-label.phase-pergunta{color:var(--accent);}
-.pair-phase-label.phase-resposta{color:var(--blue);}
-.pair-progress{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:4px 0;}
-.pair-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;}
-.pair-dot.done{background:var(--green);}
-.pair-dot.current{background:var(--accent);}
-/* Q-timer oculto completamente */
-.q-timer-wrap{display:none!important;}
-.q-timer-display{font-family:'VT323',monospace;font-size:2rem;
-  color:var(--accent);min-width:44px;transition:color .3s;}
-.q-timer-display.urgent{color:var(--red);}
-.q-timer-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
-.q-timer-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 1s linear,background .3s;}
-.q-timer-bar.recarregando{transition:width .75s ease-out,background .3s;}
-.q-timer-bar.resposta{background:var(--blue);}
-.q-timer-bar.urgent{background:var(--red);}
-.q-phase-pill{font-size:.85rem;letter-spacing:1.5px;text-transform:uppercase;
-  padding:2px 10px;border-radius:12px;background:rgba(232,255,71,.12);color:var(--accent);}
-.q-phase-pill.resposta{background:rgba(79,195,247,.12);color:var(--blue);}
-/* Botões próx par lado a lado */
+/* Botões host lado a lado */
 .btn-pair-row{display:flex;gap:8px;}
 .btn-pair-row .btn{flex:1;}
 
@@ -463,24 +428,22 @@ input::placeholder{color:var(--muted);}
       </div>
       <button class="timer-reset-btn" id="btn-timer-reset" onclick="resetarTimer()" style="display:none">▶ Iniciar</button>
     </div>
-    <!-- Área scrollável -->
-    <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-      <div class="card word-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px">
-        <div class="cat-pill" id="word-cat">—</div>
-        <div id="word-el" class="word-hidden" style="pointer-events:none;cursor:default">● ● ●</div>
-        <div class="word-hint" id="word-hint">toque o botão abaixo para revelar</div>
-      </div>
-      <div class="card" id="card-votacao" style="display:none">
-        <div class="card-label">🗳️ Votação</div>
-        <div class="vote-grid" id="vote-grid"></div>
-        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
-        <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
-      </div>
+    <!-- Votação — flex:1 e scroll interno -->
+    <div class="card" id="card-votacao" style="display:none;flex:1;min-height:0;flex-direction:column;padding:12px;">
+      <div class="card-label">🗳️ Votação</div>
+      <div class="vote-grid" id="vote-grid" style="overflow-y:auto;flex:1;min-height:0;"></div>
+      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
+      <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
-    <!-- Rodapé fixo: de baixo para cima: sair → revelar palavra → revelar impostor -->
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-    <button class="btn btn-secondary" onclick="toggleWord()">👁 Revelar minha palavra</button>
+    <!-- Word box — penúltimo fixo, clicável para revelar -->
+    <div class="card word-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;cursor:pointer" onclick="toggleWord()">
+      <div class="cat-pill" id="word-cat">—</div>
+      <div id="word-el" class="word-hidden">● ● ●</div>
+      <div class="word-hint" id="word-hint">toque aqui para revelar</div>
+    </div>
+    <!-- Rodapé: revelar impostor (host) → sair -->
     <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
+    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
     <div class="status err" id="st-palavra"></div>
   </div>
 
@@ -501,64 +464,25 @@ input::placeholder{color:var(--muted);}
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
-  <!-- ══ QUESTIONING (X pergunta Y) ══ -->
+  <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
-    <!-- Timer oculto — mantido no DOM para JS -->
-    <div class="q-timer-wrap" id="q-timer-card" style="display:none!important">
-      <div class="q-timer-display" id="q-timer-display">20</div>
-      <div style="flex:1">
-        <div class="q-timer-bar-wrap"><div class="q-timer-bar" id="q-timer-bar" style="width:100%"></div></div>
-        <div style="font-size:.6rem;color:var(--sub);margin-top:4px;display:flex;gap:6px;align-items:center">
-          <span class="q-phase-pill" id="q-phase-pill">pergunta</span>
-          <span id="q-timer-label">—</span>
-        </div>
-      </div>
+    <!-- Votação — área scrollável interna -->
+    <div class="card" id="q-votacao-card" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:12px;">
+      <div class="card-label">🗳️ Votação</div>
+      <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;"></div>
+      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
-    <!-- Área scrollável -->
-    <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-      <!-- Par atual -->
-      <div class="card" style="padding:12px">
-        <div class="card-label" style="margin-bottom:8px">
-          <span id="q-pair-counter">Par 1 de —</span>
-        </div>
-        <div class="pair-stage" id="q-pair-stage" style="padding:12px">
-          <div class="pair-player" id="q-player-left">
-            <img class="pair-avatar" id="q-avatar-left" src="" alt="">
-            <span class="pair-name" id="q-name-left">—</span>
-            <span class="pair-role role-pergunta" id="q-role-left">pergunta</span>
-          </div>
-          <div class="pair-arrow">→</div>
-          <div class="pair-player" id="q-player-right">
-            <img class="pair-avatar" id="q-avatar-right" src="" alt="">
-            <span class="pair-name" id="q-name-right">—</span>
-            <span class="pair-role role-responde" id="q-role-right">responde</span>
-          </div>
-        </div>
-        <div class="pair-phase-label" id="q-phase-desc" style="margin-top:6px">—</div>
-        <!-- Progresso de pares -->
-        <div class="pair-progress" id="q-pair-progress" style="margin-top:8px"></div>
-      </div>
-      <!-- Palavra oculta -->
-      <div class="card word-box" id="q-word-box" style="padding:14px;text-align:center">
-        <div class="cat-pill" id="q-word-cat">—</div>
-        <div id="q-word-el" class="word-hidden" style="pointer-events:none;cursor:default">● ● ●</div>
-        <div class="word-hint" id="q-word-hint">toque o botão abaixo para revelar</div>
-      </div>
-      <!-- Votação -->
-      <div class="card" id="q-votacao-card" style="padding:12px">
-        <div class="card-label">🗳️ Votação</div>
-        <div class="vote-grid" id="q-vote-grid"></div>
-        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
-      </div>
+    <!-- Word box — penúltimo item fixo -->
+    <div class="card word-box" id="q-word-box" style="padding:14px;text-align:center;cursor:pointer" onclick="toggleWordQ()">
+      <div class="cat-pill" id="q-word-cat">—</div>
+      <div id="q-word-el" class="word-hidden">● ● ●</div>
+      <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé fixo: de baixo para cima: sair → revelar palavra → (revelar impostor | próx par) -->
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-    <button class="btn btn-secondary" onclick="toggleWordQ()">👁 Revelar minha palavra</button>
-    <!-- Host: próx par e revelar impostor lado a lado -->
+    <!-- Rodapé: sair (último) → revelar impostor + revelar (host, antepenúltimo) -->
     <div class="btn-pair-row" id="btn-host-pair-row" style="display:none">
-      <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()">⏭ PRÓXIMO PAR</button>
-      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()">🔍 REVELAR</button>
+      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()">🔍 REVELAR IMPOSTOR</button>
     </div>
+    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
   <!-- ══ RESULTADO ══ -->
@@ -769,12 +693,6 @@ let timerInterval = null;
 let timerSegs = 15;
 let timerRunning = false;
 let lastTimerTs = 0;  // timestamp do último reset (do Firebase)
-
-// timer de questioning
-let qTimerInterval = null;
-let qTimerRunning  = false;
-let lastQTimerTs   = 0;
-let qWordShown     = false;
 
 // ── cached state
 let _info      = null;
@@ -1385,8 +1303,6 @@ function onInfoChanged(info){
     listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
     // Para timers e flash em TODOS os clientes quando a rodada é revelada
     pararTimerLocal();
-    pararQTimerLocal();
-    if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
     stopFlashPulse();
   }
 
@@ -1417,11 +1333,6 @@ function onInfoChanged(info){
   if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
   if(prev?.fase==='questioning' && fase==='playing') SFX.palavra();
   if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
-
-  // Listener de questioning timer
-  if(fase==='questioning'){
-    listen('qtimer',`salas/${SALA}/qtimer`,onQTimerChanged);
-  }
 
   if((fase==='playing'||fase==='voting'||fase==='revealed') && !_assignments){
     Promise.all([
@@ -1659,217 +1570,37 @@ function renderPlaying(){
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
   const votAberta=_info.votacaoAberta;
-  $('card-votacao').style.display=votAberta?'':'none';
+  $('card-votacao').style.display=votAberta?'flex':'none';
   if(votAberta) renderVoteGrid('vote-grid',false);
 }
 
 // ══════════════════════════════════════════════════════
-//  QUESTIONING — Timer sincronizado
+//  QUESTIONING — sem fila de pares
 // ══════════════════════════════════════════════════════
-let _fila = [];  // cache local da fila de pares
+let qWordShown = false;
 
-function onQTimerChanged(data){
-  if(!data) return;
-  const parIdx=typeof data.parIdx==='number'?data.parIdx:0;
-  const subFase=data.subFase||'pergunta';
-  // Apenas sincroniza o par atual — sem lógica de timer
-  if(subFase!=='preparando') renderParAtual(parIdx, 'pergunta');
-  atualizarQSubfase('pergunta');
-}
+function pararQTimerLocal(){ /* mantido para compatibilidade com revelarImpostor */ }
 
-// Countdown de 5s antes do primeiro timer de pergunta
-// A barra ENCHE de 0→100% durante esses 5s para indicar que está "carregando"
-let _prepTimer=null;
-function iniciarCountdownPreparando(startTs){
-  if(_prepTimer) clearInterval(_prepTimer);
-  stopFlashPulse();
-  const PREP=5;
-
-  // Anima barra de 0 → 100% com CSS transition, compensando latência de rede
-  const bar=$('q-timer-bar');
-  if(bar){
-    const jaPassou=Math.max(0,(serverNow()-startTs)/1000);
-    const duracaoRestante=Math.max(0.1, PREP-jaPassou);
-    const pctInicial=Math.min(100,(jaPassou/PREP)*100);
-    bar.className='q-timer-bar recarregando';
-    bar.style.width=pctInicial+'%';
-    void bar.offsetWidth;
-    bar.style.transition=`width ${duracaoRestante}s linear, background .3s`;
-    bar.style.width='100%';
-  }
-
-  function tick(){
-    const elapsed=(serverNow()-startTs)/1000;
-    const restante=Math.max(0,PREP-elapsed);
-    const seg=Math.ceil(restante);
-    $('q-timer-display').textContent=seg||'▶';
-    $('q-timer-label').textContent=`começando em ${seg}s…`;
-    $('q-timer-display').classList.remove('urgent');
-    if(restante<=0){
-      clearInterval(_prepTimer);
-      _prepTimer=null;
-      if(bar) bar.style.transition=''; // restaura transition padrão
-      // Só o host dispara o timer no Firebase; os outros recebem via listener
-      if(_info&&_info.host===ME.uid){
-        set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP,ativo:true,subFase:'pergunta',parIdx:0});
-      }
-    }
-  }
-  tick();
-  _prepTimer=setInterval(tick,200);
-}
-
-function iniciarQTimerLocal(startTs, subFase){
-  pararQTimerLocal();
-  qTimerRunning=true;
-  const DURACAO=20;
-  let lastSeg=-1;
-
-  function tick(){
-    const elapsed=(serverNow()-startTs)/1000;
-    const restante=Math.max(0, DURACAO-elapsed);
-    const segsDisplay=Math.ceil(restante);
-    const urgent=restante<=5;
-
-    renderQProgressoTimer(restante, DURACAO, subFase);
-    $('q-timer-display').classList.toggle('urgent', urgent);
-
-    // Flash vermelho APENAS na fase de resposta (não na pergunta)
-    if(subFase==='resposta' && urgent && restante>0){
-      startFlashPulse();
-    } else {
-      stopFlashPulse();
-    }
-
-    // Tick sonoro a cada segundo
-    if(restante>0 && segsDisplay!==lastSeg){
-      lastSeg=segsDisplay;
-      if(subFase==='pergunta') SFX.tickPergunta();
-      else SFX.tickResposta(restante);
-    }
-
-    if(restante<=0){
-      pararQTimerLocal();
-      renderQProgressoTimer(0, DURACAO, subFase);
-      $('q-timer-label').textContent='tempo esgotado!';
-      return;
-    }
-    qTimerInterval=requestAnimationFrame(tick);
-  }
-  qTimerInterval=requestAnimationFrame(tick);
-}
-
-function pararQTimerLocal(){
-  if(qTimerInterval) cancelAnimationFrame(qTimerInterval);
-  qTimerInterval=null; qTimerRunning=false;
-  stopFlashPulse();
-}
-
-function renderQProgressoTimer(restante, duracao, subFase){
-  const pct=restante/duracao*100;
-  $('q-timer-display').textContent=Math.ceil(restante)||'0';
-  const bar=$('q-timer-bar');
-  bar.style.width=pct+'%';
-  bar.className='q-timer-bar'+(subFase==='resposta'?' resposta':'')+(restante<=5?' urgent':'');
-}
-
-function atualizarQSubfase(subFase){
-  const pill=$('q-phase-pill');
-  const desc=$('q-phase-desc');
-  if(!pill||!desc) return;
-  if(subFase==='pergunta'||subFase==='recarregando_pergunta'||subFase==='preparando'){
-    pill.textContent='pergunta'; pill.className='q-phase-pill';
-    desc.textContent='Tempo de Pergunta'; desc.className='pair-phase-label phase-pergunta';
-    $('q-avatar-left')?.classList.add('active-perguntador');
-    $('q-avatar-left')?.classList.remove('active-respondedor');
-    $('q-avatar-right')?.classList.add('active-respondedor');
-    $('q-avatar-right')?.classList.remove('active-perguntador');
-    const btnP=$('btn-prox-par');
-    if(btnP) btnP.textContent='⏭ PRÓXIMO PAR';
-  } else {
-    pill.textContent='resposta'; pill.className='q-phase-pill resposta';
-    desc.textContent='Tempo de Resposta'; desc.className='pair-phase-label phase-resposta';
-    $('q-avatar-right')?.classList.add('active-perguntador');
-    $('q-avatar-right')?.classList.remove('active-respondedor');
-    $('q-avatar-left')?.classList.add('active-respondedor');
-    $('q-avatar-left')?.classList.remove('active-perguntador');
-    const btnR=$('btn-prox-par');
-    if(btnR) btnR.textContent='⏭ PRÓXIMO PAR';
-  }
-}
-
-function renderParAtual(parIdx, subFase){
-  if(!_fila||!_fila.length) return;
-  const total=_fila.length;
-  const par=_fila[Math.min(parIdx, total-1)];
-  if(!par) return;
-
-  $('q-pair-counter').textContent=`Par ${Math.min(parIdx+1,total)} de ${total}`;
-
-  const setPlayer=(side, id, nome, avatar)=>{
-    const av=$(side==='left'?'q-avatar-left':'q-avatar-right');
-    const nm=$(side==='left'?'q-name-left':'q-name-right');
-    if(av){av.src=avatar||AVATAR_PLACEHOLDER; av.onerror=()=>av.src=AVATAR_PLACEHOLDER;}
-    if(nm) nm.textContent=nome||'—';
-    // sem cor especial nos nomes durante o par
-  };
-  setPlayer('left',  par.pId, par.pNome, par.pAvatar);
-  setPlayer('right', par.rId, par.rNome, par.rAvatar);
-  atualizarQSubfase(subFase);
-
-  // Bolinha de progresso
-  const prog=$('q-pair-progress');
-  if(prog){
-    prog.innerHTML='';
-    _fila.forEach((_,i)=>{
-      const dot=document.createElement('div');
-      dot.className='pair-dot'+(i<parIdx?' done':i===parIdx?' current':'');
-      prog.appendChild(dot);
-    });
-  }
-}
-
-// ══════════════════════════════════════════════════════
-//  RENDER — QUESTIONING
-// ══════════════════════════════════════════════════════
 async function renderQuestioning(){
   if(document.querySelector('.screen.active')?.id!=='s-questioning'){
     qWordShown=false;
-    // Carrega fila do Firebase se não tiver local
-    if(!_fila||!_fila.length){
-      const f=await get(`salas/${SALA}/fila`);
-      _fila=f&&Array.isArray(f)?f:[];
-    }
-    // Carrega palavra se necessário
     if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
-    const myW=_assignments[idKey(ME.uid)]||'';
-    myWord=myW;
+    myWord=_assignments[idKey(ME.uid)]||'';
     $('q-word-cat').textContent=_info.categoria||'—';
     const el=$('q-word-el');
     el.className='word-hidden'; el.textContent='● ● ●';
-    $('q-word-hint').textContent='toque para revelar';
+    $('q-word-hint').textContent='toque aqui para revelar';
     showScreen('s-questioning');
   }
   const isHost=_info.host===ME.uid;
   const hostRow=$('btn-host-pair-row');
   if(hostRow) hostRow.style.display=isHost?'flex':'none';
-  $('btn-prox-par').style.display='';
-  $('btn-revelar-q').style.display='';
 
-  // Votação sempre aberta
-  $('q-votacao-card').style.display='';
   renderVoteGrid('q-vote-grid', false);
   const qVoteStatus=$('q-vote-status');
   if(qVoteStatus){
     const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
     qVoteStatus.textContent=`${Object.keys(_votos).length} de ${ativos.length} votos`;
-  }
-
-  // Sync com qtimer atual
-  const qtdata=await get(`salas/${SALA}/qtimer`);
-  if(qtdata){
-    const parIdx=qtdata.parIdx||0;
-    renderParAtual(parIdx, 'pergunta');
   }
 }
 
@@ -1883,32 +1614,10 @@ function toggleWordQ(){
     hint.textContent='toque para esconder';
     qWordShown=true;
     setTimeout(()=>{
-      if(qWordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';qWordShown=false;}
+      if(qWordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque aqui para revelar';qWordShown=false;}
     },4000);
   } else {
-    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';qWordShown=false;
-  }
-}
-
-// Host: avança para próximo par ou encerra fase
-async function proxPar(){
-  if(!_info||_info.host!==ME.uid) return;
-  const qtdata=await get(`salas/${SALA}/qtimer`);
-  const parIdx=qtdata?.parIdx||0;
-
-  const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
-  SFX.proximoPar();
-  pararQTimerLocal();
-  if(parIdx+1>=total){
-    // Acabou todos os pares → vai para playing
-    await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
-    await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
-    await upd(`salas/${SALA}/info`,{fase:'playing'});
-  } else {
-    // Próximo par
-    const nextIdx=parIdx+1;
-    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'pergunta', parIdx:nextIdx});
-    renderParAtual(nextIdx, 'pergunta');
+    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque aqui para revelar';qWordShown=false;
   }
 }
 
@@ -1928,7 +1637,7 @@ function renderVoting(){
   }
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
-  $('card-votacao').style.display='';
+  $('card-votacao').style.display='flex';
   renderVoteGrid('vote-grid',false);
 }
 
@@ -2175,27 +1884,14 @@ async function sortear(){
       assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
     });
 
-    // Snapshot dos jogadores neste momento — preserva nomes/avatares mesmo se alguém sair
+    // Snapshot dos jogadores neste momento
     const snapshot={};
     ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
-
-    // Gera fila aleatória de pares (todas as combinações A→B, exceto A→A)
-    const shuffled=[...ativos].sort(()=>Math.random()-.5);
-    const fila=[];
-    for(let i=0;i<shuffled.length;i++){
-      for(let j=0;j<shuffled.length;j++){
-        if(i!==j) fila.push({pId:shuffled[i].id,pNome:shuffled[i].nome,pAvatar:shuffled[i].avatarUrl||'',
-          rId:shuffled[j].id,rNome:shuffled[j].nome,rAvatar:shuffled[j].avatarUrl||''});
-      }
-    }
 
     await del(`salas/${SALA}/votos`);
     await set(`salas/${SALA}/assignments`, assignments);
     await set(`salas/${SALA}/snapshot`, snapshot);
     await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
-    // qtimer simplificado — sem timer, apenas controle do par atual
-    await set(`salas/${SALA}/qtimer`,{ts:0, ativo:false, subFase:'pergunta', parIdx:0});
-    await set(`salas/${SALA}/fila`, fila);
     _assignments=assignments;
     _snapshot=snapshot;
 
@@ -2293,10 +1989,7 @@ function calcularResultado(ativos, contagem, impostorId, votos){
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
   if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
-  // Para TUDO imediatamente — flash, sons
   pararTimerLocal();
-  pararQTimerLocal();
-  if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
   stopFlashPulse();
   SFX.revelar();
 
@@ -2357,9 +2050,7 @@ async function novaRodada(){
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
   await del(`salas/${SALA}/snapshot`);
-  await del(`salas/${SALA}/fila`);
   await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
-  await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
   await upd(`salas/${SALA}/info`,{
     fase:'lobby', categoria:'', palavra:'',
     impostorId:'', impostorNome:'', votacaoAberta:false
@@ -2391,9 +2082,8 @@ async function sairDaSala(){
   }catch(e){}
 
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
-  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={}; _fila=[];
-  pararQTimerLocal(); qWordShown=false;
-  if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
+  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
+  qWordShown=false;
   $('inp-codigo').value='';
   mostrarSetup();
 }
