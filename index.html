@@ -9,7 +9,7 @@
 :root{
   --bg:#0D0D14;--surface:#16161F;--card:#1E1E2C;
   --accent:#E8FF47;--red:#FF4757;--muted:#4A4A6A;
-  --text:#F0F0FF;--sub:#8888AA;--radius:12px;
+  --text:#F0F0FF;--sub:#8888AA;--radius:10px;
   --green:#4CAF50;--blue:#4FC3F7;--orange:#FF9800;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -193,6 +193,14 @@ input::placeholder{color:var(--muted);}
   background:rgba(255,71,87,.07);border:2px solid var(--red);
   border-radius:var(--radius);padding:20px 16px;
   animation:slideIn .25s ease;
+  position:relative;overflow:hidden;
+}
+.res-impostor-card .res-rank-bg,
+.res-player-tile .res-rank-bg{
+  position:absolute;left:0;top:0;height:100%;width:auto;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+  opacity:.35;
 }
 .res-impostor-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;
   border:3px solid var(--red);}
@@ -205,6 +213,7 @@ input::placeholder{color:var(--muted);}
   display:flex;flex-direction:column;align-items:center;gap:6px;
   background:var(--surface);border-radius:10px;padding:12px 8px;
   animation:slideIn .22s ease;
+  position:relative;overflow:hidden;
 }
 .res-player-tile img{width:48px;height:48px;border-radius:10px;object-fit:cover;}
 .res-player-name{font-size:.68rem;color:var(--sub);text-align:center;
@@ -748,6 +757,7 @@ let _assignments = null;
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
+let flashPulseInterval = null;   // intervalo do pisca-pisca urgente
 
 // ══════════════════════════════════════════════════════
 //  PONTUAÇÃO — edite aqui para ajustar os valores
@@ -1451,11 +1461,11 @@ function iniciarTimerLocal(startTs){
     $('timer-bar').classList.toggle('urgent',urgent);
     $('timer-label').textContent=timerRunning?'respondendo…':'';
 
-    // Pisca tela nos últimos 4s
+    // Pisca tela nos últimos 4s — liga/desliga a cada 450ms
     if(urgent && restante>0){
-      const overlay=$('flash-overlay');
-      overlay.classList.add('flash');
-      setTimeout(()=>overlay.classList.remove('flash'),150);
+      startFlashPulse();
+    } else {
+      stopFlashPulse();
     }
 
     // Tick com pitch progressivo em todos os segundos
@@ -1477,10 +1487,25 @@ function iniciarTimerLocal(startTs){
   timerInterval=requestAnimationFrame(tick);
 }
 
+function startFlashPulse(){
+  if(flashPulseInterval) return;
+  let on=false;
+  flashPulseInterval=setInterval(()=>{
+    on=!on;
+    const ov=$('flash-overlay');
+    if(ov) on ? ov.classList.add('flash') : ov.classList.remove('flash');
+  },450);
+}
+function stopFlashPulse(){
+  if(flashPulseInterval){ clearInterval(flashPulseInterval); flashPulseInterval=null; }
+  const ov=$('flash-overlay');
+  if(ov) ov.classList.remove('flash');
+}
 function pararTimerLocal(){
   if(timerInterval) cancelAnimationFrame(timerInterval);
   timerInterval=null;
   timerRunning=false;
+  stopFlashPulse();
 }
 
 async function resetarTimer(){
@@ -1654,11 +1679,11 @@ function iniciarQTimerLocal(startTs, subFase){
     renderQProgressoTimer(restante, DURACAO, subFase);
     $('q-timer-display').classList.toggle('urgent', urgent);
 
-    // Flash nos últimos 5s
+    // Pisca tela nos últimos 5s — liga/desliga a cada 450ms
     if(urgent && restante>0){
-      const ov=$('flash-overlay');
-      ov.classList.add('flash');
-      setTimeout(()=>ov.classList.remove('flash'),150);
+      startFlashPulse();
+    } else {
+      stopFlashPulse();
     }
 
     // Tick sonoro a cada segundo
@@ -1682,6 +1707,7 @@ function iniciarQTimerLocal(startTs, subFase){
 function pararQTimerLocal(){
   if(qTimerInterval) cancelAnimationFrame(qTimerInterval);
   qTimerInterval=null; qTimerRunning=false;
+  stopFlashPulse();
 }
 
 function renderQProgressoTimer(restante, duracao, subFase){
@@ -1821,7 +1847,7 @@ async function proxPar(){
     // Vai para subfase resposta do mesmo par
     SFX.transicaoPar();
     pararQTimerLocal();
-    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:true, subFase:'resposta', parIdx});
+    await set(`salas/${SALA}/qtimer`,{ts:Date.now()+600, ativo:true, subFase:'resposta', parIdx});
   } else {
     // Fim da resposta — vai para próximo par
     const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
@@ -1833,7 +1859,7 @@ async function proxPar(){
       await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
       await upd(`salas/${SALA}/info`,{fase:'playing'});
     } else {
-      await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:true, subFase:'pergunta', parIdx:parIdx+1});
+      await set(`salas/${SALA}/qtimer`,{ts:Date.now()+600, ativo:true, subFase:'pergunta', parIdx:parIdx+1});
     }
   }
 }
@@ -1954,12 +1980,14 @@ function renderResultado(){
     const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
     const impCard=document.createElement('div');
     impCard.className='res-impostor-card';
+    const impStyle=getPrestigeStyle(imp.placarTotal||0);
     impCard.innerHTML=`
-      <span class="imp-badge">Impostor</span>
+      <img class="res-rank-bg" src="${impStyle.img}" alt="">
+      <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
       <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'">
-      <div class="res-impostor-name">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
-      <span class="pts-badge ${impPtsClass}">${impPtsLabel}pt</span>`;
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+      <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
     list.appendChild(impCard);
   }
 
@@ -1973,13 +2001,15 @@ function renderResultado(){
       const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
       const ptsLabel=pts>0?`+${pts}`:String(pts);
       const isMe=j.id===ME.uid;
+      const tileStyle=getPrestigeStyle(j.placarTotal||0);
       const tile=document.createElement('div');
       tile.className='res-player-tile';
       tile.innerHTML=`
+        <img class="res-rank-bg" src="${tileStyle.img}" alt="">
         <img src="${avatarImg(j.avatarUrl)}" alt=""
-          onerror="this.src='${AVATAR_PLACEHOLDER}'">
-        <div class="res-player-name${isMe?' is-me':''}">${j.nome||'(sem nome)'}</div>
-        <span class="pts-badge ${ptsClass}">${ptsLabel}pt</span>`;
+          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
+        <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
       grid.appendChild(tile);
     });
     list.appendChild(grid);
@@ -2215,6 +2245,8 @@ function calcularResultado(ativos, contagem, impostorId, votos){
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
   if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
+  pararTimerLocal(); // para imediatamente, sem esperar Firebase
+  pararQTimerLocal();
   SFX.revelar();
 
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
