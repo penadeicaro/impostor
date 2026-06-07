@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🕵️ Impostor</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0D0D14;--surface:#16161F;--card:#1E1E2C;
@@ -13,48 +13,52 @@
   --green:#4CAF50;--blue:#4FC3F7;--orange:#FF9800;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'VT323',monospace;
+  height:100%;display:flex;flex-direction:column;align-items:center;}
 body::before{content:'';position:fixed;inset:0;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events:none;z-index:0;}
-.wrap{position:relative;z-index:1;width:100%;max-width:460px;padding:24px 16px 80px;}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;
-  letter-spacing:-1px;text-align:center;margin:32px 0 6px;}
+.wrap{position:relative;z-index:1;width:100%;max-width:460px;
+  height:100%;display:flex;flex-direction:column;overflow:hidden;padding:0 16px;}
+.logo{font-family:'VT323',monospace;font-size:2.4rem;
+  letter-spacing:2px;text-align:center;padding:10px 0 2px;}
 .logo span{color:var(--accent);}
-.tagline{text-align:center;color:var(--sub);font-size:.72rem;letter-spacing:2px;
-  text-transform:uppercase;margin-bottom:36px;}
-.screen{display:none;flex-direction:column;gap:14px;}
+.tagline{text-align:center;color:var(--sub);font-size:1rem;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:10px;}
+.screen{display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
+/* Scroll interno apenas para telas que precisam */
+.screen-scroll{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
 .card{background:var(--card);border:1px solid rgba(255,255,255,.06);
-  border-radius:var(--radius);padding:20px;}
-.card-label{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;
-  color:var(--sub);margin-bottom:12px;}
+  border-radius:var(--radius);padding:14px;}
+.card-label{font-size:1rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--sub);margin-bottom:8px;}
 input[type=text],input[type=email],input[type=password]{
   width:100%;background:var(--surface);border:1px solid var(--muted);
-  border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;
-  font-size:1rem;padding:13px 16px;outline:none;transition:border-color .2s;}
+  border-radius:8px;color:var(--text);font-family:'VT323',monospace;
+  font-size:1.2rem;padding:10px 14px;outline:none;transition:border-color .2s;}
 input:focus{border-color:var(--accent);}
 input::placeholder{color:var(--muted);}
 .row{display:flex;gap:10px;}.row input{flex:1;}
-.btn{width:100%;padding:14px;border:none;border-radius:8px;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
-  letter-spacing:1px;cursor:pointer;transition:transform .1s,opacity .2s;}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;
+  font-family:'VT323',monospace;font-size:1.3rem;
+  letter-spacing:2px;cursor:pointer;transition:transform .1s,opacity .2s;}
 .btn:active{transform:scale(.97);}.btn:disabled{opacity:.35;cursor:not-allowed;}
 .btn-primary{background:var(--accent);color:#0D0D14;}
 .btn-secondary{background:transparent;color:var(--text);border:1px solid var(--muted);}
 .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);}
-.btn-ghost{background:rgba(255,255,255,.04);color:var(--sub);font-size:.85rem;}
+.btn-ghost{background:rgba(255,255,255,.04);color:var(--sub);font-size:1.1rem;}
 .btn-google{background:#fff;color:#1a1a1a;display:flex;align-items:center;
-  justify-content:center;gap:10px;font-size:.9rem;}
+  justify-content:center;gap:10px;font-size:1.1rem;}
 .btn-google svg{flex-shrink:0;}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.7rem;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--muted);opacity:.3;}
 
 /* Auth tabs */
-.auth-tabs{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:4px;margin-bottom:16px;}
-.auth-tab{flex:1;padding:9px;border:none;border-radius:6px;cursor:pointer;
-  font-family:'Space Mono',monospace;font-size:.75rem;color:var(--sub);
+.auth-tabs{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:4px;margin-bottom:12px;}
+.auth-tab{flex:1;padding:8px;border:none;border-radius:6px;cursor:pointer;
+  font-family:'VT323',monospace;font-size:1.1rem;color:var(--sub);
   background:transparent;transition:background .2s,color .2s;}
 .auth-tab.active{background:var(--card);color:var(--text);}
 
@@ -72,11 +76,11 @@ input::placeholder{color:var(--muted);}
 
 .sala-badge{display:flex;align-items:center;justify-content:space-between;
   background:rgba(232,255,71,.07);border:1px solid rgba(232,255,71,.2);
-  border-radius:8px;padding:12px 16px;margin-bottom:4px;}
-.sala-code{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;
+  border-radius:8px;padding:10px 14px;margin-bottom:4px;}
+.sala-code{font-family:'VT323',monospace;font-size:2.2rem;
   letter-spacing:6px;color:var(--accent);}
 .sala-copy{background:none;border:none;cursor:pointer;color:var(--sub);
-  font-size:.75rem;font-family:'Space Mono',monospace;padding:4px 8px;
+  font-size:1rem;font-family:'VT323',monospace;padding:4px 8px;
   border-radius:4px;transition:color .2s;}
 .sala-copy:hover{color:var(--accent);}
 
@@ -99,13 +103,13 @@ input::placeholder{color:var(--muted);}
 .chip-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;
   min-width:0;position:relative;z-index:1;
   padding:14% 0;/* proporcional à altura do chip */}
-.chip-name{font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+.chip-name{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:5px;color:#fff!important;}
-.chip-rank{display:flex;align-items:center;gap:5px;color:#fff!important;}
+.chip-rank{display:flex;align-items:center;gap:5px;color:#fff!important;font-size:.85rem;}
 .badges-right{position:relative;z-index:1;display:flex;align-items:center;gap:4px;flex-shrink:0;}
 @keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
-.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.6rem;
-  letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.85rem;
+  letter-spacing:1px;text-transform:uppercase;}
 .badge-host{background:rgba(232,255,71,.14);color:var(--accent);}
 .badge-you{background:rgba(255,255,255,.07);color:var(--sub);}
 .badge-spec{background:rgba(79,195,247,.14);color:var(--blue);}
@@ -114,13 +118,11 @@ input::placeholder{color:var(--muted);}
   font-size:.75rem;padding:2px 5px;border-radius:4px;transition:color .2s;}
 .kick-btn:hover{color:var(--red);}
 .score-pill{background:rgba(232,255,71,.1);color:var(--accent);
-  border-radius:12px;padding:2px 8px;font-size:.7rem;font-weight:700;}
+  border-radius:12px;padding:2px 8px;font-size:.9rem;}
 
-/* Timer */
-.timer-wrap{background:var(--card);border:1px solid rgba(255,255,255,.06);
-  border-radius:var(--radius);padding:16px 20px;display:flex;
-  align-items:center;gap:14px;}
-.timer-display{font-family:'Syne',sans-serif;font-weight:800;font-size:2.4rem;
+/* Timer — oculto, mantido apenas para compatibilidade */
+.timer-wrap{display:none!important;}
+.timer-display{font-family:'VT323',monospace;font-size:2.4rem;
   color:var(--accent);min-width:52px;transition:color .3s;}
 .timer-display.urgent{color:var(--red);}
 .timer-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.08);
@@ -128,10 +130,7 @@ input::placeholder{color:var(--muted);}
 .timer-bar{height:100%;background:var(--accent);border-radius:3px;
   transition:width 1s linear,background .3s;}
 .timer-bar.urgent{background:var(--red);}
-.timer-reset-btn{background:var(--surface);border:1px solid var(--muted);
-  color:var(--sub);border-radius:8px;padding:8px 14px;cursor:pointer;
-  font-family:'Space Mono',monospace;font-size:.75rem;transition:border-color .2s,color .2s;}
-.timer-reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+.timer-reset-btn{display:none!important;}
 
 /* Flash overlay */
 #flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:998;
@@ -139,35 +138,44 @@ input::placeholder{color:var(--muted);}
 #flash-overlay.flash{background:rgba(255,71,87,.18);}
 
 /* Word screen */
-.word-box{text-align:center;padding:28px 16px;}
+.word-box{text-align:center;padding:20px 16px;}
 .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
-  border-radius:20px;padding:5px 14px;font-size:.7rem;letter-spacing:2px;
-  text-transform:uppercase;margin-bottom:20px;}
-.word-hidden{font-family:'Syne',sans-serif;font-size:3.2rem;font-weight:800;
+  border-radius:20px;padding:4px 14px;font-size:1rem;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:14px;}
+.word-hidden{font-family:'VT323',monospace;font-size:3.6rem;
   letter-spacing:6px;color:var(--muted);cursor:pointer;user-select:none;}
-.word-revealed{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;
+.word-revealed{font-family:'VT323',monospace;font-size:3rem;
   color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
 @keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
-.word-hint{font-size:.7rem;color:var(--sub);margin-top:10px;letter-spacing:1px;}
+.word-hint{font-size:.95rem;color:var(--sub);margin-top:8px;letter-spacing:1px;}
 .spec-banner{background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.2);
   border-radius:8px;padding:12px 16px;text-align:center;color:var(--blue);
-  font-size:.8rem;line-height:1.6;}
+  font-size:1rem;line-height:1.6;}
 
 /* Vote */
 .vote-grid{display:flex;flex-direction:column;gap:8px;}
+/* Controle do recorte da imagem de rank no vote-row:
+   ajuste --vote-img-top para cortar mais do topo (ex: -20px) ou do fundo */
+:root{ --vote-img-top: -8px; }
 .vote-row{display:flex;align-items:center;gap:10px;background:var(--surface);
-  border-radius:8px;padding:10px 13px;cursor:pointer;
-  border:2px solid transparent;transition:border-color .15s,background .15s;}
+  border-radius:8px;padding:8px 12px;cursor:pointer;
+  border:2px solid transparent;transition:border-color .15s,background .15s;
+  position:relative;overflow:hidden;}
+.vote-row-rankbg{position:absolute;left:0;top:var(--vote-img-top);height:calc(100% + 16px);width:auto;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+  opacity:.5;}
+.vote-row>*:not(.vote-row-rankbg){position:relative;z-index:1;}
 .vote-row:hover:not(.already-voted){border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.04);}
 .vote-row.voted-by-me{border-color:var(--accent);background:rgba(232,255,71,.06);}
 .vote-row.already-voted{cursor:not-allowed;}
 .vote-row img.avatar{width:28px;height:28px;}
 .vote-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
 .vote-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .35s ease;}
-.vote-count{font-size:.72rem;color:var(--sub);min-width:18px;text-align:right;}
+.vote-count{font-size:1rem;color:var(--sub);min-width:18px;text-align:right;}
 
 /* Result */
-.reveal-card{background:var(--card);border-radius:var(--radius);padding:14px;
+.reveal-card{background:var(--card);border-radius:var(--radius);padding:12px;
   display:flex;align-items:center;gap:13px;
   border:1px solid rgba(255,255,255,.06);animation:slideIn .22s ease;}
 .reveal-card .av{width:40px;height:40px;border-radius:50%;overflow:hidden;
@@ -175,13 +183,13 @@ input::placeholder{color:var(--muted);}
   font-size:1rem;flex-shrink:0;}
 .reveal-card .av img{width:100%;height:100%;object-fit:cover;}
 .reveal-card .info{flex:1;}
-.reveal-card .pname{font-weight:700;font-size:.9rem;}
-.reveal-card .pword{color:var(--sub);font-size:.76rem;margin-top:2px;}
+.reveal-card .pname{font-size:1.1rem;}
+.reveal-card .pword{color:var(--sub);font-size:.95rem;margin-top:2px;}
 .reveal-card.imp{border-color:var(--red);background:rgba(255,71,87,.07);}
 .reveal-card.imp .pname{color:var(--red);}
-.imp-badge{background:var(--red);color:#fff;border-radius:6px;padding:3px 8px;
-  font-size:.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
-.pts-badge{border-radius:6px;padding:3px 8px;font-size:.65rem;font-weight:700;
+.imp-badge{background:var(--red);color:#fff;border-radius:6px;padding:2px 8px;
+  font-size:.85rem;letter-spacing:1px;text-transform:uppercase;}
+.pts-badge{border-radius:6px;padding:2px 8px;font-size:.9rem;
   letter-spacing:1px;position:relative;z-index:1;}
 .pts-pos{background:rgba(76,175,80,.2);color:var(--green);}
 .pts-neg{background:rgba(255,71,87,.2);color:var(--red);}
@@ -205,7 +213,7 @@ input::placeholder{color:var(--muted);}
 }
 .res-impostor-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;
   border:3px solid var(--red);position:relative;z-index:1;}
-.res-impostor-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+.res-impostor-name{font-family:'VT323',monospace;font-size:1.3rem;
   color:var(--red);text-align:center;position:relative;z-index:1;
   text-shadow:0 1px 4px rgba(0,0,0,.9);}
 .res-players-grid{
@@ -220,40 +228,40 @@ input::placeholder{color:var(--muted);}
 }
 .res-player-tile img{width:48px;height:48px;border-radius:10px;object-fit:cover;
   position:relative;z-index:1;}
-.res-player-name{font-size:.68rem;color:#fff;text-align:center;
+.res-player-name{font-size:.9rem;color:#fff;text-align:center;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
   position:relative;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.9);}
 .res-player-name.is-me{color:var(--accent);}
 
 /* History / Leaderboard */
-.hist-item{background:var(--surface);border-radius:8px;padding:12px 14px;
-  font-size:.8rem;border-left:3px solid var(--muted);}
+.hist-item{background:var(--surface);border-radius:8px;padding:10px 12px;
+  font-size:1rem;border-left:3px solid var(--muted);}
 .hist-item.win{border-color:var(--green);}
 .hist-item.lose{border-color:var(--red);}
-.hist-rodada{font-size:.65rem;color:var(--sub);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;}
-.hist-palavra{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:2px;}
-.hist-detalhe{color:var(--sub);font-size:.75rem;}
-.placar-row{display:flex;align-items:center;gap:12px;padding:9px 0;
+.hist-rodada{font-size:.85rem;color:var(--sub);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;}
+.hist-palavra{font-family:'VT323',monospace;font-size:1.2rem;margin-bottom:2px;}
+.hist-detalhe{color:var(--sub);font-size:.95rem;}
+.placar-row{display:flex;align-items:center;gap:12px;padding:7px 0;
   border-bottom:1px solid rgba(255,255,255,.05);}
 .placar-row:last-child{border:none;}
-.placar-rank{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+.placar-rank{font-family:'VT323',monospace;font-size:1.2rem;
   color:var(--sub);min-width:24px;}
 .placar-rank.gold{color:#FFD700;}
-.placar-nome{flex:1;font-size:.88rem;}
-.placar-pts{font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);}
+.placar-nome{flex:1;font-size:1rem;}
+.placar-pts{font-family:'VT323',monospace;font-size:1.1rem;color:var(--accent);}
 
 /* Profile */
-.profile-header{display:flex;align-items:center;gap:14px;margin-bottom:4px;}
+.profile-header{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
 .profile-header img.avatar{width:44px;height:44px;}
 .profile-info{flex:1;}
-.profile-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;}
-.profile-email{font-size:.7rem;color:var(--sub);}
+.profile-name{font-family:'VT323',monospace;font-size:1.2rem;}
+.profile-email{font-size:.95rem;color:var(--sub);}
 
 /* Misc */
-.status{text-align:center;font-size:.73rem;color:var(--sub);padding:5px;min-height:22px;}
+.status{text-align:center;font-size:1rem;color:var(--sub);padding:4px;min-height:20px;}
 .status.err{color:var(--red);}
 .status.ok{color:var(--green);}
-.words-info{font-size:.67rem;color:var(--sub);text-align:center;padding:3px 0;}
+.words-info{font-size:.85rem;color:var(--sub);text-align:center;padding:3px 0;}
 .words-info.ok{color:var(--green);}
 .words-info.err{color:var(--red);}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
@@ -261,12 +269,12 @@ input::placeholder{color:var(--muted);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 #loader{position:fixed;inset:0;background:var(--bg);display:flex;
   align-items:center;justify-content:center;z-index:999;
-  font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--sub);
+  font-family:'VT323',monospace;font-size:1.3rem;color:var(--sub);
   letter-spacing:3px;text-transform:uppercase;transition:opacity .4s;}
 #loader.hide{opacity:0;pointer-events:none;}
 .tabs{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:4px;}
-.tab{flex:1;padding:8px;border:none;border-radius:6px;cursor:pointer;
-  font-family:'Space Mono',monospace;font-size:.75rem;color:var(--sub);
+.tab{flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;
+  font-family:'VT323',monospace;font-size:1.1rem;color:var(--sub);
   background:transparent;transition:background .2s,color .2s;}
 .tab.active{background:var(--card);color:var(--text);}
 .tab-content{display:none;flex-direction:column;gap:8px;}
@@ -275,38 +283,38 @@ input::placeholder{color:var(--muted);}
   display:inline-block;margin-right:6px;}
 .conn-dot.online{background:var(--green);}
 .link-btn{background:none;border:none;color:var(--sub);cursor:pointer;
-  font-family:'Space Mono',monospace;font-size:.72rem;text-decoration:underline;
+  font-family:'VT323',monospace;font-size:1rem;text-decoration:underline;
   padding:0;}
 .link-btn:hover{color:var(--accent);}
 
 /* ── Par X → Y (fase questioning) ── */
-.questioning-wrap{display:flex;flex-direction:column;gap:16px;}
+.questioning-wrap{display:flex;flex-direction:column;gap:12px;}
 .pair-stage{display:flex;align-items:center;justify-content:center;gap:12px;
-  background:var(--card);border-radius:var(--radius);padding:20px 16px;
+  background:var(--card);border-radius:var(--radius);padding:16px;
   border:1px solid rgba(255,255,255,.06);}
 .pair-player{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
-.pair-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;
+.pair-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;
   border:3px solid var(--muted);transition:border-color .3s;}
 .pair-avatar.active-perguntador{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,255,71,.2);}
 .pair-avatar.active-respondedor{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,195,247,.2);}
-.pair-name{font-size:.75rem;text-align:center;max-width:72px;
+.pair-name{font-size:1rem;text-align:center;max-width:72px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pair-role{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;
+.pair-role{font-size:.85rem;letter-spacing:1px;text-transform:uppercase;
   color:var(--sub);text-align:center;}
 .pair-role.role-pergunta{color:var(--accent);}
 .pair-role.role-responde{color:var(--blue);}
 .pair-arrow{font-size:1.8rem;color:var(--accent);flex-shrink:0;}
-.pair-phase-label{text-align:center;font-size:.7rem;letter-spacing:2px;
-  text-transform:uppercase;color:var(--sub);padding:4px 0;}
+.pair-phase-label{text-align:center;font-size:.9rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sub);padding:2px 0;}
 .pair-phase-label.phase-pergunta{color:var(--accent);}
 .pair-phase-label.phase-resposta{color:var(--blue);}
 .pair-progress{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:4px 0;}
 .pair-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;}
 .pair-dot.done{background:var(--green);}
 .pair-dot.current{background:var(--accent);}
-.q-timer-wrap{background:var(--card);border:1px solid rgba(255,255,255,.06);
-  border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;}
-.q-timer-display{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;
+/* Q-timer oculto completamente */
+.q-timer-wrap{display:none!important;}
+.q-timer-display{font-family:'VT323',monospace;font-size:2rem;
   color:var(--accent);min-width:44px;transition:color .3s;}
 .q-timer-display.urgent{color:var(--red);}
 .q-timer-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
@@ -314,9 +322,12 @@ input::placeholder{color:var(--muted);}
 .q-timer-bar.recarregando{transition:width .75s ease-out,background .3s;}
 .q-timer-bar.resposta{background:var(--blue);}
 .q-timer-bar.urgent{background:var(--red);}
-.q-phase-pill{font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;
-  padding:3px 10px;border-radius:12px;background:rgba(232,255,71,.12);color:var(--accent);}
+.q-phase-pill{font-size:.85rem;letter-spacing:1.5px;text-transform:uppercase;
+  padding:2px 10px;border-radius:12px;background:rgba(232,255,71,.12);color:var(--accent);}
 .q-phase-pill.resposta{background:rgba(79,195,247,.12);color:var(--blue);}
+/* Botões próx par lado a lado */
+.btn-pair-row{display:flex;gap:8px;}
+.btn-pair-row .btn{flex:1;}
 
 /* ── Texto sempre branco dentro do chip, legível sobre a imagem ── */
 .player-chip .chip-name,
@@ -385,40 +396,39 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ SETUP (nome + sala, após login) ══ -->
-  <div id="s-setup" class="screen">
-    <div class="card">
-      <div class="profile-header">
-        <div class="avatar-upload-wrap" style="width:54px;margin:0;position:relative">
-          <img id="setup-avatar" class="avatar" src="" alt="avatar" onclick="$('inp-avatar').click()" style="width:54px;height:54px;cursor:pointer;border-width:3px;">
+  <div id="s-setup" class="screen" style="gap:8px;">
+    <!-- Perfil + nome de exibição unificados -->
+    <div class="card" style="padding:12px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div class="avatar-upload-wrap" style="width:50px;margin:0;position:relative;flex-shrink:0">
+          <img id="setup-avatar" class="avatar" src="" alt="avatar" onclick="$('inp-avatar').click()" style="width:50px;height:50px;cursor:pointer;border-width:3px;">
           <button class="avatar-edit-btn" onclick="$('inp-avatar').click()">✏️</button>
         </div>
-        <div class="profile-info">
+        <div class="profile-info" style="flex:1;min-width:0">
           <div class="profile-name" id="setup-nome-display">—</div>
           <div class="profile-email" id="setup-email-display">—</div>
+          <div style="font-size:.8rem;color:var(--sub);margin-top:2px" id="avatar-status"></div>
         </div>
-        <button class="link-btn" onclick="logout()" style="font-size:.65rem">sair</button>
+        <button class="link-btn" onclick="logout()" style="font-size:.85rem;flex-shrink:0">sair</button>
       </div>
       <input id="inp-avatar" type="file" accept="image/*" onchange="uploadAvatar(this)">
-      <div style="font-size:.65rem;color:var(--sub);margin-top:4px;text-align:center" id="avatar-status"></div>
-    </div>
-    <!-- Rank card grande -->
-    <div id="setup-rank-card"></div>
-    <div class="card">
-      <div class="card-label">Nome de exibição</div>
       <div class="row">
         <input id="inp-displayname" type="text" placeholder="Como te chamam?" maxlength="20" autocomplete="off">
-        <button class="btn btn-secondary" style="width:auto;padding:13px 14px;font-size:.8rem" onclick="salvarNome()">Salvar</button>
+        <button class="btn btn-secondary" style="width:auto;padding:10px 14px;font-size:1rem" onclick="salvarNome()">Salvar</button>
       </div>
-      <div class="status" id="st-nome" style="margin-top:4px;min-height:16px"></div>
+      <div class="status" id="st-nome" style="margin-top:2px;min-height:14px"></div>
     </div>
-    <div class="card">
-      <div class="card-label">Sala</div>
-      <div style="color:var(--sub);font-size:.7rem;line-height:1.6;margin-bottom:12px">
-        Digite um <strong style="color:var(--text)">código existente</strong> para entrar, ou deixe <strong style="color:var(--text)">vazio</strong> para criar uma sala.
+    <!-- Rank card -->
+    <div id="setup-rank-card"></div>
+    <!-- Sala -->
+    <div class="card" style="padding:12px">
+      <div class="card-label" style="margin-bottom:6px">Sala</div>
+      <div style="color:var(--sub);font-size:.95rem;line-height:1.5;margin-bottom:10px">
+        Digite um <strong style="color:var(--text)">código existente</strong> ou deixe <strong style="color:var(--text)">vazio</strong> para criar.
       </div>
       <div class="row">
         <input id="inp-codigo" type="text" placeholder="Código da sala (opcional)" maxlength="8" autocomplete="off" style="text-transform:uppercase">
-        <button class="btn btn-primary" style="width:auto;padding:13px 20px;" onclick="entrarOuCriar()">→</button>
+        <button class="btn btn-primary" style="width:auto;padding:10px 18px;" onclick="entrarOuCriar()">→</button>
       </div>
     </div>
     <div class="status err" id="st-setup"></div>
@@ -426,19 +436,16 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ LOBBY ══ -->
-  <div id="s-lobby" class="screen">
-    <div class="card">
-      <div class="card-label">Sala</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px" id="lobby-nome-sala">—</div>
-      <div class="sala-badge">
-        <span class="sala-code" id="lobby-code">—</span>
-        <button class="sala-copy" id="btn-copiar" onclick="copiarCodigo()">copiar link</button>
-      </div>
-      <div style="font-size:.68rem;color:var(--sub)">Compartilhe o código com os amigos</div>
-    </div>
-    <div class="card">
+  <div id="s-lobby" class="screen" style="gap:8px;">
+    <!-- Lista de jogadores primeiro -->
+    <div class="card" style="flex:1;min-height:0;overflow-y:auto;padding:12px">
       <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
       <div class="player-list" id="lobby-players"></div>
+    </div>
+    <!-- Código + botão compartilhar -->
+    <div class="sala-badge" style="margin:0">
+      <span class="sala-code" id="lobby-code">—</span>
+      <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
     </div>
     <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
@@ -446,9 +453,9 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ PALAVRA ══ -->
-  <div id="s-palavra" class="screen">
-    <!-- Timer (visível pra todos, controlado só pelo host) -->
-    <div class="timer-wrap" id="timer-card">
+  <div id="s-palavra" class="screen" style="gap:8px;overflow-y:auto;">
+    <!-- Timer oculto — mantido no DOM para compatibilidade com JS -->
+    <div class="timer-wrap" id="timer-card" style="display:none!important">
       <div class="timer-display" id="timer-display">15</div>
       <div style="flex:1">
         <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
@@ -456,41 +463,35 @@ input::placeholder{color:var(--muted);}
       </div>
       <button class="timer-reset-btn" id="btn-timer-reset" onclick="resetarTimer()" style="display:none">▶ Iniciar</button>
     </div>
-    <div class="card word-box">
+    <div class="card word-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px">
       <div class="cat-pill" id="word-cat">—</div>
-      <div id="word-el" class="word-hidden" onclick="toggleWord()">● ● ●</div>
-      <div class="word-hint" id="word-hint">toque para revelar</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Regras</div>
-      <div style="color:var(--sub);font-size:.76rem;line-height:1.7">
-        Todos têm a <strong style="color:var(--text)">mesma palavra</strong>, exceto o Impostor.<br>
-        Dê dicas sem falar a palavra diretamente.<br>
-        Depois do debate, vote em quem você acha que é o Impostor!
-      </div>
+      <div id="word-el" class="word-hidden" style="pointer-events:none;cursor:default">● ● ●</div>
+      <div class="word-hint" id="word-hint">toque o botão abaixo para revelar</div>
     </div>
     <div class="card" id="card-votacao" style="display:none">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="vote-grid"></div>
-      <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="vote-status-txt"></div>
-      <div style="font-size:.65rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
+      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
+      <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
-    <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
+    <!-- Ordem de baixo para cima: sair → revelar palavra → revelar impostor -->
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+    <button class="btn btn-secondary" onclick="toggleWord()">👁 Revelar minha palavra</button>
+    <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
     <div class="status err" id="st-palavra"></div>
   </div>
 
   <!-- ══ ESPECTADOR ══ -->
-  <div id="s-espectador" class="screen">
-    <div class="card">
+  <div id="s-espectador" class="screen" style="gap:8px;">
+    <div class="card" style="padding:12px">
       <div class="card-label"><span class="dot"></span>Modo espectador</div>
       <div class="spec-banner">Você entrou como espectador.<br>Aguarde a próxima rodada para participar!</div>
     </div>
-    <div class="card">
+    <div class="card" style="flex:1;min-height:0;overflow-y:auto;padding:12px">
       <div class="card-label">Jogadores ativos</div>
       <div class="player-list" id="spec-players"></div>
     </div>
-    <div class="card" id="spec-voto-card" style="display:none">
+    <div class="card" id="spec-voto-card" style="display:none;padding:12px">
       <div class="card-label">🗳️ Votos em tempo real</div>
       <div class="vote-grid" id="spec-vote-grid"></div>
     </div>
@@ -498,8 +499,9 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ QUESTIONING (X pergunta Y) ══ -->
-  <div id="s-questioning" class="screen">
-    <div class="q-timer-wrap" id="q-timer-card">
+  <div id="s-questioning" class="screen" style="gap:8px;overflow-y:auto;">
+    <!-- Timer oculto — mantido no DOM para JS -->
+    <div class="q-timer-wrap" id="q-timer-card" style="display:none!important">
       <div class="q-timer-display" id="q-timer-display">20</div>
       <div style="flex:1">
         <div class="q-timer-bar-wrap"><div class="q-timer-bar" id="q-timer-bar" style="width:100%"></div></div>
@@ -509,11 +511,12 @@ input::placeholder{color:var(--muted);}
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-label" style="margin-bottom:10px">
+    <!-- Par atual -->
+    <div class="card" style="padding:12px">
+      <div class="card-label" style="margin-bottom:8px">
         <span id="q-pair-counter">Par 1 de —</span>
       </div>
-      <div class="pair-stage" id="q-pair-stage">
+      <div class="pair-stage" id="q-pair-stage" style="padding:12px">
         <div class="pair-player" id="q-player-left">
           <img class="pair-avatar" id="q-avatar-left" src="" alt="">
           <span class="pair-name" id="q-name-left">—</span>
@@ -526,47 +529,54 @@ input::placeholder{color:var(--muted);}
           <span class="pair-role role-responde" id="q-role-right">responde</span>
         </div>
       </div>
-      <div class="pair-phase-label" id="q-phase-desc">Tempo de pergunta</div>
+      <div class="pair-phase-label" id="q-phase-desc" style="margin-top:6px">—</div>
+      <!-- Progresso de pares -->
+      <div class="pair-progress" id="q-pair-progress" style="margin-top:8px"></div>
     </div>
-    <div class="card word-box" id="q-word-box">
+    <!-- Palavra oculta -->
+    <div class="card word-box" id="q-word-box" style="padding:14px;text-align:center">
       <div class="cat-pill" id="q-word-cat">—</div>
-      <div id="q-word-el" class="word-hidden" onclick="toggleWordQ()">● ● ●</div>
-      <div class="word-hint" id="q-word-hint">toque para revelar</div>
+      <div id="q-word-el" class="word-hidden" style="pointer-events:none;cursor:default">● ● ●</div>
+      <div class="word-hint" id="q-word-hint">toque o botão abaixo para revelar</div>
     </div>
-    <div class="card" style="padding:14px">
-      <div class="card-label" style="margin-bottom:8px">Fila de pares</div>
-      <div class="pair-progress" id="q-pair-progress"></div>
-    </div>
-    <div class="card" id="q-votacao-card">
+    <!-- Votação -->
+    <div class="card" id="q-votacao-card" style="padding:12px">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="q-vote-grid"></div>
-      <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="q-vote-status"></div>
+      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
-    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">💬 RESPONDER</button>
-    <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
+    <!-- Ordem de baixo para cima: sair → revelar palavra → (revelar impostor | próx par) -->
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+    <button class="btn btn-secondary" onclick="toggleWordQ()">👁 Revelar minha palavra</button>
+    <!-- Host: próx par e revelar impostor lado a lado -->
+    <div class="btn-pair-row" id="btn-host-pair-row" style="display:none">
+      <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()">⏭ PRÓXIMO PAR</button>
+      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()">🔍 REVELAR</button>
+    </div>
   </div>
 
   <!-- ══ RESULTADO ══ -->
-  <div id="s-resultado" class="screen">
-    <div class="card">
-      <div class="card-label">🔍 Resultado da rodada</div>
-      <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
+  <div id="s-resultado" class="screen" style="gap:8px;">
+    <div class="screen-scroll">
+      <div class="card" style="padding:12px">
+        <div class="card-label">🔍 Resultado da rodada</div>
+        <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="tabs" style="margin-bottom:10px">
+          <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
+          <button class="tab" onclick="switchTab('placar')">🏆 Placar</button>
+        </div>
+        <div class="tab-content active" id="tab-hist">
+          <div id="hist-list" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <div class="tab-content" id="tab-placar">
+          <div id="placar-list"></div>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="tabs" style="margin-bottom:12px">
-        <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
-        <button class="tab" onclick="switchTab('placar')">🏆 Placar</button>
-      </div>
-      <div class="tab-content active" id="tab-hist">
-        <div id="hist-list" style="display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-      <div class="tab-content" id="tab-placar">
-        <div id="placar-list"></div>
-      </div>
-    </div>
-    <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+    <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
   </div>
 </div>
 
@@ -827,7 +837,7 @@ function nomeHTML(nome, pts){
 // Rank title — branco dentro do chip (CSS cuida), colorido fora
 function rankBoxHTML(pts){
   const s=getPrestigeStyle(pts||0);
-  return `<span style="font-size:.6rem;color:${s.color};font-weight:600;letter-spacing:.5px;text-transform:uppercase">${s.title} · ${s.pts}pt</span>`;
+  return `<span style="font-size:.9rem;color:${s.color};letter-spacing:.5px;text-transform:uppercase">${s.title} · ${s.pts}pt</span>`;
 }
 
 // Borda do avatar com cor do rank
@@ -873,8 +883,8 @@ function rankCardHTML(pts){
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
-      <div style="font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:${c}">${s.title}</div>
+      <div style="font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
+      <div style="font-family:'VT323',monospace;font-size:1.8rem;color:${c}">${s.title}</div>
       <div style="font-size:.72rem;color:#fff;margin-top:2px;margin-bottom:14px">${pts||0} pontos totais</div>
       <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:6px">
         <div style="height:100%;width:${s.progressPct}%;background:${c};border-radius:3px;transition:width .5s ease;box-shadow:0 0 4px ${c}88"></div>
@@ -1290,12 +1300,16 @@ function configurarPresenca(){
   db.ref('.info/connected').on('value', connectedListener);
 }
 
-function copiarCodigo(){
+function compartilharCodigo(){
   const url=location.href.split('?')[0]+'?sala='+SALA;
-  navigator.clipboard.writeText(url).then(()=>{
-    $('btn-copiar').textContent='copiado!';
-    setTimeout(()=>$('btn-copiar').textContent='copiar link',2000);
-  });
+  if(navigator.share){
+    navigator.share({title:'🕵️ Impostor',text:`Entre na sala ${SALA}`,url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      $('btn-copiar').textContent='copiado!';
+      setTimeout(()=>$('btn-copiar').textContent='📤 compartilhar',2000);
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1577,7 +1591,6 @@ function renderFase(){
 // ══════════════════════════════════════════════════════
 function renderLobby(){
   if(document.querySelector('.screen.active')?.id!=='s-lobby') showScreen('s-lobby');
-  $('lobby-nome-sala').textContent=_info.nomeSala||SALA;
   $('lobby-code').textContent=SALA;
 
   const lista=Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
@@ -1636,7 +1649,6 @@ function renderPlaying(){
   }
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
-  $('btn-timer-reset').style.display=isHost?'':'none';
   $('card-votacao').style.display='';
 }
 
@@ -1647,62 +1659,11 @@ let _fila = [];  // cache local da fila de pares
 
 function onQTimerChanged(data){
   if(!data) return;
+  const parIdx=typeof data.parIdx==='number'?data.parIdx:0;
   const subFase=data.subFase||'pergunta';
-  // Não filtra por lastQTimerTs aqui — subFase pode mudar sem ts mudar
-  const tsChanged=data.ts!==lastQTimerTs;
-  lastQTimerTs=data.ts;
-
-  if(subFase==='preparando'){
-    pararQTimerLocal();
-    iniciarCountdownPreparando(data.ts);
-    atualizarQSubfase('pergunta');
-    if(typeof data.parIdx==='number') renderParAtual(data.parIdx,'pergunta');
-    return;
-  }
-
-  // Recarregando: barra enche de 0→100% em 750ms, depois host dispara timer real
-  if(subFase==='recarregando_pergunta'||subFase==='recarregando_resposta'){
-    pararQTimerLocal();
-    stopFlashPulse();
-    const proxSubFase=subFase==='recarregando_pergunta'?'pergunta':'resposta';
-    const parIdx=data.parIdx||0;
-    // Atualiza par imediatamente
-    renderParAtual(parIdx, proxSubFase);
-    atualizarQSubfase(proxSubFase);
-    // Anima barra de 0 → 100%
-    const bar=$('q-timer-bar');
-    if(bar){
-      bar.className='q-timer-bar recarregando'+(proxSubFase==='resposta'?' resposta':'');
-      bar.style.width='0%';
-      // Força reflow para animar
-      void bar.offsetWidth;
-      bar.style.width='100%';
-    }
-    $('q-timer-display').textContent='20';
-    $('q-timer-display').classList.remove('urgent');
-    $('q-timer-label').textContent='preparando…';
-    $('btn-prox-par').disabled=true;
-    // Após 850ms, host dispara o timer real
-    if(_info&&_info.host===ME.uid){
-      setTimeout(async()=>{
-        if(!SALA||!_info||_info.fase!=='questioning') return;
-        await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP,ativo:true,subFase:proxSubFase,parIdx});
-        $('btn-prox-par').disabled=false;
-      }, 850);
-    } else {
-      setTimeout(()=>{ $('btn-prox-par').disabled=false; }, 850);
-    }
-    return;
-  }
-
-  if(data.ativo && tsChanged){
-    iniciarQTimerLocal(data.ts, subFase);
-  } else if(!data.ativo && !qTimerRunning){
-    renderQProgressoTimer(20, 20, subFase);
-    $('q-timer-label').textContent='aguardando host…';
-  }
-  atualizarQSubfase(subFase);
-  if(typeof data.parIdx==='number') renderParAtual(data.parIdx, subFase);
+  // Apenas sincroniza o par atual — sem lógica de timer
+  if(subFase!=='preparando') renderParAtual(parIdx, 'pergunta');
+  atualizarQSubfase('pergunta');
 }
 
 // Countdown de 5s antes do primeiro timer de pergunta
@@ -1805,16 +1766,15 @@ function atualizarQSubfase(subFase){
   const pill=$('q-phase-pill');
   const desc=$('q-phase-desc');
   if(!pill||!desc) return;
-  if(subFase==='pergunta'){
+  if(subFase==='pergunta'||subFase==='recarregando_pergunta'||subFase==='preparando'){
     pill.textContent='pergunta'; pill.className='q-phase-pill';
     desc.textContent='Tempo de Pergunta'; desc.className='pair-phase-label phase-pergunta';
     $('q-avatar-left')?.classList.add('active-perguntador');
     $('q-avatar-left')?.classList.remove('active-respondedor');
     $('q-avatar-right')?.classList.add('active-respondedor');
     $('q-avatar-right')?.classList.remove('active-perguntador');
-    // Botão: durante pergunta, host avança para "resposta" → label RESPONDER
     const btnP=$('btn-prox-par');
-    if(btnP) btnP.textContent='💬 RESPONDER';
+    if(btnP) btnP.textContent='⏭ PRÓXIMO PAR';
   } else {
     pill.textContent='resposta'; pill.className='q-phase-pill resposta';
     desc.textContent='Tempo de Resposta'; desc.className='pair-phase-label phase-resposta';
@@ -1822,9 +1782,8 @@ function atualizarQSubfase(subFase){
     $('q-avatar-right')?.classList.remove('active-respondedor');
     $('q-avatar-left')?.classList.add('active-respondedor');
     $('q-avatar-left')?.classList.remove('active-perguntador');
-    // Botão: durante resposta, host avança para próximo par → label PRÓXIMA PERGUNTA
     const btnR=$('btn-prox-par');
-    if(btnR) btnR.textContent='⏭ PRÓXIMA PERGUNTA';
+    if(btnR) btnR.textContent='⏭ PRÓXIMO PAR';
   }
 }
 
@@ -1881,8 +1840,10 @@ async function renderQuestioning(){
     showScreen('s-questioning');
   }
   const isHost=_info.host===ME.uid;
-  $('btn-prox-par').style.display=isHost?'':'none';
-  $('btn-revelar-q').style.display=isHost?'':'none';
+  const hostRow=$('btn-host-pair-row');
+  if(hostRow) hostRow.style.display=isHost?'flex':'none';
+  $('btn-prox-par').style.display='';
+  $('btn-revelar-q').style.display='';
 
   // Votação sempre aberta
   $('q-votacao-card').style.display='';
@@ -1897,14 +1858,7 @@ async function renderQuestioning(){
   const qtdata=await get(`salas/${SALA}/qtimer`);
   if(qtdata){
     const parIdx=qtdata.parIdx||0;
-    const subFase=qtdata.subFase||'pergunta';
-    if(subFase!=='preparando') renderParAtual(parIdx, subFase);
-    if(qtdata.ativo && qtdata.ts!==lastQTimerTs){
-      lastQTimerTs=qtdata.ts;
-      iniciarQTimerLocal(qtdata.ts, subFase);
-    } else if(subFase==='preparando' && !_prepTimer){
-      iniciarCountdownPreparando(qtdata.ts);
-    }
+    renderParAtual(parIdx, 'pergunta');
   }
 }
 
@@ -1930,26 +1884,20 @@ async function proxPar(){
   if(!_info||_info.host!==ME.uid) return;
   const qtdata=await get(`salas/${SALA}/qtimer`);
   const parIdx=qtdata?.parIdx||0;
-  const subFase=qtdata?.subFase||'pergunta';
 
-  if(subFase==='pergunta'){
-    // Vai para subfase resposta — mostra recarregamento e inicia resposta
-    SFX.transicaoPar();
-    pararQTimerLocal();
-    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'recarregando_resposta', parIdx});
+  const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
+  SFX.proximoPar();
+  pararQTimerLocal();
+  if(parIdx+1>=total){
+    // Acabou todos os pares → vai para playing
+    await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
+    await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+    await upd(`salas/${SALA}/info`,{fase:'playing'});
   } else {
-    // Fim da resposta — vai para próximo par
-    const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
-    SFX.proximoPar();
-    pararQTimerLocal();
-    if(parIdx+1>=total){
-      // Acabou todos os pares → vai para playing
-      await set(`salas/${SALA}/qtimer`,{ts:0,ativo:false,subFase:'pergunta',parIdx:0});
-      await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
-      await upd(`salas/${SALA}/info`,{fase:'playing'});
-    } else {
-      await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'recarregando_pergunta', parIdx:parIdx+1});
-    }
+    // Próximo par
+    const nextIdx=parIdx+1;
+    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'pergunta', parIdx:nextIdx});
+    renderParAtual(nextIdx, 'pergunta');
   }
 }
 
@@ -1968,9 +1916,7 @@ function renderVoting(){
     showScreen('s-palavra');
   }
   const isHost=_info.host===ME.uid;
-  $('btn-abrir-voto').style.display='none';
   $('btn-revelar').style.display=isHost?'':'none';
-  $('btn-timer-reset').style.display=isHost?'':'none';
   $('card-votacao').style.display='';
   renderVoteGrid('vote-grid',false);
 }
@@ -1997,10 +1943,12 @@ function renderVoteGrid(gridId, isEspectador){
     const row=document.createElement('div');
     row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'');
     if(!isEspectador) row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
+    const tileStyle=getPrestigeStyle(pts);
     row.innerHTML=`
+      <img class="vote-row-rankbg" src="${tileStyle.img}" alt="">
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
-      <span style="font-size:.85rem;flex-shrink:0;min-width:80px">${nomeHTML(nome, pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span style="font-size:1rem;flex-shrink:0;min-width:80px">${nomeHTML(nome, pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
       <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%"></div></div>
       <span class="vote-count">${qtd}</span>`;
     grid.appendChild(row);
@@ -2234,8 +2182,8 @@ async function sortear(){
     await set(`salas/${SALA}/assignments`, assignments);
     await set(`salas/${SALA}/snapshot`, snapshot);
     await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
-    // qtimer começa como 'preparando' — autostart em 5s via onQTimerChanged
-    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'preparando', parIdx:0});
+    // qtimer simplificado — sem timer, apenas controle do par atual
+    await set(`salas/${SALA}/qtimer`,{ts:0, ativo:false, subFase:'pergunta', parIdx:0});
     await set(`salas/${SALA}/fila`, fila);
     _assignments=assignments;
     _snapshot=snapshot;
@@ -2334,7 +2282,7 @@ function calcularResultado(ativos, contagem, impostorId, votos){
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
   if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
-  // Para TUDO imediatamente — timer, qtimer, flash, sons
+  // Para TUDO imediatamente — flash, sons
   pararTimerLocal();
   pararQTimerLocal();
   if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
@@ -2413,6 +2361,9 @@ async function kickar(playerId){
 
 async function sairDaSala(){
   SFX.sair();
+  // Se estiver na tela de resultado, não remove o jogador do DOM — só desconecta do Firebase
+  const faseAtual=_info?.fase;
+  const naTelaResultado=document.querySelector('.screen.active')?.id==='s-resultado';
   stopListeners();
   pararTimerLocal();
   if(!SALA){ mostrarSetup(); return; }
