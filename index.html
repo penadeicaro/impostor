@@ -1549,25 +1549,25 @@ function renderLobby(){
   [...ativos,...specs].forEach(j=>{
     const nome=j.nome||'(sem nome)';
     const chip=document.createElement('div');
-    chip.className='player-chip'+(j.id===ME.uid?' me':'')+(j.espectador?' espectador':'');
+    chip.className='player-chip'+(j.espectador?' espectador':'');
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
-    // badges right (sem o wrapper div)
     let badgesInner='';
     if(j.espectador) badgesInner+='<span class="badge badge-spec">Espectador</span>';
-    if(j.id===_info.host) badgesInner+='<span class="badge badge-host">Host</span>';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
     if((j.placar||0)>0) badgesInner+=`<span class="score-pill">${j.placar}pt</span>`;
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
+    const hostCrown=j.id===_info.host?' 👑':'';
     chip.innerHTML=`
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
       <div class="chip-info">
-        <div class="chip-name">${j.id===_info.host?'👑 ':''} ${nomeHTML(nome, pts)}</div>
+        <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}</div>
         <div class="chip-rank">${rankBoxHTML(pts)}</div>
       </div>
       <div class="badges-right">${badgesInner}</div>`;
+    applyChipStyle(chip, pts, j.id===ME.uid);
     container.appendChild(chip);
   });
 
@@ -1898,13 +1898,15 @@ function renderVoteGrid(gridId, isEspectador){
     const nome=j.nome||'(sem nome)';
     const qtd=contagem[j.id]||0;
     const pct=totalVotos>0?Math.round(qtd/totalVotos*100):0;
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
     const row=document.createElement('div');
     row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'');
     if(!isEspectador) row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
     row.innerHTML=`
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px">
-      <span style="font-size:.85rem;flex-shrink:0;min-width:80px">${nome}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
+      <span style="font-size:.85rem;flex-shrink:0;min-width:80px">${nomeHTML(nome, pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
       <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%"></div></div>
       <span class="vote-count">${qtd}</span>`;
     grid.appendChild(row);
@@ -1923,13 +1925,20 @@ function renderEspectador(){
   ativos.forEach(j=>{
     const chip=document.createElement('div');
     chip.className='player-chip';
-    chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-      onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:32px;height:32px">
-      ${j.id===_info.host?'👑':''} ${j.nome||'(sem nome)'}
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const hostCrown=j.id===_info.host?' 👑':'';
+    chip.innerHTML=`
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
+      <div class="chip-info">
+        <div class="chip-name">${nomeHTML(j.nome||'(sem nome)', pts)}${hostCrown}</div>
+        <div class="chip-rank">${rankBoxHTML(pts)}</div>
+      </div>
       <div class="badges-right">
         ${(j.placar||0)>0?`<span class="score-pill">${j.placar}pt</span>`:''}
-        ${j.id===_info.host?'<span class="badge badge-host">Host</span>':''}
       </div>`;
+    applyChipStyle(chip, pts, false);
     container.appendChild(chip);
   });
   if(_info.fase==='voting'||_info.fase==='playing'){
@@ -2043,7 +2052,7 @@ async function renderPlacar(){
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
-      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts, voceLabel)}</span>
+      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts)}${voceLabel}</span>
       ${rankBoxHTML(pts)}
       <span class="placar-pts">${j.placar||0}pt</span>`;
     container.appendChild(div);
