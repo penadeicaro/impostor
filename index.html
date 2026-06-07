@@ -967,15 +967,18 @@ auth.onAuthStateChanged(async user=>{
 });
 
 async function carregarPerfil(uid){
-  let prof = await get(`users/${uid}`);
+  let prof = null;
+  // Tenta até 3 vezes — ao voltar do background a rede pode estar instável
+  for(let i=0; i<3; i++){
+    try{ prof = await get(`users/${uid}`); } catch(e){}
+    if(prof) break;
+    if(i<2) await new Promise(r=>setTimeout(r, 800));
+  }
   if(!prof){
-    // primeira vez — cria perfil
-    prof = {
-      nome: ME.displayName || ME.email.split('@')[0],
-      avatarUrl: ME.photoURL || '',
-      placarTotal: 0,
-      criadoEm: Date.now()
-    };
+    // Só cria perfil novo se tiver nome — senão é falha de rede, não primeira vez
+    const nome = ME.displayName || ME.email?.split('@')[0] || '';
+    if(!nome) throw new Error('Sem conexão para carregar perfil');
+    prof = { nome, avatarUrl: ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
     await set(`users/${uid}`, prof);
   }
   return prof;
