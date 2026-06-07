@@ -82,10 +82,13 @@ input::placeholder{color:var(--muted);}
 
 .player-list{display:flex;flex-direction:column;gap:7px;}
 .player-chip{display:flex;align-items:center;gap:10px;background:var(--surface);
-  border-radius:8px;padding:8px 13px;font-size:.86rem;animation:slideIn .22s ease;}
+  border-radius:8px;padding:10px 13px;font-size:.86rem;animation:slideIn .22s ease;}
 .player-chip.me{border:1px solid rgba(232,255,71,.3);}
 .player-chip.espectador{opacity:.6;border-style:dashed;}
-.player-chip img.avatar{width:32px;height:32px;}
+.player-chip img.avatar{width:36px;height:36px;flex-shrink:0;}
+.chip-info{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.chip-name{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chip-rank{display:flex;align-items:center;gap:5px;}
 @keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.6rem;
   letter-spacing:1px;text-transform:uppercase;font-weight:700;}
@@ -481,11 +484,7 @@ input::placeholder{color:var(--muted);}
       <div class="card-label" style="margin-bottom:8px">Fila de pares</div>
       <div class="pair-progress" id="q-pair-progress"></div>
     </div>
-    <div class="card" id="q-players-card">
-      <div class="card-label"><span class="dot"></span>Jogadores</div>
-      <div class="player-list" id="q-players-list"></div>
-    </div>
-    <div class="card" id="q-votacao-card" style="display:none">
+    <div class="card" id="q-votacao-card">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="q-vote-grid"></div>
       <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="q-vote-status"></div>
@@ -783,7 +782,7 @@ function getPrestigeStyle(pts){
   };
 }
 
-// HTML do nome com todos os estilos aplicados inline
+// HTML do nome com badge ao redor em todos os tiers
 function nomeHTML(nome, pts, extra=''){
   const s=getPrestigeStyle(pts||0);
   const color=s.isGOAT?'#FFD700':(s.fontWhite?'#F0F0FF':s.color);
@@ -792,20 +791,26 @@ function nomeHTML(nome, pts, extra=''){
   if(s.isGOAT) shadow=`0 0 8px rgba(255,200,0,.7),0 0 18px rgba(255,200,0,.4)`;
   else if(s.glowStrong) shadow=`0 0 6px ${s.color}99,0 0 14px ${s.color}55`;
   else if(s.glow) shadow=`0 0 5px ${s.color}77`;
-  const style=`color:${color};font-weight:${fw};${shadow?`text-shadow:${shadow};`:''}`;
+  const nameStyle=`color:${color};font-weight:${fw};${shadow?`text-shadow:${shadow};`:''}`;
 
-  if(s.badge){
-    const bgAlpha=s.badgeOpaque?'dd':'44';
-    const border=s.isGOAT?`border:1px solid #FFD700;`:`border:1px solid ${s.color}88;`;
-    const bgColor=s.isGOAT?'#FFD700':`${s.color}${bgAlpha}`;
-    const textColor=s.isGOAT?'#0D0D14':(s.fontWhite?'#F0F0FF':s.color);
-    const boxShadow=s.isGOAT?`box-shadow:0 0 8px rgba(255,200,0,.5);`:
-      s.glowStrong?`box-shadow:0 0 6px ${s.color}66;`:'';
-    return `<span style="display:inline-flex;align-items:center;padding:2px 10px 2px 2px;border-radius:20px;background:${bgColor};${border}${boxShadow}gap:6px;">
-      <span style="${style}">${nome}</span>
-    </span>${extra}`;
-  }
-  return `<span style="${style}">${nome}</span>${extra}`;
+  // Badge ao redor do nome em todos os tiers — opacidade varia por tier
+  let bgAlpha, borderAlpha;
+  if(s.isGOAT){      bgAlpha='ee'; borderAlpha='ff'; }
+  else if(s.badgeOpaque){ bgAlpha='cc'; borderAlpha='cc'; }
+  else if(s.badge){  bgAlpha='44'; borderAlpha='88'; }
+  else if(s.tier>=3){ bgAlpha='22'; borderAlpha='55'; } // tiers 3-4: badge muito sutil
+  else if(s.tier===2){ bgAlpha='18'; borderAlpha='44'; } // tier 2: quase invisível
+  else {             bgAlpha='10'; borderAlpha='30'; } // tier 1: mínimo
+
+  const bgColor=s.isGOAT?'#FFD700':`${s.color}${bgAlpha}`;
+  const borderColor=s.isGOAT?'#FFD700':`${s.color}${borderAlpha}`;
+  const textColor=s.isGOAT?'#0D0D14':(s.fontWhite?'#F0F0FF':s.color);
+  const boxShadow=s.isGOAT?`box-shadow:0 0 8px rgba(255,200,0,.5);`:
+    s.glowStrong?`box-shadow:0 0 6px ${s.color}55;`:'';
+
+  return `<span style="display:inline-flex;align-items:center;padding:2px 8px 2px 8px;border-radius:20px;background:${bgColor};border:1px solid ${borderColor};${boxShadow}">
+    <span style="${nameStyle}">${nome}</span>
+  </span>${extra}`;
 }
 
 // HTML do rank box (painel lateral)
@@ -1529,20 +1534,24 @@ function renderLobby(){
     const nome=j.nome||'(sem nome)';
     const chip=document.createElement('div');
     chip.className='player-chip'+(j.id===ME.uid?' me':'')+(j.espectador?' espectador':'');
-    let badges='<div class="badges-right">';
-    if(j.espectador) badges+='<span class="badge badge-spec">Espectador</span>';
-    if(j.id===_info.host) badges+='<span class="badge badge-host">Host</span>';
-    if(j.id===ME.uid) badges+='<span class="badge badge-you">Você</span>';
-    if((j.placar||0)>0) badges+=`<span class="score-pill">${j.placar}pt</span>`;
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    // badges right (sem o wrapper div)
+    let badgesInner='';
+    if(j.espectador) badgesInner+='<span class="badge badge-spec">Espectador</span>';
+    if(j.id===_info.host) badgesInner+='<span class="badge badge-host">Host</span>';
+    if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
+    if((j.placar||0)>0) badgesInner+=`<span class="score-pill">${j.placar}pt</span>`;
     if(_info.host===ME.uid&&j.id!==ME.uid)
-      badges+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
-    badges+='</div>';
-    const pBadge=rankBoxHTML(j.placarTotal||0);
-    const avStyle=avatarTierStyle(j.placarTotal||0);
-    chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-      onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:32px;height:32px;${avStyle}">
-      <span style="flex:1;font-size:.86rem">${j.id===_info.host?'👑 ':''} ${nomeHTML(j.nome||'(sem nome)', j.placarTotal||0)}</span>
-      ${pBadge}${badges}`;
+      badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
+    chip.innerHTML=`
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
+      <div class="chip-info">
+        <div class="chip-name">${j.id===_info.host?'👑 ':''} ${nomeHTML(nome, pts)}</div>
+        <div class="chip-rank">${rankBoxHTML(pts)}</div>
+      </div>
+      <div class="badges-right">${badgesInner}</div>`;
     container.appendChild(chip);
   });
 
@@ -1764,25 +1773,6 @@ async function renderQuestioning(){
   const isHost=_info.host===ME.uid;
   $('btn-prox-par').style.display=isHost?'':'none';
   $('btn-revelar-q').style.display=isHost?'':'none';
-
-  // Lista de jogadores
-  const qList=$('q-players-list');
-  if(qList){
-    const ativos=Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-    qList.innerHTML='';
-    ativos.forEach(j=>{
-      const chip=document.createElement('div');
-      chip.className='player-chip'+(j.id===ME.uid?' me':'');
-      chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:32px;height:32px">
-        ${j.nome||'(sem nome)'}
-        <div class="badges-right">
-          ${(j.placar||0)>0?`<span class="score-pill">${j.placar}pt</span>`:''}
-          ${j.id===ME.uid?'<span class="badge badge-you">Você</span>':''}
-        </div>`;
-      qList.appendChild(chip);
-    });
-  }
 
   // Votação sempre aberta
   $('q-votacao-card').style.display='';
