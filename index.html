@@ -291,7 +291,34 @@ input::placeholder{color:var(--muted);}
   animation:goatglow 1.4s ease-in-out infinite;}
 @keyframes goatglow{0%,100%{box-shadow:0 0 6px rgba(255,200,0,.4)}50%{box-shadow:0 0 14px rgba(255,200,0,.9)}}
 
-/* Nome colorido por tier (lobby / placar) */
+/* ── Rank box highlight ── */
+.rank-box{display:inline-flex;align-items:center;gap:4px;
+  border-radius:8px;padding:3px 9px;font-size:.62rem;font-weight:700;
+  letter-spacing:.5px;white-space:nowrap;flex-shrink:0;border:1px solid transparent;}
+.rank-box-t1{background:rgba(136,136,170,.12);border-color:rgba(136,136,170,.25);color:#8888AA;}
+.rank-box-t2{background:rgba(79,195,247,.12);border-color:rgba(79,195,247,.3);color:#4FC3F7;}
+.rank-box-t3{background:rgba(76,175,80,.14);border-color:rgba(76,175,80,.3);color:#4CAF50;}
+.rank-box-t4{background:rgba(255,152,0,.14);border-color:rgba(255,152,0,.3);color:#FF9800;}
+.rank-box-t5{background:rgba(179,136,255,.14);border-color:rgba(179,136,255,.3);color:#B388FF;}
+.rank-box-t6{background:rgba(255,215,0,.14);border-color:rgba(255,215,0,.35);color:#FFD700;}
+.rank-box-t7{background:rgba(255,71,87,.14);border-color:rgba(255,71,87,.3);color:#FF4757;}
+.rank-box-t8{background:linear-gradient(90deg,rgba(232,255,71,.14),rgba(79,195,247,.14));
+  border-color:rgba(232,255,71,.3);color:#E8FF47;animation:pt8shimmer 2s linear infinite;}
+.rank-box-t9{background:linear-gradient(90deg,rgba(255,215,0,.25),rgba(255,152,0,.25));
+  border-color:#FFD700;color:#0D0D14;font-weight:900;
+  box-shadow:0 0 8px rgba(255,200,0,.4);animation:goatglow 1.4s ease-in-out infinite;}
+
+/* ── Avatar border by tier ── */
+.av-t1{border-color:var(--muted)!important;}
+.av-t2{border-color:#4FC3F7!important;box-shadow:0 0 0 2px rgba(79,195,247,.2);}
+.av-t3{border-color:#4CAF50!important;box-shadow:0 0 0 2px rgba(76,175,80,.2);}
+.av-t4{border-color:#FF9800!important;box-shadow:0 0 0 2px rgba(255,152,0,.2);}
+.av-t5{border-color:#B388FF!important;box-shadow:0 0 0 2px rgba(179,136,255,.2);}
+.av-t6{border-color:#FFD700!important;box-shadow:0 0 0 2px rgba(255,215,0,.25);}
+.av-t7{border-color:#FF4757!important;box-shadow:0 0 0 2px rgba(255,71,87,.25);}
+.av-t8{border-color:#E8FF47!important;box-shadow:0 0 0 3px rgba(232,255,71,.3);animation:pt8shimmer 2s linear infinite;}
+.av-t9{border-color:#FFD700!important;box-shadow:0 0 0 3px rgba(255,200,0,.5),0 0 10px rgba(255,200,0,.3);animation:goatglow 1.4s ease-in-out infinite;}
+
 .pname-t2{color:#4FC3F7!important;}
 .pname-t3{color:#4CAF50!important;}
 .pname-t4{color:#FF9800!important;}
@@ -447,7 +474,6 @@ input::placeholder{color:var(--muted);}
       <div style="font-size:.65rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
     <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
-    <button class="btn btn-secondary" id="btn-abrir-voto" onclick="abrirVotacao()" style="display:none">🗳️ ABRIR VOTAÇÃO</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
     <div class="status err" id="st-palavra"></div>
   </div>
@@ -518,9 +544,8 @@ input::placeholder{color:var(--muted);}
       <div class="vote-grid" id="q-vote-grid"></div>
       <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="q-vote-status"></div>
     </div>
-    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">⏭ PRÓXIMO PAR</button>
+    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">⏭ PRÓXIMA PERGUNTA</button>
     <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
-    <button class="btn btn-secondary" id="btn-abrir-voto-q" onclick="abrirVotacao()" style="display:none">🗳️ ABRIR VOTAÇÃO</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
@@ -764,9 +789,15 @@ function prestigeNameClass(pts){
   return getPrestige(pts||0).nameCls;
 }
 
-// ══════════════════════════════════════════════════════
-//  UTILS
-// ══════════════════════════════════════════════════════
+function rankBoxHTML(pts){
+  const t=getPrestige(pts||0);
+  return `<span class="rank-box rank-box-t${t.tier}">${t.title} · ${pts||0}pt</span>`;
+}
+function avatarTierClass(pts){
+  const t=getPrestige(pts||0);
+  return `av-t${t.tier}`;
+}
+
 const $ = id => document.getElementById(id);
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -810,6 +841,8 @@ function listen(key, path, cb){
 function stopListeners(){
   Object.values(listeners).forEach(r=>r.off());
   listeners={};
+  Object.values(_userListeners).forEach(r=>r.off());
+  _userListeners={};
   if(connectedListener){ db.ref('.info/connected').off('value', connectedListener); connectedListener=null; }
 }
 
@@ -1177,10 +1210,33 @@ function iniciarListeners(){
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
   listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
   listen('timer',     `salas/${SALA}/timer`,     onTimerChanged);
+  iniciarListenerPlacarTotal();
   showScreen('s-lobby');
 }
 
-function onInfoChanged(info){
+// ── Listener em tempo real para placarTotal de todos os jogadores na sala
+let _userListeners = {};
+function iniciarListenerPlacarTotal(){
+  // limpa listeners anteriores
+  Object.values(_userListeners).forEach(r=>r.off('value'));
+  _userListeners={};
+}
+function sincronizarPlacarTotalJogador(uid){
+  const key=idKey(uid);
+  if(_userListeners[key]) return; // já tem listener
+  _userListeners[key]=db.ref(`users/${uid}/placarTotal`);
+  _userListeners[key].on('value', snap=>{
+    const val=snap.val()||0;
+    if(_jogadores[key]){
+      if(_jogadores[key].placarTotal!==val){
+        _jogadores[key].placarTotal=val;
+        renderFase();
+      }
+    }
+  });
+}
+
+
   if(!info){ sairDaSala(); return; }
   const prev=_info;
   _info=info;
@@ -1246,6 +1302,8 @@ function onJogadoresChanged(jogadores){
   _jogadores=normalized;
   const cur=Object.keys(_jogadores).length;
   if(cur>prev) SFX.join();
+  // Inicia listener de placarTotal para cada jogador (sem duplicar)
+  Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
   renderFase();
 }
 
@@ -1381,9 +1439,10 @@ function renderLobby(){
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badges+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     badges+='</div>';
-    const pBadge=prestigeBadgeHTML(j.placarTotal||0);
+    const pBadge=rankBoxHTML(j.placarTotal||0);
     const pNameCls=prestigeNameClass(j.placarTotal||0);
-    chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+    const avTierCls=avatarTierClass(j.placarTotal||0);
+    chip.innerHTML=`<img class="avatar ${avTierCls}" src="${avatarImg(j.avatarUrl)}" alt=""
       onerror="this.src='${AVATAR_PLACEHOLDER}'">
       <span class="${pNameCls}" style="flex:1;font-size:.86rem">${j.id===_info.host?'👑':''} ${nome}</span>
       ${pBadge}${badges}`;
@@ -1408,15 +1467,15 @@ function renderPlaying(){
     const el=$('word-el');
     el.className='word-hidden'; el.textContent='● ● ●';
     $('word-hint').textContent='toque para revelar';
-    $('card-votacao').style.display='none';
+    $('card-votacao').style.display='';
+    renderVoteGrid('vote-grid',false);
     showScreen('s-palavra');
     SFX.palavra();
   }
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
-  $('btn-abrir-voto').style.display=isHost?'':'none';
   $('btn-timer-reset').style.display=isHost?'':'none';
-  $('card-votacao').style.display='none';
+  $('card-votacao').style.display='';
 }
 
 // ══════════════════════════════════════════════════════
@@ -1537,15 +1596,15 @@ function atualizarQSubfase(subFase){
   const desc=$('q-phase-desc');
   if(!pill||!desc) return;
   if(subFase==='pergunta'){
-    pill.textContent='pergunta'; pill.className='q-phase-pill';
-    desc.textContent='Tempo de pergunta'; desc.className='pair-phase-label phase-pergunta';
+    pill.textContent='Próxima Pergunta'; pill.className='q-phase-pill';
+    desc.textContent='Tempo de Pergunta'; desc.className='pair-phase-label phase-pergunta';
     $('q-avatar-left')?.classList.add('active-perguntador');
     $('q-avatar-left')?.classList.remove('active-respondedor');
     $('q-avatar-right')?.classList.add('active-respondedor');
     $('q-avatar-right')?.classList.remove('active-perguntador');
   } else {
-    pill.textContent='resposta'; pill.className='q-phase-pill resposta';
-    desc.textContent='Tempo de resposta'; desc.className='pair-phase-label phase-resposta';
+    pill.textContent='Resposta'; pill.className='q-phase-pill resposta';
+    desc.textContent='Tempo de Resposta'; desc.className='pair-phase-label phase-resposta';
     $('q-avatar-right')?.classList.add('active-perguntador');
     $('q-avatar-right')?.classList.remove('active-respondedor');
     $('q-avatar-left')?.classList.add('active-respondedor');
@@ -1608,7 +1667,6 @@ async function renderQuestioning(){
   const isHost=_info.host===ME.uid;
   $('btn-prox-par').style.display=isHost?'':'none';
   $('btn-revelar-q').style.display=isHost?'':'none';
-  $('btn-abrir-voto-q').style.display=isHost?'':'none';
 
   // Lista de jogadores
   const qList=$('q-players-list');
@@ -1629,10 +1687,9 @@ async function renderQuestioning(){
     });
   }
 
-  // Votação (se aberta)
-  const votacaoAberta=_info.votacaoAberta||_info.fase==='voting';
-  $('q-votacao-card').style.display=votacaoAberta?'':'none';
-  if(votacaoAberta) renderVoteGrid('q-vote-grid', false);
+  // Votação sempre aberta
+  $('q-votacao-card').style.display='';
+  renderVoteGrid('q-vote-grid', false);
   const qVoteStatus=$('q-vote-status');
   if(qVoteStatus){
     const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
@@ -1876,11 +1933,12 @@ async function renderPlacar(){
   lista.forEach((j,i)=>{
     const div=document.createElement('div');
     div.className='placar-row';
-    const pBadgeP=prestigeBadgeHTML(j.placarTotal||0);
+    const pBadgeP=rankBoxHTML(j.placarTotal||0);
     const pNmCls=prestigeNameClass(j.placarTotal||0);
+    const avTierCls=avatarTierClass(j.placarTotal||0);
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
-      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+      <img class="avatar ${avTierCls}" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px">
       <span class="placar-nome ${pNmCls}">${j.nome||'(sem nome)'}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
       ${pBadgeP}
