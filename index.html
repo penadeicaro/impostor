@@ -1464,7 +1464,7 @@ function iniciarTimerLocal(startTs){
 
   let lastTickSeg=-1;
   function tick(){
-    const elapsed=(Date.now()-startTs)/1000;
+    const elapsed=(serverNow()-startTs)/1000;
     const restante=Math.max(0, DURACAO-elapsed);
     const segsDisplay=Math.ceil(restante);
     const urgent=restante<=5;
@@ -1686,7 +1686,7 @@ function onQTimerChanged(data){
     if(_info&&_info.host===ME.uid){
       setTimeout(async()=>{
         if(!SALA||!_info||_info.fase!=='questioning') return;
-        await set(`salas/${SALA}/qtimer`,{ts:Date.now(),ativo:true,subFase:proxSubFase,parIdx});
+        await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP,ativo:true,subFase:proxSubFase,parIdx});
         $('btn-prox-par').disabled=false;
       }, 850);
     } else {
@@ -1713,18 +1713,21 @@ function iniciarCountdownPreparando(startTs){
   stopFlashPulse();
   const PREP=5;
 
-  // Anima barra de 0 → 100% em 5s com CSS transition
+  // Anima barra de 0 → 100% com CSS transition, compensando latência de rede
   const bar=$('q-timer-bar');
   if(bar){
+    const jaPassou=Math.max(0,(serverNow()-startTs)/1000);
+    const duracaoRestante=Math.max(0.1, PREP-jaPassou);
+    const pctInicial=Math.min(100,(jaPassou/PREP)*100);
     bar.className='q-timer-bar recarregando';
-    bar.style.width='0%';
-    void bar.offsetWidth; // força reflow
-    bar.style.transition='width 5s linear, background .3s';
+    bar.style.width=pctInicial+'%';
+    void bar.offsetWidth;
+    bar.style.transition=`width ${duracaoRestante}s linear, background .3s`;
     bar.style.width='100%';
   }
 
   function tick(){
-    const elapsed=(Date.now()-startTs)/1000;
+    const elapsed=(serverNow()-startTs)/1000;
     const restante=Math.max(0,PREP-elapsed);
     const seg=Math.ceil(restante);
     $('q-timer-display').textContent=seg||'▶';
@@ -1736,7 +1739,7 @@ function iniciarCountdownPreparando(startTs){
       if(bar) bar.style.transition=''; // restaura transition padrão
       // Só o host dispara o timer no Firebase; os outros recebem via listener
       if(_info&&_info.host===ME.uid){
-        set(`salas/${SALA}/qtimer`,{ts:Date.now(),ativo:true,subFase:'pergunta',parIdx:0});
+        set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP,ativo:true,subFase:'pergunta',parIdx:0});
       }
     }
   }
@@ -1751,7 +1754,7 @@ function iniciarQTimerLocal(startTs, subFase){
   let lastSeg=-1;
 
   function tick(){
-    const elapsed=(Date.now()-startTs)/1000;
+    const elapsed=(serverNow()-startTs)/1000;
     const restante=Math.max(0, DURACAO-elapsed);
     const segsDisplay=Math.ceil(restante);
     const urgent=restante<=5;
@@ -1933,7 +1936,7 @@ async function proxPar(){
     // Vai para subfase resposta — mostra recarregamento e inicia resposta
     SFX.transicaoPar();
     pararQTimerLocal();
-    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'recarregando_resposta', parIdx});
+    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'recarregando_resposta', parIdx});
   } else {
     // Fim da resposta — vai para próximo par
     const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
@@ -1945,7 +1948,7 @@ async function proxPar(){
       await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
       await upd(`salas/${SALA}/info`,{fase:'playing'});
     } else {
-      await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'recarregando_pergunta', parIdx:parIdx+1});
+      await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'recarregando_pergunta', parIdx:parIdx+1});
     }
   }
 }
@@ -2232,7 +2235,7 @@ async function sortear(){
     await set(`salas/${SALA}/snapshot`, snapshot);
     await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
     // qtimer começa como 'preparando' — autostart em 5s via onQTimerChanged
-    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'preparando', parIdx:0});
+    await set(`salas/${SALA}/qtimer`,{ts:firebase.database.ServerValue.TIMESTAMP, ativo:false, subFase:'preparando', parIdx:0});
     await set(`salas/${SALA}/fila`, fila);
     _assignments=assignments;
     _snapshot=snapshot;
