@@ -262,77 +262,21 @@ input::placeholder{color:var(--muted);}
   padding:3px 10px;border-radius:12px;background:rgba(232,255,71,.12);color:var(--accent);}
 .q-phase-pill.resposta{background:rgba(79,195,247,.12);color:var(--blue);}
 
-/* ── Prestígio ── */
-.prestige-badge{display:inline-flex;align-items:center;gap:4px;
-  font-size:.58rem;letter-spacing:.5px;border-radius:10px;
-  padding:2px 7px;font-weight:700;white-space:nowrap;flex-shrink:0;}
-
-/* Tier 1: Curioso – cinza */
-.pt1{background:rgba(136,136,170,.15);color:#8888AA;}
-/* Tier 2: Suspeito – azul */
-.pt2{background:rgba(79,195,247,.15);color:#4FC3F7;}
-/* Tier 3: Detetive – verde */
-.pt3{background:rgba(76,175,80,.18);color:#4CAF50;}
-/* Tier 4: Agente – laranja */
-.pt4{background:rgba(255,152,0,.18);color:#FF9800;}
-/* Tier 5: Infiltrado – roxo */
-.pt5{background:rgba(179,136,255,.18);color:#B388FF;}
-/* Tier 6: Espião – dourado */
-.pt6{background:rgba(255,215,0,.18);color:#FFD700;}
-/* Tier 7: Mestre – vermelho vivo */
-.pt7{background:rgba(255,71,87,.18);color:#FF4757;}
-/* Tier 8: Lenda – degradê animado */
-.pt8{background:linear-gradient(90deg,rgba(232,255,71,.2),rgba(79,195,247,.2));
-  color:#E8FF47;animation:pt8shimmer 2s linear infinite;}
+/* ── Prestígio — estilos base (cores aplicadas inline via JS) ── */
+@keyframes goatglow{0%,100%{box-shadow:0 0 6px rgba(255,200,0,.4),0 0 12px rgba(255,200,0,.2)}50%{box-shadow:0 0 14px rgba(255,200,0,.9),0 0 28px rgba(255,200,0,.4)}}
+@keyframes goatglow2{0%,100%{filter:drop-shadow(0 0 3px rgba(255,200,0,.4))}50%{filter:drop-shadow(0 0 10px rgba(255,200,0,.9))}}
 @keyframes pt8shimmer{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
-/* Tier 9: GOAT – glow pulsante */
-.pt9{background:linear-gradient(90deg,#FFD700,#FF9800);color:#0D0D14;
-  font-weight:900;box-shadow:0 0 8px rgba(255,200,0,.5);
-  animation:goatglow 1.4s ease-in-out infinite;}
-@keyframes goatglow{0%,100%{box-shadow:0 0 6px rgba(255,200,0,.4)}50%{box-shadow:0 0 14px rgba(255,200,0,.9)}}
 
-/* ── Rank box highlight ── */
-.rank-box{display:inline-flex;align-items:center;gap:4px;
-  border-radius:8px;padding:3px 9px;font-size:.62rem;font-weight:700;
-  letter-spacing:.5px;white-space:nowrap;flex-shrink:0;border:1px solid transparent;}
-.rank-box-t1{background:rgba(136,136,170,.12);border-color:rgba(136,136,170,.25);color:#8888AA;}
-.rank-box-t2{background:rgba(79,195,247,.12);border-color:rgba(79,195,247,.3);color:#4FC3F7;}
-.rank-box-t3{background:rgba(76,175,80,.14);border-color:rgba(76,175,80,.3);color:#4CAF50;}
-.rank-box-t4{background:rgba(255,152,0,.14);border-color:rgba(255,152,0,.3);color:#FF9800;}
-.rank-box-t5{background:rgba(179,136,255,.14);border-color:rgba(179,136,255,.3);color:#B388FF;}
-.rank-box-t6{background:rgba(255,215,0,.14);border-color:rgba(255,215,0,.35);color:#FFD700;}
-.rank-box-t7{background:rgba(255,71,87,.14);border-color:rgba(255,71,87,.3);color:#FF4757;}
-.rank-box-t8{background:linear-gradient(90deg,rgba(232,255,71,.14),rgba(79,195,247,.14));
-  border-color:rgba(232,255,71,.3);color:#E8FF47;animation:pt8shimmer 2s linear infinite;}
-.rank-box-t9{background:linear-gradient(90deg,rgba(255,215,0,.25),rgba(255,152,0,.25));
-  border-color:#FFD700;color:#0D0D14;font-weight:900;
-  box-shadow:0 0 8px rgba(255,200,0,.4);animation:goatglow 1.4s ease-in-out infinite;}
-
-/* ── Avatar border by tier ── */
-.av-t1{border-color:var(--muted)!important;}
-.av-t2{border-color:#4FC3F7!important;box-shadow:0 0 0 2px rgba(79,195,247,.2);}
-.av-t3{border-color:#4CAF50!important;box-shadow:0 0 0 2px rgba(76,175,80,.2);}
-.av-t4{border-color:#FF9800!important;box-shadow:0 0 0 2px rgba(255,152,0,.2);}
-.av-t5{border-color:#B388FF!important;box-shadow:0 0 0 2px rgba(179,136,255,.2);}
-.av-t6{border-color:#FFD700!important;box-shadow:0 0 0 2px rgba(255,215,0,.25);}
-.av-t7{border-color:#FF4757!important;box-shadow:0 0 0 2px rgba(255,71,87,.25);}
-.av-t8{border-color:#E8FF47!important;box-shadow:0 0 0 3px rgba(232,255,71,.3);animation:pt8shimmer 2s linear infinite;}
-.av-t9{border-color:#FFD700!important;box-shadow:0 0 0 3px rgba(255,200,0,.5),0 0 10px rgba(255,200,0,.3);animation:goatglow 1.4s ease-in-out infinite;}
-
+/* Nome colorido por tier (lobby / placar) — mantido para compatibilidade */
 .pname-t2{color:#4FC3F7!important;}
 .pname-t3{color:#4CAF50!important;}
-.pname-t4{color:#FF9800!important;}
-.pname-t5{color:#B388FF!important;}
-.pname-t6{color:#FFD700!important;}
-.pname-t7{color:#FF4757!important;}
-.pname-t8{background:linear-gradient(90deg,#E8FF47,#4FC3F7);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  animation:pt8shimmer 2s linear infinite;}
-.pname-t9{background:linear-gradient(90deg,#FFD700,#FF9800);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;
-  animation:goatglow2 1.4s ease-in-out infinite;}
-@keyframes goatglow2{0%,100%{filter:drop-shadow(0 0 3px rgba(255,200,0,.4))}
-  50%{filter:drop-shadow(0 0 8px rgba(255,200,0,.9))}}
+.pname-t4{color:#C6F135!important;}
+.pname-t5{color:#FF9800!important;}
+.pname-t6{color:#FF5252!important;}
+.pname-t7{color:#B388FF!important;}
+.pname-t8{color:#FF4FAD!important;}
+.pname-t9{color:#FFD700!important;font-weight:700;}
+
 </style>
 </head>
 <body>
@@ -388,8 +332,8 @@ input::placeholder{color:var(--muted);}
   <div id="s-setup" class="screen">
     <div class="card">
       <div class="profile-header">
-        <div class="avatar-upload-wrap" style="width:44px;margin:0">
-          <img id="setup-avatar" class="avatar" src="" alt="avatar" onclick="$('inp-avatar').click()" style="width:44px;height:44px;cursor:pointer">
+        <div class="avatar-upload-wrap" style="width:54px;margin:0;position:relative">
+          <img id="setup-avatar" class="avatar" src="" alt="avatar" onclick="$('inp-avatar').click()" style="width:54px;height:54px;cursor:pointer;border-width:3px;">
           <button class="avatar-edit-btn" onclick="$('inp-avatar').click()">✏️</button>
         </div>
         <div class="profile-info">
@@ -401,6 +345,8 @@ input::placeholder{color:var(--muted);}
       <input id="inp-avatar" type="file" accept="image/*" onchange="uploadAvatar(this)">
       <div style="font-size:.65rem;color:var(--sub);margin-top:4px;text-align:center" id="avatar-status"></div>
     </div>
+    <!-- Rank card grande -->
+    <div id="setup-rank-card"></div>
     <div class="card">
       <div class="card-label">Nome de exibição</div>
       <div class="row">
@@ -766,36 +712,161 @@ let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
 
-// ── Prestígio
+// ── Prestígio (novo sistema)
+// Thresholds acumulados: 0,20,40,70,100,150,200,300,400
 const PRESTIGE_TIERS = [
-  {min:0,   max:9,   tier:1, title:'Curioso',    cls:'pt1', nameCls:''},
-  {min:10,  max:24,  tier:2, title:'Suspeito',   cls:'pt2', nameCls:'pname-t2'},
-  {min:25,  max:49,  tier:3, title:'Detetive',   cls:'pt3', nameCls:'pname-t3'},
-  {min:50,  max:99,  tier:4, title:'Agente',     cls:'pt4', nameCls:'pname-t4'},
-  {min:100, max:199, tier:5, title:'Infiltrado', cls:'pt5', nameCls:'pname-t5'},
-  {min:200, max:349, tier:6, title:'Espião',     cls:'pt6', nameCls:'pname-t6'},
-  {min:350, max:599, tier:7, title:'Mestre',     cls:'pt7', nameCls:'pname-t7'},
-  {min:600, max:999, tier:8, title:'Lenda',      cls:'pt8', nameCls:'pname-t8'},
-  {min:1000,max:Infinity,tier:9,title:'GOAT',   cls:'pt9', nameCls:'pname-t9'},
+  {min:0,   max:19,  tier:1, title:'Curioso',    color:'#8888AA'},
+  {min:20,  max:39,  tier:2, title:'Suspeito',   color:'#4FC3F7'},
+  {min:40,  max:69,  tier:3, title:'Detetive',   color:'#4CAF50'},
+  {min:70,  max:99,  tier:4, title:'Agente',     color:'#C6F135'},
+  {min:100, max:149, tier:5, title:'Infiltrado', color:'#FF9800'},
+  {min:150, max:199, tier:6, title:'Espião',     color:'#FF5252'},
+  {min:200, max:299, tier:7, title:'Mestre',     color:'#B388FF'},
+  {min:300, max:399, tier:8, title:'Lenda',      color:'#FF4FAD'},
+  {min:400, max:Infinity, tier:9, title:'GOAT',  color:'#FFD700'},
 ];
+
+// As 9 cores da paleta em ordem para o color wheel dentro do tier
+const TIER_COLORS=['#8888AA','#4FC3F7','#4CAF50','#C6F135','#FF9800','#FF5252','#B388FF','#FF4FAD','#FFD700'];
+
 function getPrestige(pts){
-  return PRESTIGE_TIERS.find(t=>pts>=t.min&&pts<=t.max) || PRESTIGE_TIERS[0];
-}
-function prestigeBadgeHTML(pts){
-  const t=getPrestige(pts||0);
-  return `<span class="prestige-badge ${t.cls}">${t.title} · ${pts||0}pt</span>`;
-}
-function prestigeNameClass(pts){
-  return getPrestige(pts||0).nameCls;
+  return PRESTIGE_TIERS.find(t=>pts>=t.min&&pts<=t.max)||PRESTIGE_TIERS[0];
 }
 
-function rankBoxHTML(pts){
-  const t=getPrestige(pts||0);
-  return `<span class="rank-box rank-box-t${t.tier}">${t.title} · ${pts||0}pt</span>`;
+// Calcula cor dinâmica baseada no progresso dentro do tier (interpola entre as 9 cores)
+function getTierColor(pts){
+  const p=pts||0;
+  const t=getPrestige(p);
+  if(t.tier===9) return '#FFD700'; // GOAT sempre dourado
+  const tierRange=t.max===Infinity?100:(t.max-t.min+1);
+  const progress=Math.min(1,(p-t.min)/tierRange); // 0.0 → 1.0 dentro do tier
+  // Interpola entre as 9 cores
+  const totalColors=TIER_COLORS.length;
+  const colorPos=progress*(totalColors-1);
+  const ci=Math.floor(colorPos);
+  const cf=colorPos-ci;
+  const c1=hexToRgb(TIER_COLORS[Math.min(ci,totalColors-1)]);
+  const c2=hexToRgb(TIER_COLORS[Math.min(ci+1,totalColors-1)]);
+  const r=Math.round(c1.r+(c2.r-c1.r)*cf);
+  const g=Math.round(c1.g+(c2.g-c1.g)*cf);
+  const b=Math.round(c1.b+(c2.b-c1.b)*cf);
+  return `rgb(${r},${g},${b})`;
 }
-function avatarTierClass(pts){
-  const t=getPrestige(pts||0);
-  return `av-t${t.tier}`;
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+
+// Retorna objeto com todos os estilos visuais pro tier
+function getPrestigeStyle(pts){
+  const p=pts||0;
+  const t=getPrestige(p);
+  const color=getTierColor(p);
+  const tier=t.tier;
+  // Progresso pro próximo tier
+  const nextTier=PRESTIGE_TIERS[tier] || null;
+  const ptsParaProx=nextTier ? nextTier.min-p : 0;
+  const tierRange=nextTier ? (nextTier.min-t.min) : 1;
+  const progressPct=nextTier ? Math.round((p-t.min)/tierRange*100) : 100;
+
+  return {tier, title:t.title, color, pts:p, ptsParaProx, progressPct,
+    bold: tier>=3,
+    glow: tier===4||tier>=7,
+    glowStrong: tier>=7,
+    badge: tier>=5,
+    badgeOpaque: tier>=7,
+    fontWhite: tier>=5 && tier<=8,
+    isGOAT: tier===9
+  };
+}
+
+// HTML do nome com todos os estilos aplicados inline
+function nomeHTML(nome, pts, extra=''){
+  const s=getPrestigeStyle(pts||0);
+  const color=s.isGOAT?'#FFD700':(s.fontWhite?'#F0F0FF':s.color);
+  const fw=s.bold?'700':'400';
+  let shadow='';
+  if(s.isGOAT) shadow=`0 0 8px rgba(255,200,0,.7),0 0 18px rgba(255,200,0,.4)`;
+  else if(s.glowStrong) shadow=`0 0 6px ${s.color}99,0 0 14px ${s.color}55`;
+  else if(s.glow) shadow=`0 0 5px ${s.color}77`;
+  const style=`color:${color};font-weight:${fw};${shadow?`text-shadow:${shadow};`:''}`;
+
+  if(s.badge){
+    const bgAlpha=s.badgeOpaque?'dd':'44';
+    const border=s.isGOAT?`border:1px solid #FFD700;`:`border:1px solid ${s.color}88;`;
+    const bgColor=s.isGOAT?'#FFD700':`${s.color}${bgAlpha}`;
+    const textColor=s.isGOAT?'#0D0D14':(s.fontWhite?'#F0F0FF':s.color);
+    const boxShadow=s.isGOAT?`box-shadow:0 0 8px rgba(255,200,0,.5);`:
+      s.glowStrong?`box-shadow:0 0 6px ${s.color}66;`:'';
+    return `<span style="display:inline-flex;align-items:center;padding:2px 10px 2px 2px;border-radius:20px;background:${bgColor};${border}${boxShadow}gap:6px;">
+      <span style="${style}">${nome}</span>
+    </span>${extra}`;
+  }
+  return `<span style="${style}">${nome}</span>${extra}`;
+}
+
+// HTML do rank box (painel lateral)
+function rankBoxHTML(pts){
+  const s=getPrestigeStyle(pts||0);
+  const color=s.color;
+  let style,inner;
+  if(s.isGOAT){
+    style=`background:#FFD700;border:1px solid #FFD700;color:#0D0D14;font-weight:900;box-shadow:0 0 10px rgba(255,200,0,.6);border-radius:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;`;
+    inner=`👑 ${s.title} · ${pts||0}pt`;
+  } else if(s.badgeOpaque){
+    style=`background:${color}dd;border:1px solid ${color};color:#F0F0FF;font-weight:700;box-shadow:0 0 6px ${color}66;border-radius:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;`;
+    inner=`${s.title} · ${pts||0}pt`;
+  } else if(s.badge){
+    style=`background:${color}33;border:1px solid ${color}88;color:${color};font-weight:700;border-radius:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;`;
+    inner=`${s.title} · ${pts||0}pt`;
+  } else {
+    style=`background:${color}18;border:1px solid ${color}44;color:${color};font-weight:700;border-radius:8px;padding:3px 10px;font-size:.6rem;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;`;
+    inner=`${s.title} · ${pts||0}pt`;
+  }
+  return `<span style="${style}">${inner}</span>`;
+}
+
+// Classe + inline style pro avatar
+function avatarTierStyle(pts){
+  const s=getPrestigeStyle(pts||0);
+  const color=s.color;
+  if(s.isGOAT) return `border-color:#FFD700!important;box-shadow:0 0 0 3px rgba(255,200,0,.5),0 0 12px rgba(255,200,0,.4)!important;`;
+  if(s.glowStrong) return `border-color:${color}!important;box-shadow:0 0 0 3px ${color}44,0 0 8px ${color}55!important;`;
+  if(s.tier>=2) return `border-color:${color}!important;box-shadow:0 0 0 2px ${color}33!important;`;
+  return '';
+}
+
+// Card grande de rank pro menu principal
+function rankCardHTML(pts){
+  const s=getPrestigeStyle(pts||0);
+  const color=s.color;
+  const nextLabel=s.isGOAT?'Rank máximo atingido!':
+    `${s.ptsParaProx}pt para ${PRESTIGE_TIERS[s.tier]?.title||'GOAT'}`;
+  const barColor=s.isGOAT?'#FFD700':color;
+  const glowStyle=s.isGOAT?`box-shadow:0 0 20px rgba(255,200,0,.3);border-color:#FFD700;`:
+    s.glowStrong?`box-shadow:0 0 12px ${color}44;border-color:${color}88;`:
+    `border-color:${color}44;`;
+  return `
+  <div style="background:var(--card);border-radius:12px;padding:16px 20px;border:1px solid rgba(255,255,255,.06);${glowStyle}">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="flex:1">
+        <div style="font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-bottom:4px">Seu rank</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:${s.isGOAT?'#FFD700':color};${s.isGOAT?'text-shadow:0 0 10px rgba(255,200,0,.6)':s.glowStrong?`text-shadow:0 0 8px ${color}88`:''}">${s.isGOAT?'👑 ':''} ${s.title}</div>
+        <div style="font-size:.72rem;color:var(--sub);margin-top:2px">${pts||0} pontos totais</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.6rem;color:var(--sub);margin-bottom:2px">Tier</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:${s.isGOAT?'#FFD700':color}">${s.tier}</div>
+      </div>
+    </div>
+    <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:6px">
+      <div style="height:100%;width:${s.progressPct}%;background:${barColor};border-radius:3px;transition:width .5s ease;${s.isGOAT?`box-shadow:0 0 6px rgba(255,200,0,.6)`:s.glowStrong?`box-shadow:0 0 4px ${color}99`:''}"></div>
+    </div>
+    <div style="font-size:.65rem;color:var(--sub);text-align:right">${nextLabel}</div>
+  </div>`;
 }
 
 const $ = id => document.getElementById(id);
@@ -1005,15 +1076,24 @@ function traduzirErroAuth(code){
 function mostrarSetup(){
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
   const avatar = ME_PROFILE?.avatarUrl || ME.photoURL || '';
+  const pts = ME_PROFILE?.placarTotal || 0;
   $('setup-nome-display').textContent = nome;
   $('setup-email-display').textContent = ME.email||'';
   $('inp-displayname').value = nome;
-  $('setup-avatar').src = avatarImg(avatar);
+  // Avatar com borda de tier
+  const av=$('setup-avatar');
+  av.src = avatarImg(avatar);
+  av.style.cssText += ';'+avatarTierStyle(pts);
+  // Rank card grande
+  const rankCard=$('setup-rank-card');
+  if(rankCard) rankCard.innerHTML = rankCardHTML(pts);
   // preenche código se vier na URL
   const params=new URLSearchParams(location.search);
   const salaParam=params.get('sala');
   if(salaParam) $('inp-codigo').value=salaParam.toUpperCase();
   showScreen('s-setup');
+  // Listener em tempo real do próprio placarTotal
+  if(ME?.uid) iniciarListenerMeuPlacar();
 }
 
 async function salvarNome(){
@@ -1214,7 +1294,25 @@ function iniciarListeners(){
   showScreen('s-lobby');
 }
 
-// ── Listener em tempo real para placarTotal de todos os jogadores na sala
+// ── Listener em tempo real do próprio placarTotal (atualiza setup screen)
+let _meuPlacarListener = null;
+function iniciarListenerMeuPlacar(){
+  if(_meuPlacarListener) _meuPlacarListener.off('value');
+  _meuPlacarListener = db.ref(`users/${ME.uid}/placarTotal`);
+  _meuPlacarListener.on('value', snap=>{
+    const val = snap.val()||0;
+    if(ME_PROFILE) ME_PROFILE.placarTotal = val;
+    // Atualiza rank card se setup estiver visível
+    const rankCard=$('setup-rank-card');
+    if(rankCard && document.querySelector('.screen.active')?.id==='s-setup'){
+      rankCard.innerHTML = rankCardHTML(val);
+      const av=$('setup-avatar');
+      if(av){ av.style.border='3px solid'; av.style.cssText += ';'+avatarTierStyle(val); }
+    }
+  });
+}
+
+
 let _userListeners = {};
 function iniciarListenerPlacarTotal(){
   // limpa listeners anteriores
@@ -1440,11 +1538,10 @@ function renderLobby(){
       badges+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     badges+='</div>';
     const pBadge=rankBoxHTML(j.placarTotal||0);
-    const pNameCls=prestigeNameClass(j.placarTotal||0);
-    const avTierCls=avatarTierClass(j.placarTotal||0);
-    chip.innerHTML=`<img class="avatar ${avTierCls}" src="${avatarImg(j.avatarUrl)}" alt=""
-      onerror="this.src='${AVATAR_PLACEHOLDER}'">
-      <span class="${pNameCls}" style="flex:1;font-size:.86rem">${j.id===_info.host?'👑':''} ${nome}</span>
+    const avStyle=avatarTierStyle(j.placarTotal||0);
+    chip.innerHTML=`<img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+      onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:32px;height:32px;${avStyle}">
+      <span style="flex:1;font-size:.86rem">${j.id===_info.host?'👑 ':''} ${nomeHTML(j.nome||'(sem nome)', j.placarTotal||0)}</span>
       ${pBadge}${badges}`;
     container.appendChild(chip);
   });
@@ -1933,15 +2030,15 @@ async function renderPlacar(){
   lista.forEach((j,i)=>{
     const div=document.createElement('div');
     div.className='placar-row';
-    const pBadgeP=rankBoxHTML(j.placarTotal||0);
-    const pNmCls=prestigeNameClass(j.placarTotal||0);
-    const avTierCls=avatarTierClass(j.placarTotal||0);
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const voceLabel=j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':'';
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
-      <img class="avatar ${avTierCls}" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px">
-      <span class="placar-nome ${pNmCls}">${j.nome||'(sem nome)'}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
-      ${pBadgeP}
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
+      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts, voceLabel)}</span>
+      ${rankBoxHTML(pts)}
       <span class="placar-pts">${j.placar||0}pt</span>`;
     container.appendChild(div);
   });
