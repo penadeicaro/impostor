@@ -919,23 +919,50 @@ async function carregarPalavras(){
 // ══════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════
+// Debounce para ignorar null temporário ao voltar do background
+let _authNullTimer = null;
+
 auth.onAuthStateChanged(async user=>{
-  try{
-    if(user){
+  if(_authNullTimer){ clearTimeout(_authNullTimer); _authNullTimer=null; }
+
+  if(user){
+    // Usuário presente — cancela qualquer logout pendente e inicializa
+    try{
       ME=user;
-      ME_PROFILE = await carregarPerfil(user.uid);
+      // Se já temos perfil carregado e é o mesmo usuário, não recarrega
+      if(!ME_PROFILE || ME_PROFILE._uid !== user.uid){
+        ME_PROFILE = await carregarPerfil(user.uid);
+        ME_PROFILE._uid = user.uid;
+      }
       mostrarSetup();
-    } else {
-      ME=null; ME_PROFILE=null;
-      showScreen('s-auth');
+    }catch(e){
+      // Erro de rede ao carregar perfil — mantém sessão, tenta com dados locais
+      console.warn('Erro ao carregar perfil, usando fallback:', e);
+      if(!ME_PROFILE){
+        ME_PROFILE = {
+          nome: user.displayName || user.email?.split('@')[0] || 'Jogador',
+          avatarUrl: user.photoURL || '',
+          placarTotal: 0
+        };
+      }
+      mostrarSetup();
+    }finally{
+      $('loader').classList.add('hide');
     }
-  }catch(e){
-    console.error('Erro ao inicializar sessão:', e);
-    // Mesmo com erro, esconde o loader e volta para login
-    ME=null; ME_PROFILE=null;
-    showScreen('s-auth');
-  }finally{
-    $('loader').classList.add('hide');
+  } else {
+    // null pode ser temporário (background/foreground no mobile)
+    // aguarda 2s antes de realmente deslogar
+    _authNullTimer = setTimeout(()=>{
+      _authNullTimer = null;
+      ME=null; ME_PROFILE=null;
+      $('loader').classList.add('hide');
+      showScreen('s-auth');
+    }, 2000);
+    // Esconde loader imediatamente só se nunca houve usuário
+    if(!ME) $('loader').classList.add('hide');
   }
 });
 
