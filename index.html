@@ -182,7 +182,7 @@ input::placeholder{color:var(--muted);}
 .imp-badge{background:var(--red);color:#fff;border-radius:6px;padding:3px 8px;
   font-size:.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
 .pts-badge{border-radius:6px;padding:3px 8px;font-size:.65rem;font-weight:700;
-  letter-spacing:1px;}
+  letter-spacing:1px;position:relative;z-index:1;}
 .pts-pos{background:rgba(76,175,80,.2);color:var(--green);}
 .pts-neg{background:rgba(255,71,87,.2);color:var(--red);}
 .pts-zero{background:rgba(255,255,255,.06);color:var(--sub);}
@@ -190,35 +190,40 @@ input::placeholder{color:var(--muted);}
 /* Result — novo layout */
 .res-impostor-card{
   display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:rgba(255,71,87,.07);border:2px solid var(--red);
+  background:transparent;border:2px solid var(--red);
   border-radius:var(--radius);padding:20px 16px;
   animation:slideIn .25s ease;
   position:relative;overflow:hidden;
 }
+/* Imagem de fundo bem visível — sem overlay escuro */
 .res-impostor-card .res-rank-bg,
 .res-player-tile .res-rank-bg{
   position:absolute;left:0;top:0;height:100%;width:auto;
   pointer-events:none;z-index:0;
   image-rendering:pixelated;image-rendering:-moz-crisp-edges;
-  opacity:.35;
+  opacity:.85;
 }
 .res-impostor-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;
-  border:3px solid var(--red);}
+  border:3px solid var(--red);position:relative;z-index:1;}
 .res-impostor-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
-  color:var(--red);text-align:center;}
+  color:var(--red);text-align:center;position:relative;z-index:1;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);}
 .res-players-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;
 }
 .res-player-tile{
   display:flex;flex-direction:column;align-items:center;gap:6px;
-  background:var(--surface);border-radius:10px;padding:12px 8px;
+  background:transparent;border-radius:10px;padding:12px 8px;
   animation:slideIn .22s ease;
   position:relative;overflow:hidden;
+  border:2px solid rgba(255,255,255,.08);
 }
-.res-player-tile img{width:48px;height:48px;border-radius:10px;object-fit:cover;}
-.res-player-name{font-size:.68rem;color:var(--sub);text-align:center;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
-.res-player-name.is-me{color:var(--text);}
+.res-player-tile img{width:48px;height:48px;border-radius:10px;object-fit:cover;
+  position:relative;z-index:1;}
+.res-player-name{font-size:.68rem;color:#fff;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
+  position:relative;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.9);}
+.res-player-name.is-me{color:var(--accent);}
 
 /* History / Leaderboard */
 .hist-item{background:var(--surface);border-radius:8px;padding:12px 14px;
@@ -1457,11 +1462,12 @@ function iniciarTimerLocal(startTs){
   timerRunning=true;
   const DURACAO=15;
 
+  let lastTickSeg=-1;
   function tick(){
     const elapsed=(Date.now()-startTs)/1000;
     const restante=Math.max(0, DURACAO-elapsed);
     const segsDisplay=Math.ceil(restante);
-    const urgent=restante<=4;
+    const urgent=restante<=5;
 
     $('timer-display').textContent=segsDisplay;
     $('timer-bar').style.width=(restante/DURACAO*100)+'%';
@@ -1469,19 +1475,18 @@ function iniciarTimerLocal(startTs){
     $('timer-bar').classList.toggle('urgent',urgent);
     $('timer-label').textContent=timerRunning?'respondendo…':'';
 
-    // Pisca tela nos últimos 4s — liga/desliga a cada 450ms
-    if(urgent && restante>0){
-      startFlashPulse();
-    } else {
-      stopFlashPulse();
-    }
+    // Flash sincronizado com o timer (cada segundo = pulso)
+    setFlashByRestante(restante);
 
-    // Tick com pitch progressivo em todos os segundos
-    if(restante>0 && Math.abs(elapsed-Math.floor(elapsed))<0.12){
+    // Tick sonoro uma vez por segundo (quando o display muda)
+    if(restante>0 && segsDisplay!==lastTickSeg){
+      lastTickSeg=segsDisplay;
       SFX.tick(restante);
     }
 
     if(restante<=0){
+      // Mantém flash vermelho sólido por 300ms depois que zera, depois some
+      setTimeout(()=>{ stopFlashPulse(); },300);
       pararTimerLocal();
       $('timer-display').textContent='15';
       $('timer-bar').style.width='100%';
@@ -1495,6 +1500,34 @@ function iniciarTimerLocal(startTs){
   timerInterval=requestAnimationFrame(tick);
 }
 
+// Flash sincronizado com o tick do timer.
+// Recebe restante (segundos, float). Calcula se deve estar ON ou OFF
+// com base na metade do segundo atual.
+// Regra: abaixo de 5s, pisca na "primeira metade" de cada segundo
+// (frac >= 0.5), fica apagado na segunda metade.
+// Quando restante = 0 exatamente: fica vermelho sólido até o timer parar.
+function setFlashByRestante(restante){
+  const ov=$('flash-overlay');
+  if(!ov) return;
+  if(restante<=0){
+    ov.classList.add('flash'); // sólido até parar
+    return;
+  }
+  if(restante>=5){
+    ov.classList.remove('flash');
+    return;
+  }
+  const frac=restante-Math.floor(restante);
+  // frac próximo de 1.0 = início do segundo (flash ON)
+  // frac próximo de 0.0 = fim do segundo (flash OFF)
+  frac>=0.5 ? ov.classList.add('flash') : ov.classList.remove('flash');
+}
+function stopFlashPulse(){
+  if(flashPulseInterval){ clearInterval(flashPulseInterval); flashPulseInterval=null; }
+  const ov=$('flash-overlay');
+  if(ov) ov.classList.remove('flash');
+}
+// Mantido para compatibilidade com código que chama startFlashPulse (qtimer resposta)
 function startFlashPulse(){
   if(flashPulseInterval) return;
   let on=false;
@@ -1503,11 +1536,6 @@ function startFlashPulse(){
     const ov=$('flash-overlay');
     if(ov) on ? ov.classList.add('flash') : ov.classList.remove('flash');
   },450);
-}
-function stopFlashPulse(){
-  if(flashPulseInterval){ clearInterval(flashPulseInterval); flashPulseInterval=null; }
-  const ov=$('flash-overlay');
-  if(ov) ov.classList.remove('flash');
 }
 function pararTimerLocal(){
   if(timerInterval) cancelAnimationFrame(timerInterval);
