@@ -978,6 +978,29 @@ function onInfoChanged(info){
 
   if(fase==='revealed') listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
 
+  // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
+  // O host não tem permissão de escrever em users/$outroUid pelas regras do Firebase,
+  // então cada jogador grava apenas seu próprio nó.
+  if(prev?.fase!=='revealed' && fase==='revealed'){
+    (async()=>{
+      try{
+        const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+        const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+        const eu=ativos.find(j=>j.id===ME.uid);
+        if(!eu||eu.espectador) return;
+        const contagem={};
+        Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+        const {cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,info.impostorId,_votos);
+        const isImp=ME.uid===info.impostorId;
+        const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
+        if(pts!==0){
+          const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
+          await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
+        }
+      }catch(e){ console.warn('Erro ao atualizar placarTotal:',e); }
+    })();
+  }
+
   // Detecta abertura de votação para som
   if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
 
@@ -1520,7 +1543,10 @@ async function revelarImpostor(){
   const {impostorPegou, cenarioImpostor, cenarioJogadores} =
     calcularResultado(ativos, contagem, _info.impostorId, _votos);
 
-  // Aplica pontos na sala e no perfil global do usuário
+  // Aplica pontos na sala (host tem permissão de escrever em salas/)
+  // O update do placar global de cada usuário em users/ é feito por cada cliente
+  // no próprio listener de fase, pois as regras do Firebase só permitem
+  // que o próprio usuário escreva em users/$uid.
   const updates={};
   for(const j of ativos){
     const isImp=j.id===_info.impostorId;
@@ -1528,9 +1554,6 @@ async function revelarImpostor(){
     if(pts!==0){
       const atualSala=(_jogadores[idKey(j.id)]?.placar||0);
       updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
-      // Placar global no perfil (nunca fica negativo)
-      const atualGlobal=(await get(`users/${j.id}/placarTotal`))||0;
-      updates[`users/${j.id}/placarTotal`]=Math.max(0, atualGlobal+pts);
     }
   }
   if(Object.keys(updates).length) await db.ref().update(updates);
