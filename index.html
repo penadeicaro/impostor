@@ -306,6 +306,7 @@ input::placeholder{color:var(--muted);}
 .q-timer-display.urgent{color:var(--red);}
 .q-timer-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
 .q-timer-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 1s linear,background .3s;}
+.q-timer-bar.recarregando{transition:width .75s ease-out,background .3s;}
 .q-timer-bar.resposta{background:var(--blue);}
 .q-timer-bar.urgent{background:var(--red);}
 .q-phase-pill{font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;
@@ -536,7 +537,7 @@ input::placeholder{color:var(--muted);}
       <div class="vote-grid" id="q-vote-grid"></div>
       <div style="font-size:.7rem;color:var(--sub);margin-top:10px;text-align:center" id="q-vote-status"></div>
     </div>
-    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">⏭ PRÓXIMA PERGUNTA</button>
+    <button class="btn btn-primary" id="btn-prox-par" onclick="proxPar()" style="display:none">💬 RESPONDER</button>
     <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">👁️ REVELAR IMPOSTOR</button>
     <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
@@ -1350,7 +1351,14 @@ function onInfoChanged(info){
   _info=info;
   const fase=info.fase;
 
-  if(fase==='revealed') listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
+  if(fase==='revealed'){
+    listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
+    // Para timers e flash em TODOS os clientes quando a rodada é revelada
+    pararTimerLocal();
+    pararQTimerLocal();
+    if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
+    stopFlashPulse();
+  }
 
   // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
   // O host não tem permissão de escrever em users/$outroUid pelas regras do Firebase,
@@ -1612,48 +1620,92 @@ let _fila = [];  // cache local da fila de pares
 function onQTimerChanged(data){
   if(!data) return;
   const subFase=data.subFase||'pergunta';
-  if(data.ts===lastQTimerTs && qTimerRunning) return;
+  // Não filtra por lastQTimerTs aqui — subFase pode mudar sem ts mudar
+  const tsChanged=data.ts!==lastQTimerTs;
   lastQTimerTs=data.ts;
 
   if(subFase==='preparando'){
-    // Countdown de 5s visível, depois dispara pergunta automaticamente
     pararQTimerLocal();
     iniciarCountdownPreparando(data.ts);
-    atualizarQSubfase('pergunta'); // mostra UI de pergunta já
+    atualizarQSubfase('pergunta');
     if(typeof data.parIdx==='number') renderParAtual(data.parIdx,'pergunta');
     return;
   }
 
-  if(data.ativo){
-    iniciarQTimerLocal(data.ts, subFase);
-  } else {
+  // Recarregando: barra enche de 0→100% em 750ms, depois host dispara timer real
+  if(subFase==='recarregando_pergunta'||subFase==='recarregando_resposta'){
     pararQTimerLocal();
+    stopFlashPulse();
+    const proxSubFase=subFase==='recarregando_pergunta'?'pergunta':'resposta';
+    const parIdx=data.parIdx||0;
+    // Atualiza par imediatamente
+    renderParAtual(parIdx, proxSubFase);
+    atualizarQSubfase(proxSubFase);
+    // Anima barra de 0 → 100%
+    const bar=$('q-timer-bar');
+    if(bar){
+      bar.className='q-timer-bar recarregando'+(proxSubFase==='resposta'?' resposta':'');
+      bar.style.width='0%';
+      // Força reflow para animar
+      void bar.offsetWidth;
+      bar.style.width='100%';
+    }
+    $('q-timer-display').textContent='20';
+    $('q-timer-display').classList.remove('urgent');
+    $('q-timer-label').textContent='preparando…';
+    $('btn-prox-par').disabled=true;
+    // Após 850ms, host dispara o timer real
+    if(_info&&_info.host===ME.uid){
+      setTimeout(async()=>{
+        if(!SALA||!_info||_info.fase!=='questioning') return;
+        await set(`salas/${SALA}/qtimer`,{ts:Date.now(),ativo:true,subFase:proxSubFase,parIdx});
+        $('btn-prox-par').disabled=false;
+      }, 850);
+    } else {
+      setTimeout(()=>{ $('btn-prox-par').disabled=false; }, 850);
+    }
+    return;
+  }
+
+  if(data.ativo && tsChanged){
+    iniciarQTimerLocal(data.ts, subFase);
+  } else if(!data.ativo && !qTimerRunning){
     renderQProgressoTimer(20, 20, subFase);
     $('q-timer-label').textContent='aguardando host…';
   }
-  // Atualiza label de subfase
   atualizarQSubfase(subFase);
-  // Re-renderiza par se parIdx mudou
   if(typeof data.parIdx==='number') renderParAtual(data.parIdx, subFase);
 }
 
 // Countdown de 5s antes do primeiro timer de pergunta
+// A barra ENCHE de 0→100% durante esses 5s para indicar que está "carregando"
 let _prepTimer=null;
 function iniciarCountdownPreparando(startTs){
   if(_prepTimer) clearInterval(_prepTimer);
+  stopFlashPulse();
   const PREP=5;
+
+  // Anima barra de 0 → 100% em 5s com CSS transition
+  const bar=$('q-timer-bar');
+  if(bar){
+    bar.className='q-timer-bar recarregando';
+    bar.style.width='0%';
+    void bar.offsetWidth; // força reflow
+    bar.style.transition='width 5s linear, background .3s';
+    bar.style.width='100%';
+  }
+
   function tick(){
     const elapsed=(Date.now()-startTs)/1000;
     const restante=Math.max(0,PREP-elapsed);
     const seg=Math.ceil(restante);
-    $('q-timer-display').textContent=seg||'—';
+    $('q-timer-display').textContent=seg||'▶';
     $('q-timer-label').textContent=`começando em ${seg}s…`;
-    $('q-timer-bar').style.width=(restante/PREP*100)+'%';
-    $('q-timer-bar').className='q-timer-bar';
     $('q-timer-display').classList.remove('urgent');
     if(restante<=0){
       clearInterval(_prepTimer);
       _prepTimer=null;
+      if(bar) bar.style.transition=''; // restaura transition padrão
       // Só o host dispara o timer no Firebase; os outros recebem via listener
       if(_info&&_info.host===ME.uid){
         set(`salas/${SALA}/qtimer`,{ts:Date.now(),ativo:true,subFase:'pergunta',parIdx:0});
@@ -1679,8 +1731,8 @@ function iniciarQTimerLocal(startTs, subFase){
     renderQProgressoTimer(restante, DURACAO, subFase);
     $('q-timer-display').classList.toggle('urgent', urgent);
 
-    // Pisca tela nos últimos 5s — liga/desliga a cada 450ms
-    if(urgent && restante>0){
+    // Flash vermelho APENAS na fase de resposta (não na pergunta)
+    if(subFase==='resposta' && urgent && restante>0){
       startFlashPulse();
     } else {
       stopFlashPulse();
@@ -1723,19 +1775,25 @@ function atualizarQSubfase(subFase){
   const desc=$('q-phase-desc');
   if(!pill||!desc) return;
   if(subFase==='pergunta'){
-    pill.textContent='Próxima Pergunta'; pill.className='q-phase-pill';
+    pill.textContent='pergunta'; pill.className='q-phase-pill';
     desc.textContent='Tempo de Pergunta'; desc.className='pair-phase-label phase-pergunta';
     $('q-avatar-left')?.classList.add('active-perguntador');
     $('q-avatar-left')?.classList.remove('active-respondedor');
     $('q-avatar-right')?.classList.add('active-respondedor');
     $('q-avatar-right')?.classList.remove('active-perguntador');
+    // Botão: durante pergunta, host avança para "resposta" → label RESPONDER
+    const btnP=$('btn-prox-par');
+    if(btnP) btnP.textContent='💬 RESPONDER';
   } else {
-    pill.textContent='Resposta'; pill.className='q-phase-pill resposta';
+    pill.textContent='resposta'; pill.className='q-phase-pill resposta';
     desc.textContent='Tempo de Resposta'; desc.className='pair-phase-label phase-resposta';
     $('q-avatar-right')?.classList.add('active-perguntador');
     $('q-avatar-right')?.classList.remove('active-respondedor');
     $('q-avatar-left')?.classList.add('active-respondedor');
     $('q-avatar-left')?.classList.remove('active-perguntador');
+    // Botão: durante resposta, host avança para próximo par → label PRÓXIMA PERGUNTA
+    const btnR=$('btn-prox-par');
+    if(btnR) btnR.textContent='⏭ PRÓXIMA PERGUNTA';
   }
 }
 
@@ -1844,10 +1902,10 @@ async function proxPar(){
   const subFase=qtdata?.subFase||'pergunta';
 
   if(subFase==='pergunta'){
-    // Vai para subfase resposta do mesmo par
+    // Vai para subfase resposta — mostra recarregamento e inicia resposta
     SFX.transicaoPar();
     pararQTimerLocal();
-    await set(`salas/${SALA}/qtimer`,{ts:Date.now()+600, ativo:true, subFase:'resposta', parIdx});
+    await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'recarregando_resposta', parIdx});
   } else {
     // Fim da resposta — vai para próximo par
     const total=_fila.length||((await get(`salas/${SALA}/fila`))||[]).length;
@@ -1859,7 +1917,7 @@ async function proxPar(){
       await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
       await upd(`salas/${SALA}/info`,{fase:'playing'});
     } else {
-      await set(`salas/${SALA}/qtimer`,{ts:Date.now()+600, ativo:true, subFase:'pergunta', parIdx:parIdx+1});
+      await set(`salas/${SALA}/qtimer`,{ts:Date.now(), ativo:false, subFase:'recarregando_pergunta', parIdx:parIdx+1});
     }
   }
 }
@@ -2245,8 +2303,11 @@ function calcularResultado(ativos, contagem, impostorId, votos){
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
   if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
-  pararTimerLocal(); // para imediatamente, sem esperar Firebase
+  // Para TUDO imediatamente — timer, qtimer, flash, sons
+  pararTimerLocal();
   pararQTimerLocal();
+  if(_prepTimer){ clearInterval(_prepTimer); _prepTimer=null; }
+  stopFlashPulse();
   SFX.revelar();
 
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
