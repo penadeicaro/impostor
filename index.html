@@ -479,52 +479,52 @@ function playNoise(duration, vol=0.12, delay=0){
 
 const SFX = {
   // Jogador entra — acorde ascendente dó-mi-sol
-  join(){ playTone(261,.sine,.12); playTone(329,.sine,.12,0.14,0.08); playTone(392,.sine,.18,0.12,0.16); },
+  join(){ playTone(261,'sine',.12); playTone(329,'sine',.12,0.14,0.08); playTone(392,'sine',.18,0.12,0.16); },
 
   // Sortear — drum roll + fanfara
   sortear(){
     for(let i=0;i<8;i++) playNoise(0.04,0.08+i*0.01,i*0.055);
-    playTone(523,.sawtooth,.15,0.16,0.48);
-    playTone(659,.sawtooth,.15,0.14,0.60);
-    playTone(784,.sawtooth,.25,0.18,0.72);
+    playTone(523,'sawtooth',.15,0.16,0.48);
+    playTone(659,'sawtooth',.15,0.14,0.60);
+    playTone(784,'sawtooth',.25,0.18,0.72);
   },
 
   // Ver palavra — whoosh + tom
-  palavra(){ playNoise(0.18,0.15); playTone(220,.sine,.35,0.12,0.1); },
+  palavra(){ playNoise(0.18,0.15); playTone(220,'sine',.35,0.12,0.1); },
 
   // Clique de voto — ploc percussivo
-  voto(){ playTone(800,.square,.04,0.1); playTone(500,.square,.06,0.08,0.04); },
+  voto(){ playTone(800,'square',.04,0.1); playTone(500,'square',.06,0.08,0.04); },
 
   // Timer tick normal
-  tick(){ playTone(880,.sine,.05,0.06); },
+  tick(){ playTone(880,'sine',.05,0.06); },
 
   // Timer urgente (últimos 4s)
-  tickUrgente(){ playTone(1100,.sine,.06,0.1); playTone(1100,.square,.03,0.04,0.07); },
+  tickUrgente(){ playTone(1100,'sine',.06,0.1); playTone(1100,'square',.03,0.04,0.07); },
 
   // Timer chegou a zero
-  timerZero(){ playTone(440,.sawtooth,.08,0.15); playTone(300,.sawtooth,.18,0.12,0.09); },
+  timerZero(){ playTone(440,'sawtooth',.08,0.15); playTone(300,'sawtooth',.18,0.12,0.09); },
 
   // Revelar impostor — acorde dramático descendente
   revelar(){
-    playTone(523,.sawtooth,.12,0.2);
-    playTone(415,.sawtooth,.12,0.18,0.14);
-    playTone(330,.sawtooth,.25,0.22,0.28);
+    playTone(523,'sawtooth',.12,0.2);
+    playTone(415,'sawtooth',.12,0.18,0.14);
+    playTone(330,'sawtooth',.25,0.22,0.28);
     playNoise(0.08,0.1,0.28);
   },
 
   // Vitória — fanfara ascendente
   vitoria(){
-    [523,659,784,1047].forEach((f,i)=>playTone(f,.sine,.2,0.2,i*0.12));
-    playTone(1047,.sine,.4,0.18,0.5);
+    [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.2,0.2,i*0.12));
+    playTone(1047,'sine',.4,0.18,0.5);
   },
 
   // Derrota — tom descendente triste
   derrota(){
-    [440,415,392,330].forEach((f,i)=>playTone(f,.triangle,.22,0.15,i*0.14));
+    [440,415,392,330].forEach((f,i)=>playTone(f,'triangle',.22,0.15,i*0.14));
   },
 
   // Votação aberta — ping duplo
-  votacaoAberta(){ playTone(660,.sine,.1,0.15); playTone(880,.sine,.12,0.12,0.14); },
+  votacaoAberta(){ playTone(660,'sine',.1,0.15); playTone(880,'sine',.12,0.12,0.14); },
 };
 
 // ══════════════════════════════════════════════════════
