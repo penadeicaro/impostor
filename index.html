@@ -397,6 +397,7 @@ input::placeholder{color:var(--muted);}
       </div>
     </div>
     <div class="status err" id="st-setup"></div>
+    <button class="btn btn-secondary" id="btn-rejoin" onclick="rejoinSala()" style="display:none">↩ VOLTAR PARA <span id="rejoin-code"></span></button>
     <div class="words-info" id="words-status2"></div>
   </div>
 
@@ -1044,6 +1045,7 @@ async function esqueciSenha(){
 async function logout(){
   stopListeners();
   SALA='';
+  localStorage.removeItem('_imp_sala');
   await auth.signOut();
 }
 
@@ -1085,6 +1087,15 @@ function mostrarSetup(){
   // Rank card grande
   const rankCard=$('setup-rank-card');
   if(rankCard) rankCard.innerHTML = rankCardHTML(pts);
+  // Botão de rejoin se havia sala ativa
+  const ultimaSala = localStorage.getItem('_imp_sala');
+  const btnRejoin = $('btn-rejoin');
+  if(ultimaSala && btnRejoin){
+    $('rejoin-code').textContent = ultimaSala;
+    btnRejoin.style.display = '';
+  } else if(btnRejoin){
+    btnRejoin.style.display = 'none';
+  }
   // preenche código se vier na URL
   const params=new URLSearchParams(location.search);
   const salaParam=params.get('sala');
@@ -1199,6 +1210,18 @@ function _bindInputListeners(){
   bind('ca-senha',  'keydown',e=>{if(e.key==='Enter')cadastrar();});
 }
 
+async function rejoinSala(){
+  const cod = localStorage.getItem('_imp_sala');
+  if(!cod) return;
+  clearErr('st-setup');
+  const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || 'Jogador';
+  try{
+    const info = await get(`salas/${cod}/info`);
+    if(!info){ localStorage.removeItem('_imp_sala'); $('btn-rejoin').style.display='none'; throw new Error('Sala não existe mais.'); }
+    await entrarSala(nome, cod);
+  }catch(e){ setErr('st-setup', e.message); }
+}
+
 async function entrarOuCriar(){
   const raw=$('inp-codigo').value.trim().toUpperCase();
   clearErr('st-setup');
@@ -1230,6 +1253,7 @@ async function criarSala(nome, codCustom){
   });
   await _gravarJogador(cod, uid, nome, false);
   SALA=cod;
+  localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
   iniciarListeners();
 }
@@ -1240,6 +1264,7 @@ async function entrarSala(nome, cod){
   const espectador=info.fase!=='lobby';
   await _gravarJogador(cod, ME.uid, nome, espectador);
   SALA=cod;
+  localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
   iniciarListeners();
 }
@@ -2127,6 +2152,7 @@ async function sairDaSala(){
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
   _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
   qWordShown=false;
+  localStorage.removeItem('_imp_sala');
   $('inp-codigo').value='';
   mostrarSetup();
 }
