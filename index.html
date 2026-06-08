@@ -335,6 +335,36 @@ input::placeholder{color:var(--muted);}
 .player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
 .player-chip .kick-btn:hover{color:#FF4757!important;}
 
+/* ── DEVLOG ── */
+#devlog-panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:rgba(0,0,0,.92);border-top:2px solid #E8FF47;
+  font-family:monospace;font-size:11px;
+  max-height:38vh;display:flex;flex-direction:column;
+}
+#devlog-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 8px;background:#111;border-bottom:1px solid #333;
+  cursor:pointer;user-select:none;flex-shrink:0;
+}
+#devlog-bar span{color:#E8FF47;letter-spacing:1px;font-size:11px;}
+#devlog-bar .devlog-btns{display:flex;gap:6px;}
+#devlog-bar button{background:#222;border:1px solid #444;color:#aaa;
+  font-size:10px;padding:2px 7px;cursor:pointer;font-family:monospace;}
+#devlog-bar button:hover{color:#E8FF47;border-color:#E8FF47;}
+#devlog-body{overflow-y:auto;flex:1;padding:4px 8px 6px;}
+#devlog-body.collapsed{display:none;}
+.dlog{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;gap:6px;align-items:flex-start;line-height:1.4;}
+.dlog-time{color:#555;flex-shrink:0;min-width:68px;}
+.dlog-uid{color:#4FC3F7;flex-shrink:0;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dlog-msg{color:#ddd;word-break:break-all;}
+.dlog.err .dlog-msg{color:#FF4757;}
+.dlog.warn .dlog-msg{color:#FF9800;}
+.dlog.ok .dlog-msg{color:#4CAF50;}
+.dlog.info .dlog-msg{color:#4FC3F7;}
+.dlog.auth .dlog-msg{color:#E8FF47;}
+
 
 /* Scrollbars invisíveis mas funcionais */
 .player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
@@ -550,6 +580,19 @@ input::placeholder{color:var(--muted);}
   </div>
 </div>
 
+<!-- ══ DEVLOG PANEL ══ -->
+<div id="devlog-panel">
+  <div id="devlog-bar" onclick="devlogToggle()">
+    <span>🛠 DEVLOG <span id="devlog-count" style="color:#aaa">(0)</span></span>
+    <div class="devlog-btns" onclick="event.stopPropagation()">
+      <button onclick="devlogClear()">Limpar</button>
+      <button onclick="devlogCopy()">Copiar</button>
+      <button onclick="devlogToggle()">▲/▼</button>
+    </div>
+  </div>
+  <div id="devlog-body"></div>
+</div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -573,6 +616,107 @@ firebase.initializeApp(firebaseConfig);
 const auth    = firebase.auth();
 const db      = firebase.database();
 const storage = firebase.storage();
+
+// ══════════════════════════════════════════════════════
+//  DEVLOG — visível na tela + sincronizado via Firebase
+// ══════════════════════════════════════════════════════
+let _devlogCollapsed = false;
+let _devlogCount = 0;
+let _devlogRef = null; // referência no Firebase para log compartilhado
+const _DEVLOG_SESSION = Math.random().toString(36).slice(2,6).toUpperCase(); // ID desta sessão
+
+function _devlogUidLabel(){
+  if(typeof ME !== 'undefined' && ME?.uid) return ME.uid.slice(0,6);
+  return 'NOAUTH';
+}
+
+// Escreve no painel local E no Firebase (para ver de outro dispositivo)
+function devlog(msg, tipo='info'){
+  // Painel local
+  const body = document.getElementById('devlog-body');
+  if(body){
+    const now = new Date();
+    const ts  = now.toTimeString().slice(0,8)+'.'+String(now.getMilliseconds()).padStart(3,'0');
+    const row = document.createElement('div');
+    row.className = 'dlog ' + tipo;
+    row.innerHTML = `<span class="dlog-time">${ts}</span><span class="dlog-uid">[${_DEVLOG_SESSION}/${_devlogUidLabel()}]</span><span class="dlog-msg">${msg}</span>`;
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+    _devlogCount++;
+    const cnt = document.getElementById('devlog-count');
+    if(cnt) cnt.textContent = `(${_devlogCount})`;
+  }
+  // Também no console
+  console[tipo==='err'?'error':tipo==='warn'?'warn':'log'](`[IMP-${_DEVLOG_SESSION}] ${msg}`);
+  // Grava no Firebase para ver de outro device (sem bloquear)
+  try{
+    if(typeof db !== 'undefined'){
+      const ref = db.ref('_devlog').push();
+      ref.set({
+        ts: Date.now(),
+        session: _DEVLOG_SESSION,
+        uid: _devlogUidLabel(),
+        msg, tipo
+      }).catch(()=>{});
+      // Limita a 200 entradas automaticamente
+      db.ref('_devlog').once('value', snap=>{
+        if(snap.numChildren && snap.numChildren() > 200){
+          const keys = Object.keys(snap.val()||{});
+          keys.slice(0, keys.length-200).forEach(k=> db.ref(`_devlog/${k}`).remove().catch(()=>{}));
+        }
+      }).catch(()=>{});
+    }
+  }catch(_){}
+}
+
+function devlogToggle(){
+  _devlogCollapsed = !_devlogCollapsed;
+  const body = document.getElementById('devlog-body');
+  if(body) body.classList.toggle('collapsed', _devlogCollapsed);
+}
+function devlogClear(){
+  const body = document.getElementById('devlog-body');
+  if(body){ body.innerHTML=''; _devlogCount=0; }
+  const cnt = document.getElementById('devlog-count');
+  if(cnt) cnt.textContent='(0)';
+}
+function devlogCopy(){
+  const body = document.getElementById('devlog-body');
+  if(!body) return;
+  const linhas = [...body.querySelectorAll('.dlog')].map(r=>r.textContent).join('\n');
+  navigator.clipboard.writeText(linhas).then(()=>devlog('Log copiado!','ok')).catch(()=>devlog('Falha ao copiar','err'));
+}
+
+// Inicia listener no Firebase para mostrar logs de OUTROS devices também
+function devlogStartRemoteListener(){
+  if(_devlogRef) return;
+  _devlogRef = db.ref('_devlog').orderByChild('ts').limitToLast(50);
+  _devlogRef.on('child_added', snap=>{
+    const d = snap.val();
+    if(!d || d.session === _DEVLOG_SESSION) return; // não duplica o próprio
+    const body = document.getElementById('devlog-body');
+    if(!body) return;
+    const ts = new Date(d.ts).toTimeString().slice(0,8);
+    const row = document.createElement('div');
+    row.className = 'dlog ' + (d.tipo||'info');
+    row.style.opacity = '0.7'; // diferencia logs remotos
+    row.innerHTML = `<span class="dlog-time">${ts}📡</span><span class="dlog-uid">[${d.session||'?'}/${d.uid||'?'}]</span><span class="dlog-msg">${d.msg}</span>`;
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+    _devlogCount++;
+    const cnt = document.getElementById('devlog-count');
+    if(cnt) cnt.textContent = `(${_devlogCount})`;
+  });
+}
+
+// Intercepta visibilitychange para logar quando app vai para background/foreground
+document.addEventListener('visibilitychange', ()=>{
+  devlog(`visibilitychange → ${document.visibilityState} | ME=${typeof ME!=='undefined'&&ME?ME.uid?.slice(0,6):'null'} | SALA=${typeof SALA!=='undefined'?SALA:'?'}`, document.visibilityState==='hidden'?'warn':'ok');
+});
+window.addEventListener('focus', ()=> devlog('window focus', 'ok'));
+window.addEventListener('blur',  ()=> devlog('window blur',  'warn'));
+window.addEventListener('online',  ()=> devlog('REDE: online',  'ok'));
+window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
 
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
 
@@ -966,24 +1110,30 @@ async function carregarPalavras(){
 let _authNullTimer = null;
 
 auth.onAuthStateChanged(async user=>{
-  if(_authNullTimer){ clearTimeout(_authNullTimer); _authNullTimer=null; }
+  devlog(`onAuthStateChanged → ${user ? 'USER:'+user.uid.slice(0,6) : 'NULL'} | hadME=${!!ME}`, user?'auth':'warn');
+  if(_authNullTimer){ clearTimeout(_authNullTimer); _authNullTimer=null; devlog('authNullTimer cancelado','info'); }
 
   if(user){
-    // Usuário presente — cancela qualquer logout pendente e inicializa
     try{
       ME=user;
-      // Se já temos perfil carregado e é o mesmo usuário, não recarrega
+      devlog(`user ok: ${user.email} | displayName="${user.displayName}"`, 'auth');
       if(!ME_PROFILE || ME_PROFILE._uid !== user.uid){
+        devlog('carregando perfil do Firebase…','info');
         ME_PROFILE = await carregarPerfil(user.uid);
         ME_PROFILE._uid = user.uid;
+        devlog(`perfil carregado: nome="${ME_PROFILE.nome}" placarTotal=${ME_PROFILE.placarTotal}`, ME_PROFILE.nome?'ok':'err');
+      } else {
+        devlog('perfil já em cache, pulando reload','info');
       }
+      devlogStartRemoteListener();
       mostrarSetup();
     }catch(e){
-      // Erro de rede ao carregar perfil — mantém sessão, tenta com dados locais
-      console.warn('Erro ao carregar perfil, usando fallback:', e);
+      devlog(`ERRO ao carregar perfil: ${e.message}`, 'err');
       if(!ME_PROFILE){
+        const nomeFallback = user.displayName || user.email?.split('@')[0] || 'Jogador';
+        devlog(`usando fallback nome="${nomeFallback}"`, 'warn');
         ME_PROFILE = {
-          nome: user.displayName || user.email?.split('@')[0] || 'Jogador',
+          nome: nomeFallback,
           avatarUrl: user.photoURL || '',
           placarTotal: 0
         };
@@ -993,39 +1143,41 @@ auth.onAuthStateChanged(async user=>{
       $('loader').classList.add('hide');
     }
   } else {
-    // null pode ser temporário (background/foreground no mobile)
-    // aguarda 2s antes de realmente deslogar
+    devlog(`auth NULL — aguardando 2s antes de deslogar | SALA=${SALA}`, 'warn');
     _authNullTimer = setTimeout(()=>{
       _authNullTimer = null;
+      devlog('auth NULL confirmado após 2s — limpando estado e indo para login', 'err');
       ME=null; ME_PROFILE=null;
       $('loader').classList.add('hide');
       showScreen('s-auth');
     }, 2000);
-    // Esconde loader imediatamente só se nunca houve usuário
     if(!ME) $('loader').classList.add('hide');
   }
 });
 
 async function carregarPerfil(uid){
   let prof = null;
-  // Tenta até 3 vezes — ao voltar do background a rede pode estar instável
   for(let i=0; i<3; i++){
-    try{ prof = await get(`users/${uid}`); } catch(e){}
-    if(prof) break;
+    devlog(`carregarPerfil tentativa ${i+1}/3 uid=${uid.slice(0,6)}`, 'info');
+    try{ prof = await get(`users/${uid}`); } catch(e){ devlog(`tentativa ${i+1} erro: ${e.message}`, 'err'); }
+    if(prof){ devlog(`perfil encontrado na tentativa ${i+1}: nome="${prof.nome}"`, 'ok'); break; }
     if(i<2) await new Promise(r=>setTimeout(r, 800));
   }
 
   const nomeFirebase = ME.displayName || ME.email?.split('@')[0] || '';
+  devlog(`nomeFirebase="${nomeFirebase}" | prof=${prof?JSON.stringify({nome:prof.nome,placarTotal:prof.placarTotal}):'null'}`, 'info');
 
   if(!prof){
-    // Só cria perfil novo se tiver nome — senão é falha de rede, não primeira vez
-    if(!nomeFirebase) throw new Error('Sem conexão para carregar perfil');
+    if(!nomeFirebase){ devlog('sem nome e sem perfil — throw Sem conexão', 'err'); throw new Error('Sem conexão para carregar perfil'); }
+    devlog(`criando perfil novo nome="${nomeFirebase}"`, 'warn');
     prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
     await set(`users/${uid}`, prof);
   } else if(!prof.nome && nomeFirebase){
-    // Repara perfil com nome vazio (corrompido por bug anterior)
+    devlog(`perfil com nome vazio — reparando para "${nomeFirebase}"`, 'warn');
     prof.nome = nomeFirebase;
     await upd(`users/${uid}`, { nome: nomeFirebase });
+  } else if(!prof.nome && !nomeFirebase){
+    devlog('perfil com nome vazio E sem nomeFirebase — nome ficará vazio!', 'err');
   }
   return prof;
 }
@@ -1107,6 +1259,7 @@ function traduzirErroAuth(code){
 // ══════════════════════════════════════════════════════
 function mostrarSetup(){
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || '';
+  devlog(`mostrarSetup: nome="${nome}" ME_PROFILE.nome="${ME_PROFILE?.nome}" ME.displayName="${ME.displayName}"`, nome?'ok':'err');
   const avatar = ME_PROFILE?.avatarUrl || ME.photoURL || '';
   const pts = ME_PROFILE?.placarTotal || 0;
   $('setup-nome-display').textContent = nome || '(sem nome)';
@@ -1265,15 +1418,17 @@ async function entrarOuCriar(){
   const raw=$('inp-codigo').value.trim().toUpperCase();
   clearErr('st-setup');
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
+  devlog(`entrarOuCriar: codigo="${raw}" nome="${nome}"`, nome?'info':'err');
   try{
     if(!raw){
       await criarSala(nome);
     } else {
       const existing=await get(`salas/${raw}/info`);
+      devlog(`sala ${raw} existe=${!!existing}`, 'info');
       if(existing) await entrarSala(nome,raw);
       else          await criarSala(nome, raw);
     }
-  }catch(e){ setErr('st-setup',e.message); }
+  }catch(e){ devlog(`entrarOuCriar ERRO: ${e.message}`, 'err'); setErr('st-setup',e.message); }
 }
 
 async function criarSala(nome, codCustom){
@@ -1309,6 +1464,7 @@ async function entrarSala(nome, cod){
 }
 
 async function _gravarJogador(cod, uid, nome, espectador){
+  devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}" espectador=${espectador}`, nome?'info':'err');
   const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
@@ -1401,10 +1557,11 @@ function sincronizarPlacarTotalJogador(uid){
 }
 
 function onInfoChanged(info){
-  if(!info){ sairDaSala(); return; }
+  if(!info){ devlog('onInfoChanged: sala removida — saindo', 'err'); sairDaSala(); return; }
   const prev=_info;
   _info=info;
   const fase=info.fase;
+  devlog(`onInfoChanged: fase ${prev?.fase||'?'} → ${fase} | host=${info.host?.slice(0,6)}`, 'info');
 
   if(fase==='revealed'){
     listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
@@ -1465,6 +1622,7 @@ function onJogadoresChanged(jogadores){
   });
   _jogadores=normalized;
   const cur=Object.keys(_jogadores).length;
+  devlog(`onJogadoresChanged: ${prev}→${cur} jogadores: ${Object.values(_jogadores).map(j=>`${j.nome||'?'}(${j.id?.slice(0,4)||'?'})`).join(', ')}`, 'info');
   if(cur>prev) SFX.join();
   // Inicia listener de placarTotal para cada jogador (sem duplicar)
   Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
@@ -2200,6 +2358,7 @@ async function sairDaSala(){
 //  INIT
 // ══════════════════════════════════════════════════════
 window.addEventListener('load', async()=>{
+  devlog(`APP INIT | session=${_DEVLOG_SESSION} | userAgent=${navigator.userAgent.slice(0,80)}`, 'auth');
   // Registra listeners de teclado aqui — garante que o DOM existe
   _bindInputListeners();
 
