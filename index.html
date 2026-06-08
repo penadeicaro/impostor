@@ -451,8 +451,10 @@ input::placeholder{color:var(--muted);}
       <div class="word-hint" id="word-hint">toque aqui para revelar</div>
     </div>
     <!-- Rodapé: revelar impostor (host) → sair -->
-    <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+    <div class="btn-pair-row">
+  <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+  <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
+    </div>
     <div class="status err" id="st-palavra"></div>
   </div>
 
@@ -488,10 +490,10 @@ input::placeholder{color:var(--muted);}
       <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
     <!-- Rodapé: sair (último) → revelar impostor + revelar (host, antepenúltimo) -->
-    <div class="btn-pair-row" id="btn-host-pair-row" style="display:none">
-      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()">🔍 REVELAR IMPOSTOR</button>
+   <div class="btn-pair-row">
+  <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+  <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" id="btn-host-pair-row" style="display:none">🔍 REVELAR IMPOSTOR</button>
     </div>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
   <!-- ══ RESULTADO ══ -->
