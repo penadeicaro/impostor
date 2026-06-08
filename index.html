@@ -419,10 +419,10 @@ input::placeholder{color:var(--muted);}
       <span class="sala-code" id="lobby-code">—</span>
       <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
     </div>
-    <div class="btn-pair-row">
+   <div class="btn-pair-row">
   <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-  <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
-    </div>
+  <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" id="btn-host-pair-row" style="display:none">🔍 REVELAR IMPOSTOR</button>
+</div>
     <div class="status err" id="st-lobby"></div>
   </div>
 
@@ -451,10 +451,10 @@ input::placeholder{color:var(--muted);}
       <div class="word-hint" id="word-hint">toque aqui para revelar</div>
     </div>
     <!-- Rodapé: revelar impostor (host) → sair -->
-    <div class="btn-pair-row">
+  <div class="btn-pair-row">
   <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-  <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
-    </div>
+  <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" id="btn-host-pair-row" style="display:none">🔍 REVELAR IMPOSTOR</button>
+</div>
     <div class="status err" id="st-palavra"></div>
   </div>
 
@@ -493,7 +493,7 @@ input::placeholder{color:var(--muted);}
    <div class="btn-pair-row">
   <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" id="btn-host-pair-row" style="display:none">🔍 REVELAR IMPOSTOR</button>
-    </div>
+</div>
   </div>
 
   <!-- ══ RESULTADO ══ -->
