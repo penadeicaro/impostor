@@ -433,7 +433,7 @@ input::placeholder{color:var(--muted);}
     <!-- Votação — flex:1 e scroll interno -->
     <div class="card" id="card-votacao" style="display:none;flex:1;min-height:0;flex-direction:column;padding:12px;">
       <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="vote-grid" style="overflow-y:auto;flex:1;min-height:0;"></div>
+      <div class="vote-grid" id="q-vote-grid"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
       <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
@@ -469,9 +469,9 @@ input::placeholder{color:var(--muted);}
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
     <!-- Votação — área scrollável interna -->
-    <div class="card" id="q-votacao-card" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:12px;">
+    <div class="card" id="q-votacao-card" style="padding:12px;">
       <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;"></div>
+      <div class="vote-grid" id="q-vote-grid"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
     <!-- Word box — penúltimo item fixo -->
@@ -1262,8 +1262,7 @@ async function criarSala(nome, codCustom){
 async function entrarSala(nome, cod){
   const info=await get(`salas/${cod}/info`);
   if(!info) throw new Error('Sala não encontrada.');
-  const espectador=info.fase!=='lobby';
-  await _gravarJogador(cod, ME.uid, nome, espectador);
+  await _gravarJogador(cod, ME.uid, nome, false);
   SALA=cod;
   localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
@@ -1562,14 +1561,12 @@ async function resetarTimer(){
 function renderFase(){
   if(!_info) return;
   const fase=_info.fase;
-  const eu=_jogadores[idKey(ME.uid)];
-  const euSouEspectador=eu?.espectador===true;
-
-  if(euSouEspectador){
-    if(fase==='revealed') renderResultado();
-    else renderEspectador();
-    return;
-  }
+  if(fase==='lobby')            renderLobby();
+  else if(fase==='questioning') renderQuestioning();
+  else if(fase==='playing')     renderPlaying();
+  else if(fase==='voting')      renderVoting();
+  else if(fase==='revealed')    renderResultado();
+}
   if(fase==='lobby')          renderLobby();
   else if(fase==='questioning') renderQuestioning();
   else if(fase==='playing')     renderPlaying();
@@ -2109,13 +2106,6 @@ async function novaRodada(){
   SFX.novaRodada();
   meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
   pararTimerLocal();
-
-  const updates={};
-  Object.values(_jogadores).forEach(j=>{
-    if(j.espectador) updates[`salas/${SALA}/jogadores/${idKey(j.id)}/espectador`]=false;
-  });
-  if(Object.keys(updates).length) await db.ref().update(updates);
-
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
   await del(`salas/${SALA}/snapshot`);
