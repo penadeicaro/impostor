@@ -29,7 +29,7 @@ body::before{content:'';position:fixed;inset:0;
 .screen{display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
 /* Scroll interno apenas para telas que precisam */
-.screen-scroll{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
+.screen-scroll{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
 .card{background:var(--card);border:1px solid rgba(255,255,255,.06);
   border-radius:var(--radius);padding:14px;}
 .card-label{font-size:1rem;letter-spacing:2px;text-transform:uppercase;
@@ -419,11 +419,11 @@ input::placeholder{color:var(--muted);}
       <span class="sala-code" id="lobby-code">—</span>
       <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
     </div>
+    <div class="status err" id="st-lobby"></div>
     <div class="btn-pair-row">
       <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
       <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
     </div>
-    <div class="status err" id="st-lobby"></div>
   </div>
 
   <!-- ══ PALAVRA ══ -->
@@ -450,12 +450,12 @@ input::placeholder{color:var(--muted);}
       <div id="word-el" class="word-hidden">● ● ●</div>
       <div class="word-hint" id="word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé: revelar impostor (host) → sair -->
+    <!-- Rodapé -->
+    <div class="status err" id="st-palavra"></div>
     <div class="btn-pair-row">
       <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-      <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
+      <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
-    <div class="status err" id="st-palavra"></div>
   </div>
 
   <!-- ══ ESPECTADOR ══ -->
@@ -489,10 +489,10 @@ input::placeholder{color:var(--muted);}
       <div id="q-word-el" class="word-hidden">● ● ●</div>
       <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé: sair sempre à esq, revelar impostor (host) à dir -->
+    <!-- Rodapé -->
     <div class="btn-pair-row">
       <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
+      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
   </div>
 
