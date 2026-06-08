@@ -419,11 +419,9 @@ input::placeholder{color:var(--muted);}
       <span class="sala-code" id="lobby-code">—</span>
       <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
     </div>
-    <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
     <div class="btn-pair-row">
-  <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-  <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
+      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
     </div>
     <div class="status err" id="st-lobby"></div>
   </div>
@@ -453,8 +451,10 @@ input::placeholder{color:var(--muted);}
       <div class="word-hint" id="word-hint">toque aqui para revelar</div>
     </div>
     <!-- Rodapé: revelar impostor (host) → sair -->
-    <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+    <div class="btn-pair-row">
+      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
+    </div>
     <div class="status err" id="st-palavra"></div>
   </div>
 
@@ -489,11 +489,11 @@ input::placeholder{color:var(--muted);}
       <div id="q-word-el" class="word-hidden">● ● ●</div>
       <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé: sair (último) → revelar impostor + revelar (host, antepenúltimo) -->
-    <div class="btn-pair-row" id="btn-host-pair-row" style="display:none">
-      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()">🔍 REVELAR IMPOSTOR</button>
+    <!-- Rodapé: sair sempre à esq, revelar impostor (host) à dir -->
+    <div class="btn-pair-row">
+      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR IMPOSTOR</button>
     </div>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
   <!-- ══ RESULTADO ══ -->
@@ -516,11 +516,9 @@ input::placeholder{color:var(--muted);}
         </div>
       </div>
     </div>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-    <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     <div class="btn-pair-row">
-  <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-  <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
+      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     </div>
   </div>
 </div>
@@ -1675,8 +1673,8 @@ async function renderQuestioning(){
     showScreen('s-questioning');
   }
   const isHost=_info.host===ME.uid;
-  const hostRow=$('btn-host-pair-row');
-  if(hostRow) hostRow.style.display=isHost?'flex':'none';
+  const revelarQ=$('btn-revelar-q');
+  if(revelarQ) revelarQ.style.display=isHost?'':'none';
 
   renderVoteGrid('q-vote-grid', false);
   const qVoteStatus=$('q-vote-status');
