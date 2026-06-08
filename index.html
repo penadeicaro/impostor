@@ -26,7 +26,7 @@ body::before{content:'';position:fixed;inset:0;
 .logo span{color:var(--accent);}
 .tagline{text-align:center;color:var(--sub);font-size:1rem;letter-spacing:2px;
   text-transform:uppercase;margin-bottom:10px;}
-.screen{display:none;flex-direction:column;gap:10px;flex:1;overflow-y:auto;padding-bottom:12px;}
+.screen{display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
 /* Scroll interno apenas para telas que precisam */
 .screen-scroll{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
@@ -335,14 +335,19 @@ input::placeholder{color:var(--muted);}
 .player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
 .player-chip .kick-btn:hover{color:#FF4757!important;}
 
+
+/* Scrollbars invisíveis mas funcionais */
+.player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
+  scrollbar-width:none;}
+.player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
+#hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
+.tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
 </style>
 </head>
 <body>
 <div id="flash-overlay"></div>
 <div id="loader">carregando…</div>
 <div class="wrap">
-  <img src="header.png" alt="Impostor" style="width:100%;max-width:460px;display:block;margin:10px auto 6px;">
-
   <!-- ══ AUTH ══ -->
   <div id="s-auth" class="screen">
     <div class="card">
@@ -386,7 +391,7 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ SETUP (nome + sala, após login) ══ -->
-  <div id="s-setup" class="screen" style="gap:8px;">
+  <div id="s-setup" class="screen" style="gap:8px;overflow-y:auto;">
     <!-- Perfil + nome de exibição unificados -->
     <div class="card" style="padding:12px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
@@ -429,9 +434,9 @@ input::placeholder{color:var(--muted);}
   <!-- ══ LOBBY ══ -->
   <div id="s-lobby" class="screen" style="gap:8px;">
     <!-- Lista de jogadores primeiro -->
-    <div class="card" style="padding:12px">
+    <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
       <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
-      <div class="player-list" id="lobby-players"></div>
+      <div class="player-list" id="lobby-players" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <div class="btn-pair-row">
@@ -459,9 +464,9 @@ input::placeholder{color:var(--muted);}
       <button class="timer-reset-btn" id="btn-timer-reset" onclick="resetarTimer()" style="display:none">▶ Iniciar</button>
     </div>
     <!-- Votação — flex:1 e scroll interno -->
-    <div class="card" id="card-votacao" style="display:none;flex-direction:column;padding:12px;">
+    <div class="card" id="card-votacao" style="display:none;flex-direction:column;padding:12px;flex:1;min-height:0;">
       <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="vote-grid"></div>
+      <div class="vote-grid" id="vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
       <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
@@ -485,9 +490,9 @@ input::placeholder{color:var(--muted);}
       <div class="card-label"><span class="dot"></span>Modo espectador</div>
       <div class="spec-banner">Você entrou como espectador.<br>Aguarde a próxima rodada para participar!</div>
     </div>
-    <div class="card" style="padding:12px">
+    <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
       <div class="card-label">Jogadores ativos</div>
-      <div class="player-list" id="spec-players"></div>
+      <div class="player-list" id="spec-players" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
     </div>
     <div class="card" id="spec-voto-card" style="display:none;padding:12px">
       <div class="card-label">🗳️ Votos em tempo real</div>
@@ -499,9 +504,9 @@ input::placeholder{color:var(--muted);}
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
     <!-- Votação — área scrollável interna -->
-    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;">
+    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;">
       <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="q-vote-grid"></div>
+      <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
     <!-- Word box — penúltimo item fixo -->
@@ -519,20 +524,20 @@ input::placeholder{color:var(--muted);}
 
   <!-- ══ RESULTADO ══ -->
   <div id="s-resultado" class="screen" style="gap:8px;">
-    <div>
-      <div class="card" style="padding:12px">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;">
+      <div class="card" style="padding:12px;flex-shrink:0;">
         <div class="card-label">🔍 Resultado da rodada</div>
         <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
       </div>
-      <div class="card" style="padding:12px">
-        <div class="tabs" style="margin-bottom:10px">
+      <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
+        <div class="tabs" style="margin-bottom:10px;flex-shrink:0;">
           <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
           <button class="tab" onclick="switchTab('placar')">🏆 Placar</button>
         </div>
-        <div class="tab-content active" id="tab-hist">
+        <div class="tab-content active" id="tab-hist" style="flex:1;min-height:0;overflow-y:auto;padding-right:2px;">
           <div id="hist-list" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
-        <div class="tab-content" id="tab-placar">
+        <div class="tab-content" id="tab-placar" style="flex:1;min-height:0;overflow-y:auto;padding-right:2px;">
           <div id="placar-list"></div>
         </div>
       </div>
@@ -542,6 +547,7 @@ input::placeholder{color:var(--muted);}
       <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     </div>
   </div>
+  <img src="header.png" alt="Impostor" style="width:100%;max-width:460px;display:block;flex-shrink:0;">
 </div>
 
 <!-- Firebase SDKs -->
