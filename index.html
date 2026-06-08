@@ -414,18 +414,18 @@ input::placeholder{color:var(--muted);}
       <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
       <div class="player-list" id="lobby-players"></div>
     </div>
-    <div class="status err" id="st-lobby"></div>
-    <div style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;flex-direction:column;gap:8px">
       <div class="btn-pair-row">
         <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
         <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
       </div>
       <!-- Código + botão compartilhar -->
-      <div class="sala-badge" style="margin:0;border-radius:0 0 10px 10px;border-top:none">
+      <div class="sala-badge" style="margin:0">
         <span class="sala-code" id="lobby-code">—</span>
         <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
       </div>
     </div>
+    <div class="status err" id="st-lobby" style="min-height:0"></div>
   </div>
 
   <!-- ══ PALAVRA ══ -->
