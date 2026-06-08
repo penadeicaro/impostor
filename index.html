@@ -102,7 +102,7 @@ input::placeholder{color:var(--muted);}
 
 .player-list{display:flex;flex-direction:column;gap:7px;}
 .player-chip{display:flex;align-items:center;gap:10px;
-  border-radius:6px;padding:0 13px;font-size:.86rem;
+  padding:0 13px;font-size:.86rem;
   animation:slideIn .22s ease;border:2px solid transparent;
   transition:border-color .3s,box-shadow .3s;
   /* ratio 130:35 → height = width * 35/130 ≈ 27% — usamos aspect-ratio */
@@ -141,9 +141,8 @@ input::placeholder{color:var(--muted);}
 .timer-display{font-family:'VT323',monospace;font-size:2.4rem;
   color:var(--accent);min-width:52px;transition:color .3s;}
 .timer-display.urgent{color:var(--red);}
-.timer-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.08);
-  border-radius:3px;overflow:hidden;}
-.timer-bar{height:100%;background:var(--accent);border-radius:3px;
+.timer-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.08);overflow:hidden;}
+.timer-bar{height:100%;background:var(--accent);
   transition:width 1s linear,background .3s;}
 .timer-bar.urgent{background:var(--red);}
 .timer-reset-btn{display:none!important;}
@@ -841,8 +840,8 @@ function rankCardHTML(pts){
   const nextTitle=s.isMax?'Rank máximo!':PRESTIGE_TIERS[s.tier]?.title||'';
   const nextLabel=s.isMax?'Rank máximo atingido!':`${s.ptsParaProx}pt para ${nextTitle}`;
   return `
-  <div style="position:relative;overflow:hidden;background:var(--card);border-radius:12px;
-    padding:16px 20px;border:2px solid ${c};box-shadow:0 0 14px ${c}44;">
+  <div style="position:relative;overflow:hidden;background:var(--card);
+    padding:16px 20px;border:2px solid ${c};box-shadow:3px 3px 0 rgba(0,0,0,.8);">
     <img src="${s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
@@ -850,8 +849,8 @@ function rankCardHTML(pts){
       <div style="font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
       <div style="font-family:'VT323',monospace;font-size:1.8rem;color:${c}">${s.title}</div>
       <div style="font-size:.72rem;color:#fff;margin-top:2px;margin-bottom:14px">${pts||0} pontos totais</div>
-      <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:6px">
-        <div style="height:100%;width:${s.progressPct}%;background:${c};border-radius:3px;transition:width .5s ease;box-shadow:0 0 4px ${c}88"></div>
+      <div style="height:5px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px">
+        <div style="height:100%;width:${s.progressPct}%;background:${c};transition:width .5s ease;"></div>
       </div>
       <div style="font-size:.65rem;color:#fff">${nextLabel}</div>
     </div>
