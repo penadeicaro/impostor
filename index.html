@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🕵️ Impostor</title>
+<title>A Monster Among</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -337,7 +338,22 @@ input::placeholder{color:var(--muted);}
 .player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
 .player-chip .kick-btn:hover{color:#FF4757!important;}
 
-/* ── DEVLOG ── */
+/* ── Offline status ── */
+.player-chip.offline{opacity:.4;filter:grayscale(1);}
+.vote-row.offline{opacity:.4;filter:grayscale(1);}
+.offline-label{font-family:'VT323',monospace;font-size:.8rem;color:#FF9800;
+  letter-spacing:1px;display:inline-flex;align-items:center;gap:4px;margin-left:4px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.offline-spinner{display:inline-block;width:10px;height:10px;
+  border:2px solid rgba(255,152,0,.3);border-top-color:#FF9800;
+  border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+
+/* ── Garantia VT323 em pontuação ── */
+.placar-pts,.placar-rank,.score-pill,.pts-badge,.chip-rank span{
+  font-family:'VT323',monospace!important;}
+
+/* ── DEVLOG — oculto por switch ── */
+.devlog-hidden #devlog-panel{display:none!important;}
 #devlog-panel{
   position:fixed;bottom:0;left:0;right:0;z-index:9999;
   background:rgba(0,0,0,.92);border-top:2px solid #E8FF47;
@@ -620,8 +636,9 @@ const db      = firebase.database();
 const storage = firebase.storage();
 
 // ══════════════════════════════════════════════════════
-//  DEVLOG — visível na tela + sincronizado via Firebase
+//  DEVLOG SWITCH — mude para true para ativar
 // ══════════════════════════════════════════════════════
+const DEVLOG_ENABLED = false;
 let _devlogCollapsed = false;
 let _devlogCount = 0;
 let _devlogRef = null; // referência no Firebase para log compartilhado
@@ -634,7 +651,7 @@ function _devlogUidLabel(){
 
 // Escreve no painel local E no Firebase (para ver de outro dispositivo)
 function devlog(msg, tipo='info'){
-  // Painel local
+  if(!DEVLOG_ENABLED) return; // switch desligado
   const body = document.getElementById('devlog-body');
   if(body){
     const now = new Date();
@@ -1800,11 +1817,12 @@ function renderLobby(){
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     const hostCrown=j.id===_info.host?' 👑':'';
+    const offlineLabel=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
     chip.innerHTML=`
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
       <div class="chip-info">
-        <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}</div>
+        <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}${offlineLabel}</div>
         <div class="chip-rank">${rankBoxHTML(pts)}</div>
       </div>
       <div class="badges-right">${badgesInner}</div>`;
@@ -1930,11 +1948,12 @@ function renderVoteGrid(gridId, isEspectador){
     row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'')+(j.online===false?' offline':'');
     if(!isEspectador) row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
     const tileStyle=getPrestigeStyle(pts);
+    const offlineBadge=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
     row.innerHTML=`
       <img class="vote-row-rankbg" src="${tileStyle.img}" alt="">
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
-      <span style="font-size:1rem;flex-shrink:0;min-width:80px">${nomeHTML(nome, pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span style="font-size:1rem;flex-shrink:0;min-width:80px">${nomeHTML(nome, pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</span>
       <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%"></div></div>
       <span class="vote-count">${qtd}</span>`;
     grid.appendChild(row);
@@ -2359,6 +2378,7 @@ async function sairDaSala(){
 //  INIT
 // ══════════════════════════════════════════════════════
 window.addEventListener('load', async()=>{
+  if(!DEVLOG_ENABLED) document.body.classList.add('devlog-hidden');
   devlog(`APP INIT | session=${_DEVLOG_SESSION} | userAgent=${navigator.userAgent.slice(0,80)}`, 'auth');
   // Registra listeners de teclado aqui — garante que o DOM existe
   _bindInputListeners();
