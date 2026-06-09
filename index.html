@@ -110,6 +110,7 @@ input::placeholder{color:var(--muted);}
   position:relative;overflow:hidden;
   background:var(--surface);}
 .player-chip.espectador{opacity:.6;border-style:dashed!important;}
+.player-chip.offline{opacity:.4;filter:grayscale(1);}
 /* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
 .chip-bg{position:absolute;inset:0;width:100%;height:100%;
   object-fit:fill;
@@ -1479,12 +1480,12 @@ async function _gravarJogador(cod, uid, nome, espectador){
 function configurarPresenca(){
   if(!SALA) return;
   const playerRef=db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`);
-  playerRef.onDisconnect().remove();
-  // Remove listener anterior antes de criar um novo
+  playerRef.onDisconnect().update({online:false});
   if(connectedListener) db.ref('.info/connected').off('value', connectedListener);
   connectedListener=snap=>{
     if(snap.val()){
-      playerRef.onDisconnect().remove();
+      playerRef.onDisconnect().cancel();
+      playerRef.onDisconnect().update({online:false});
       playerRef.update({online:true});
     }
   };
@@ -1788,7 +1789,7 @@ function renderLobby(){
   [...ativos,...specs].forEach(j=>{
     const nome=j.nome||'(sem nome)';
     const chip=document.createElement('div');
-    chip.className='player-chip'+(j.espectador?' espectador':'');
+    chip.className='player-chip'+(j.online===false?' offline':'');
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
