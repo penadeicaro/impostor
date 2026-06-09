@@ -1455,8 +1455,7 @@ async function criarSala(nome, codCustom){
 async function entrarSala(nome, cod){
   const info=await get(`salas/${cod}/info`);
   if(!info) throw new Error('Sala não encontrada.');
-  const espectador=info.fase!=='lobby';
-  await _gravarJogador(cod, ME.uid, nome, espectador);
+  await _gravarJogador(cod, ME.uid, nome, false);
   SALA=cod;
   localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
