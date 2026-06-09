@@ -111,6 +111,7 @@ input::placeholder{color:var(--muted);}
   background:var(--surface);}
 .player-chip.espectador{opacity:.6;border-style:dashed!important;}
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
+.vote-row.offline{opacity:.4;filter:grayscale(1);}
 /* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
 .chip-bg{position:absolute;inset:0;width:100%;height:100%;
   object-fit:fill;
@@ -1926,7 +1927,7 @@ function renderVoteGrid(gridId, isEspectador){
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
     const row=document.createElement('div');
-    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'');
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'')+(j.online===false?' offline':'');
     if(!isEspectador) row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
     const tileStyle=getPrestigeStyle(pts);
     row.innerHTML=`
