@@ -915,21 +915,21 @@ const PTS = {
   acertou_unanimidade:  2,   // votou no impostor + todo mundo votou junto
   acertou_maioria:      3,   // votou no impostor + maioria acertou
   acertou_minoria:      4,   // votou no impostor + poucos acertaram (mais difícil)
-  absteve_impegou:      0,   // não votou, mas impostor foi pego de qualquer forma
-  errou_impegou:        0,   // votou em outro, mas impostor foi pego
+  absteve_impegou:      2,   // não votou, mas impostor foi pego de qualquer forma
+  errou_impegou:        -1,   // votou em outro, mas impostor foi pego
 
   // Jogadores quando IMPOSTOR ESCAPA
-  acertou_escapou:     -1,   // votou no impostor, mas ele escapou mesmo assim
-  errou_escapou:       -3,   // votou em outro e impostor escapou
-  absteve_escapou:     -2,   // não votou e impostor escapou
+  acertou_escapou:     0,   // votou no impostor, mas ele escapou mesmo assim
+  errou_escapou:       -2,   // votou em outro e impostor escapou
+  absteve_escapou:     -3,   // não votou e impostor escapou
 
   // Impostor
-  imp_pego_unanimidade:-4,   // pego por unanimidade
-  imp_pego_maioria:    -3,   // pego por maioria
-  imp_pego_minoria:    -2,   // pego por minoria (poucos o identificaram)
-  imp_escapou_zerovoto: 8,   // ninguém votou nele
-  imp_escapou_minoria:  5,   // minoria votou nele mas escapou
-  imp_escapou_empate:   3,   // empate nos votos
+  imp_pego_unanimidade:-3,   // pego por unanimidade
+  imp_pego_maioria:    -2,   // pego por maioria
+  imp_pego_minoria:    -1,   // pego por minoria (poucos o identificaram)
+  imp_escapou_zerovoto: 6,   // ninguém votou nele
+  imp_escapou_minoria:  4,   // minoria votou nele mas escapou
+  imp_escapou_empate:   2,   // empate nos votos
 };
 
 // ══════════════════════════════════════════════════════
