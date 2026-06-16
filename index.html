@@ -184,20 +184,21 @@ input::placeholder{color:var(--muted);}
 :root{ --vote-img-top: 0px; }
 .vote-row{
   display:flex;align-items:center;gap:12px;background:var(--surface);
-  padding:12px 16px;cursor:pointer;
+  padding:0 16px;cursor:pointer;
   border:2px solid rgba(255,255,255,.06);
   border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
   transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;
-  min-height:72px;}
+  aspect-ratio:130/35;
+}
 .vote-row-rankbg{
-  position:absolute;top:0;left:0;
-  width:100%;height:auto;
-  object-fit:cover;
-  object-position:top center;
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:fill;
   pointer-events:none;z-index:0;
   image-rendering:pixelated;image-rendering:-moz-crisp-edges;
-  opacity:.5;}
+  opacity:.6;
+}
 .vote-row>*:not(.vote-row-rankbg){position:relative;z-index:1;}
 .vote-row:hover:not(.already-voted){border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.04);}
 .vote-row.voted-by-me{border-color:var(--accent);background:rgba(232,255,71,.06);}
