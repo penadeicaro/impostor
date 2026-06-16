@@ -29,7 +29,6 @@ body::before{content:'';position:fixed;inset:0;
   text-transform:uppercase;margin-bottom:10px;}
 .screen{display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
-/* Scroll interno apenas para telas que precisam */
 .screen-scroll{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
 .card{background:var(--card);
   border:2px solid rgba(255,255,255,.18);
@@ -70,14 +69,12 @@ input::placeholder{color:var(--muted);}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.7rem;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--muted);opacity:.3;}
 
-/* Auth tabs */
 .auth-tabs{display:flex;gap:4px;background:var(--surface);border:2px solid rgba(255,255,255,.08);padding:4px;margin-bottom:12px;}
 .auth-tab{flex:1;padding:8px;border:none;cursor:pointer;
   font-family:'VT323',monospace;font-size:1.1rem;color:var(--sub);
   background:transparent;transition:background .2s,color .2s;}
 .auth-tab.active{background:var(--card);color:var(--text);}
 
-/* Avatar */
 .avatar{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
   border:2px solid var(--muted);flex-shrink:0;}
 .avatar-lg{width:72px;height:72px;object-fit:cover;image-rendering:pixelated;
@@ -106,14 +103,12 @@ input::placeholder{color:var(--muted);}
   padding:0 13px;font-size:.86rem;
   animation:slideIn .22s ease;border:2px solid transparent;
   transition:border-color .3s,box-shadow .3s;
-  /* ratio 130:35 → height = width * 35/130 ≈ 27% — usamos aspect-ratio */
   aspect-ratio:130/35;
   position:relative;overflow:hidden;
   background:var(--surface);}
 .player-chip.espectador{opacity:.6;border-style:dashed!important;}
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
 .vote-row.offline{opacity:.4;filter:grayscale(1);}
-/* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
 .chip-bg{position:absolute;inset:0;width:100%;height:100%;
   object-fit:fill;
   image-rendering:pixelated;image-rendering:-moz-crisp-edges;
@@ -121,7 +116,7 @@ input::placeholder{color:var(--muted);}
 .player-chip img.avatar{flex-shrink:0;position:relative;z-index:1;}
 .chip-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;
   min-width:0;position:relative;z-index:1;
-  padding:14% 0;/* proporcional à altura do chip */}
+  padding:14% 0;}
 .chip-name{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:5px;color:#fff!important;}
 .chip-rank{display:flex;align-items:center;gap:5px;color:#fff!important;font-size:.85rem;}
@@ -139,7 +134,6 @@ input::placeholder{color:var(--muted);}
 .score-pill{background:rgba(232,255,71,.1);color:var(--accent);
   padding:2px 8px;font-size:.9rem;border:1px solid rgba(232,255,71,.25);}
 
-/* Timer — oculto, mantido apenas para compatibilidade */
 .timer-wrap{display:none!important;}
 .timer-display{font-family:'VT323',monospace;font-size:2.4rem;
   color:var(--accent);min-width:52px;transition:color .3s;}
@@ -150,12 +144,10 @@ input::placeholder{color:var(--muted);}
 .timer-bar.urgent{background:var(--red);}
 .timer-reset-btn{display:none!important;}
 
-/* Flash overlay */
 #flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:998;
   background:rgba(255,71,87,0);transition:background .1s;}
 #flash-overlay.flash{background:rgba(255,71,87,.18);}
 
-/* Word screen */
 .word-box{text-align:center;padding:20px 16px;}
 .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
   padding:4px 14px;font-size:1rem;letter-spacing:2px;
@@ -177,10 +169,7 @@ input::placeholder{color:var(--muted);}
   padding:12px 16px;text-align:center;color:var(--blue);
   font-size:1rem;line-height:1.6;}
 
-/* Vote */
 .vote-grid{display:flex;flex-direction:column;gap:8px;}
-/* Controle do offset vertical da imagem de rank no vote-row.
-   --vote-img-top: 0px = centralizado; negativo = sobe (corta topo); positivo = desce (corta fundo) */
 :root{ --vote-img-top: 0px; }
 .vote-row{
   display:flex;align-items:center;gap:12px;background:var(--surface);
@@ -208,7 +197,6 @@ input::placeholder{color:var(--muted);}
 .vote-bar{height:100%;background:var(--accent);transition:width .35s ease;}
 .vote-count{font-size:1rem;color:var(--sub);min-width:18px;text-align:right;}
 
-/* Result */
 .reveal-card{background:var(--card);border-radius:var(--radius);padding:12px;
   display:flex;align-items:center;gap:13px;
   border:1px solid rgba(255,255,255,.06);animation:slideIn .22s ease;}
@@ -229,7 +217,6 @@ input::placeholder{color:var(--muted);}
 .pts-neg{background:rgba(255,71,87,.2);color:var(--red);}
 .pts-zero{background:rgba(255,255,255,.06);color:var(--sub);}
 
-/* Result — novo layout */
 .res-impostor-card{
   display:flex;flex-direction:column;align-items:center;gap:8px;
   background:transparent;border:2px solid var(--red);
@@ -237,7 +224,6 @@ input::placeholder{color:var(--muted);}
   animation:slideIn .25s ease;
   position:relative;overflow:hidden;
 }
-/* Imagem de fundo bem visível — sem overlay escuro */
 .res-impostor-card .res-rank-bg,
 .res-player-tile .res-rank-bg{
   position:absolute;left:0;top:0;height:100%;width:auto;
@@ -267,7 +253,6 @@ input::placeholder{color:var(--muted);}
   position:relative;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.9);}
 .res-player-name.is-me{color:var(--accent);}
 
-/* History / Leaderboard */
 .hist-item{background:var(--surface);padding:10px 12px;border:2px solid rgba(255,255,255,.07);border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
   font-size:1rem;border-left:3px solid var(--muted);}
 .hist-item.win{border-color:var(--green);}
@@ -284,14 +269,12 @@ input::placeholder{color:var(--muted);}
 .placar-nome{flex:1;font-size:1rem;}
 .placar-pts{font-family:'VT323',monospace;font-size:1.1rem;color:var(--accent);}
 
-/* Profile */
 .profile-header{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
 .profile-header img.avatar{width:44px;height:44px;}
 .profile-info{flex:1;}
 .profile-name{font-family:'VT323',monospace;font-size:1.2rem;}
 .profile-email{font-size:.95rem;color:var(--sub);}
 
-/* Misc */
 .status{text-align:center;font-size:1rem;color:var(--sub);padding:4px;min-height:20px;}
 .status.err{color:var(--red);}
 .status.ok{color:var(--green);}
@@ -321,11 +304,9 @@ input::placeholder{color:var(--muted);}
   padding:0;}
 .link-btn:hover{color:var(--accent);}
 
-/* Botões host lado a lado */
 .btn-pair-row{display:flex;gap:8px;}
 .btn-pair-row .btn{flex:1;}
 
-/* ── Texto sempre branco dentro do chip, legível sobre a imagem ── */
 .player-chip .chip-name,
 .player-chip .chip-name span,
 .player-chip .chip-rank,
@@ -340,7 +321,6 @@ input::placeholder{color:var(--muted);}
 .player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
 .player-chip .kick-btn:hover{color:#FF4757!important;}
 
-/* ── Offline status ── */
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
 .vote-row.offline{opacity:.4;filter:grayscale(1);}
 .offline-label{font-family:'VT323',monospace;font-size:.8rem;color:#FF9800;
@@ -350,11 +330,9 @@ input::placeholder{color:var(--muted);}
   border:2px solid rgba(255,152,0,.3);border-top-color:#FF9800;
   border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
 
-/* ── Garantia VT323 em pontuação ── */
 .placar-pts,.placar-rank,.score-pill,.pts-badge,.chip-rank span{
   font-family:'VT323',monospace!important;}
 
-/* ── DEVLOG — oculto por switch ── */
 .devlog-hidden #devlog-panel{display:none!important;}
 #devlog-panel{
   position:fixed;bottom:0;left:0;right:0;z-index:9999;
@@ -385,8 +363,6 @@ input::placeholder{color:var(--muted);}
 .dlog.info .dlog-msg{color:#4FC3F7;}
 .dlog.auth .dlog-msg{color:#E8FF47;}
 
-
-/* Scrollbars invisíveis mas funcionais */
 .player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
   scrollbar-width:none;}
 .player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
@@ -443,7 +419,6 @@ input::placeholder{color:var(--muted);}
 
   <!-- ══ SETUP (nome + sala, após login) ══ -->
   <div id="s-setup" class="screen" style="gap:8px;overflow-y:auto;">
-    <!-- Perfil + nome de exibição unificados -->
     <div class="card" style="padding:12px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
         <div class="avatar-upload-wrap" style="width:50px;margin:0;position:relative;flex-shrink:0">
@@ -464,9 +439,7 @@ input::placeholder{color:var(--muted);}
       </div>
       <div class="status" id="st-nome" style="margin-top:2px;min-height:14px"></div>
     </div>
-    <!-- Rank card -->
     <div id="setup-rank-card"></div>
-    <!-- Sala -->
     <div class="card" style="padding:12px">
       <div class="card-label" style="margin-bottom:6px">Sala</div>
       <div style="color:var(--sub);font-size:.95rem;line-height:1.5;margin-bottom:10px">
@@ -484,16 +457,15 @@ input::placeholder{color:var(--muted);}
 
   <!-- ══ LOBBY ══ -->
   <div id="s-lobby" class="screen" style="gap:8px;">
-    <!-- Lista de jogadores primeiro -->
     <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
       <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
       <div class="player-list" id="lobby-players" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <div class="btn-pair-row">
+        <button class="btn btn-ghost" id="btn-sair-lobby" onclick="sairDaSala()">🚪 SAIR DA SALA</button>
         <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
       </div>
-      <!-- Código + botão compartilhar -->
       <div class="sala-badge" style="margin:0">
         <span class="sala-code" id="lobby-code">—</span>
         <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
@@ -504,7 +476,6 @@ input::placeholder{color:var(--muted);}
 
   <!-- ══ PALAVRA ══ -->
   <div id="s-palavra" class="screen" style="gap:8px;">
-    <!-- Timer oculto — mantido no DOM para compatibilidade com JS -->
     <div class="timer-wrap" id="timer-card" style="display:none!important">
       <div class="timer-display" id="timer-display">15</div>
       <div style="flex:1">
@@ -513,46 +484,40 @@ input::placeholder{color:var(--muted);}
       </div>
       <button class="timer-reset-btn" id="btn-timer-reset" onclick="resetarTimer()" style="display:none">▶ Iniciar</button>
     </div>
-    <!-- Votação — flex:1 e scroll interno -->
     <div class="card" id="card-votacao" style="display:none;flex-direction:column;padding:12px;flex:1;min-height:0;">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
       <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
     </div>
-    <!-- Word box — penúltimo fixo, clicável para revelar -->
     <div class="card word-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;cursor:pointer" onclick="toggleWord()">
       <div class="cat-pill" id="word-cat">—</div>
       <div id="word-el" class="word-hidden">● ● ●</div>
       <div class="word-hint" id="word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé -->
     <div class="status err" id="st-palavra"></div>
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">❌ CANCELAR</button>
-      <button class="btn btn-secondary" id="btn-reiniciar-palavra" onclick="novaRodada()">🔄 REINICIAR</button>
+      <button class="btn btn-ghost" id="btn-cancelar-palavra" onclick="cancelarRodada()" style="display:none">❌ CANCELAR</button>
+      <button class="btn btn-secondary" id="btn-reiniciar-palavra" onclick="reiniciarRodada()" style="display:none">🔄 REINICIAR</button>
       <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
   </div>
 
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
-    <!-- Votação — área scrollável interna -->
     <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
-    <!-- Word box — penúltimo item fixo -->
     <div class="card word-box" id="q-word-box" style="padding:14px;text-align:center;cursor:pointer;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center" onclick="toggleWordQ()">
       <div class="cat-pill" id="q-word-cat">—</div>
       <div id="q-word-el" class="word-hidden">● ● ●</div>
       <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
-    <!-- Rodapé -->
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">❌ CANCELAR</button>
-      <button class="btn btn-secondary" id="btn-reiniciar-questioning" onclick="novaRodada()">🔄 REINICIAR</button>
+      <button class="btn btn-ghost" id="btn-cancelar-questioning" onclick="cancelarRodada()" style="display:none">❌ CANCELAR</button>
+      <button class="btn btn-secondary" id="btn-reiniciar-questioning" onclick="reiniciarRodada()" style="display:none">🔄 REINICIAR</button>
       <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
   </div>
@@ -578,7 +543,7 @@ input::placeholder{color:var(--muted);}
       </div>
     </div>
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-ghost" onclick="sairDaSala()">🚪 SAIR DA SALA</button>
       <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     </div>
   </div>
@@ -596,16 +561,12 @@ input::placeholder{color:var(--muted);}
   <div id="devlog-body"></div>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <script>
-// ══════════════════════════════════════════════════════
-//  CONFIG
-// ══════════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey:"AIzaSyB7w-qxJqX_qT2JFirm5Njpub1xRsc12Dw",
   authDomain:"impostor-d4711.firebaseapp.com",
@@ -620,23 +581,19 @@ const auth    = firebase.auth();
 const db      = firebase.database();
 const storage = firebase.storage();
 
-// ══════════════════════════════════════════════════════
-//  DEVLOG SWITCH — mude para true para ativar
-// ══════════════════════════════════════════════════════
 const DEVLOG_ENABLED = false;
 let _devlogCollapsed = false;
 let _devlogCount = 0;
-let _devlogRef = null; // referência no Firebase para log compartilhado
-const _DEVLOG_SESSION = Math.random().toString(36).slice(2,6).toUpperCase(); // ID desta sessão
+let _devlogRef = null;
+const _DEVLOG_SESSION = Math.random().toString(36).slice(2,6).toUpperCase();
 
 function _devlogUidLabel(){
   if(typeof ME !== 'undefined' && ME?.uid) return ME.uid.slice(0,6);
   return 'NOAUTH';
 }
 
-// Escreve no painel local E no Firebase (para ver de outro dispositivo)
 function devlog(msg, tipo='info'){
-  if(!DEVLOG_ENABLED) return; // switch desligado
+  if(!DEVLOG_ENABLED) return;
   const body = document.getElementById('devlog-body');
   if(body){
     const now = new Date();
@@ -650,9 +607,7 @@ function devlog(msg, tipo='info'){
     const cnt = document.getElementById('devlog-count');
     if(cnt) cnt.textContent = `(${_devlogCount})`;
   }
-  // Também no console
   console[tipo==='err'?'error':tipo==='warn'?'warn':'log'](`[IMP-${_DEVLOG_SESSION}] ${msg}`);
-  // Grava no Firebase para ver de outro device (sem bloquear)
   try{
     if(typeof db !== 'undefined'){
       const ref = db.ref('_devlog').push();
@@ -662,7 +617,6 @@ function devlog(msg, tipo='info'){
         uid: _devlogUidLabel(),
         msg, tipo
       }).catch(()=>{});
-      // Limita a 200 entradas automaticamente
       db.ref('_devlog').once('value', snap=>{
         if(snap.numChildren && snap.numChildren() > 200){
           const keys = Object.keys(snap.val()||{});
@@ -691,19 +645,18 @@ function devlogCopy(){
   navigator.clipboard.writeText(linhas).then(()=>devlog('Log copiado!','ok')).catch(()=>devlog('Falha ao copiar','err'));
 }
 
-// Inicia listener no Firebase para mostrar logs de OUTROS devices também
 function devlogStartRemoteListener(){
   if(_devlogRef) return;
   _devlogRef = db.ref('_devlog').orderByChild('ts').limitToLast(50);
   _devlogRef.on('child_added', snap=>{
     const d = snap.val();
-    if(!d || d.session === _DEVLOG_SESSION) return; // não duplica o próprio
+    if(!d || d.session === _DEVLOG_SESSION) return;
     const body = document.getElementById('devlog-body');
     if(!body) return;
     const ts = new Date(d.ts).toTimeString().slice(0,8);
     const row = document.createElement('div');
     row.className = 'dlog ' + (d.tipo||'info');
-    row.style.opacity = '0.7'; // diferencia logs remotos
+    row.style.opacity = '0.7';
     row.innerHTML = `<span class="dlog-time">${ts}📡</span><span class="dlog-uid">[${d.session||'?'}/${d.uid||'?'}]</span><span class="dlog-msg">${d.msg}</span>`;
     body.appendChild(row);
     body.scrollTop = body.scrollHeight;
@@ -713,7 +666,6 @@ function devlogStartRemoteListener(){
   });
 }
 
-// Intercepta visibilitychange para logar quando app vai para background/foreground
 document.addEventListener('visibilitychange', ()=>{
   devlog(`visibilitychange → ${document.visibilityState} | ME=${typeof ME!=='undefined'&&ME?ME.uid?.slice(0,6):'null'} | SALA=${typeof SALA!=='undefined'?SALA:'?'}`, document.visibilityState==='hidden'?'warn':'ok');
 });
@@ -724,14 +676,8 @@ window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
 
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
 
-// ══════════════════════════════════════════════════════
-//  SERVER TIME (simples — usa Date.now; offset não é crítico pois timer está oculto)
-// ══════════════════════════════════════════════════════
 function serverNow(){ return Date.now(); }
 
-// ══════════════════════════════════════════════════════
-//  WEB AUDIO SYNTH
-// ══════════════════════════════════════════════════════
 let audioCtx = null;
 function getAudio(){
   if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
@@ -772,65 +718,38 @@ function playNoise(duration, vol=0.12, delay=0){
 }
 
 const SFX = {
-  // Jogador entra — acorde ascendente dó-mi-sol
   join(){ playTone(261,'sine',.12); playTone(329,'sine',.12,0.14,0.08); playTone(392,'sine',.18,0.12,0.16); },
-
-  // Sortear — drum roll + fanfara (tocado via Firebase para todos)
   sortear(){
     for(let i=0;i<8;i++) playNoise(0.04,0.08+i*0.01,i*0.055);
     playTone(523,'sawtooth',.15,0.16,0.48);
     playTone(659,'sawtooth',.15,0.14,0.60);
     playTone(784,'sawtooth',.25,0.18,0.72);
   },
-
-  // Ver palavra — whoosh + tom
   palavra(){ playNoise(0.18,0.15); playTone(220,'sine',.35,0.12,0.1); },
-
-  // Clique de voto — ploc percussivo
   voto(){ playTone(800,'square',.04,0.1); playTone(500,'square',.06,0.08,0.04); },
-
-  // Timer tick com pitch progressivo de 15→0s, sobe 3 semitons (880→1046 Hz)
-  // semitom = 2^(1/12); 3 semitons = 2^(3/12) ≈ 1.189
   tick(restante){
-    const BASE=880, TOPO=880*Math.pow(2,3/12); // ~1046 Hz
+    const BASE=880, TOPO=880*Math.pow(2,3/12);
     const t=Math.max(0,Math.min(1,(15-restante)/15));
     const freq=BASE+(TOPO-BASE)*t;
     playTone(freq,'sine',.05,0.06);
   },
-
-  // Revelar impostor — acorde dramático descendente
   revelar(){
     playTone(523,'sawtooth',.12,0.2);
     playTone(415,'sawtooth',.12,0.18,0.14);
     playTone(330,'sawtooth',.25,0.22,0.28);
     playNoise(0.08,0.1,0.28);
   },
-
-  // Vitória — fanfara ascendente
   vitoria(){
     [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.2,0.2,i*0.12));
     playTone(1047,'sine',.4,0.18,0.5);
   },
-
-  // Derrota — tom descendente triste
   derrota(){
     [440,415,392,330].forEach((f,i)=>playTone(f,'triangle',.22,0.15,i*0.14));
   },
-
-  // Votação aberta — ping duplo
   votacaoAberta(){ playTone(660,'sine',.1,0.15); playTone(880,'sine',.12,0.12,0.14); },
-
-  // Nova rodada — acorde ascendente limpo
   novaRodada(){ playTone(392,'sine',.15,0.15); playTone(523,'sine',.15,0.13,0.12); playTone(659,'sine',.2,0.15,0.24); },
-
-  // Sair da sala — swoosh descendente
   sair(){ playTone(600,'sine',.08,0.14); playTone(400,'sine',.12,0.12,0.08); playTone(250,'sine',.18,0.1,0.18); },
-
-  // Questioning tick na fase de PERGUNTA — tick neutro (880 Hz fixo)
   tickPergunta(){ playTone(880,'sine',.04,0.05); },
-
-  // Questioning tick na fase de RESPOSTA — pitch sobe 6 semitons nos últimos 10s
-  // 880 Hz → 880*2^(6/12) = 1244 Hz. Nos primeiros 10s: tick normal 880 Hz.
   tickResposta(restante){
     if(restante>10){
       playTone(880,'sine',.04,0.05);
@@ -841,17 +760,10 @@ const SFX = {
       playTone(freq,'sine',.05,0.06);
     }
   },
-
-  // Transição pergunta → resposta
   transicaoPar(){ playTone(523,'sine',.06,0.12); playTone(659,'sine',.08,0.14,0.07); },
-
-  // Próximo par
   proximoPar(){ playNoise(0.05,0.06); playTone(440,'sine',.06,0.1,0.04); },
 };
 
-// ══════════════════════════════════════════════════════
-//  PALAVRAS FALLBACK
-// ══════════════════════════════════════════════════════
 const PALAVRAS_FALLBACK = {
   "Comidas":["Lasanha","Coxinha","Pizza","Feijoada","Hambúrguer","Brigadeiro","Estrogonofe","Pastel","Sushi","Macarronada","Panqueca","Risoto","Pão de queijo","Churrasco","Pudim","Tapioca","Farofa","Batata frita"],
   "Animais":["Cachorro","Gato","Elefante","Leão","Tigre","Girafa","Urso","Panda","Golfinho","Águia","Cavalo","Lobo","Raposa","Canguru","Pinguim","Macaco","Jacaré","Tubarão"],
@@ -863,64 +775,47 @@ const PALAVRAS_FALLBACK = {
 };
 const SHEETS_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vS-iZqk5Q9ZAA_syRdr-dXve0iX4i_mCzhLTpRJneq7Qm5kuxO-eSKYfaYhTwJ-f5gIAWxUHd5LAyCZ/pub?output=csv';
 
-// ══════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════
-let ME = null;         // firebase.User
-let ME_PROFILE = null; // { nome, avatarUrl, placarTotal }
+let ME = null;
+let ME_PROFILE = null;
 let SALA = '';
 let meuVoto = null;
 let myWord  = '';
 let wordShown = false;
 let palavrasCache = null;
 let listeners = {};
-let connectedListener = null; // listener de presença — gerenciado separadamente
+let connectedListener = null;
 
-// timer local
 let timerInterval = null;
 let timerSegs = 15;
 let timerRunning = false;
-let lastTimerTs = 0;  // timestamp do último reset (do Firebase)
+let lastTimerTs = 0;
 
-// ── cached state
 let _info      = null;
 let _jogadores = {};
 let _votos     = {};
 let _assignments = null;
-let _snapshot  = {};   // snapshot dos jogadores no início da rodada
+let _snapshot  = {};
 let _historico = {};
-let resultadoSomTocado = false; // evita som duplicado na tela de resultado
-let flashPulseInterval = null;   // intervalo do pisca-pisca urgente
+let resultadoSomTocado = false;
+let flashPulseInterval = null;
 
-// ══════════════════════════════════════════════════════
-//  PONTUAÇÃO — edite aqui para ajustar os valores
-// ══════════════════════════════════════════════════════
 const PTS = {
-  // Jogadores quando IMPOSTOR É PEGO
-  acertou_unanimidade:  2,   // votou no impostor + todo mundo votou junto
-  acertou_maioria:      3,   // votou no impostor + maioria acertou
-  acertou_minoria:      4,   // votou no impostor + poucos acertaram (mais difícil)
-  absteve_impegou:      2,   // não votou, mas impostor foi pego de qualquer forma
-  errou_impegou:        -1,   // votou em outro, mas impostor foi pego
-
-  // Jogadores quando IMPOSTOR ESCAPA
-  acertou_escapou:     0,   // votou no impostor, mas ele escapou mesmo assim
-  errou_escapou:       -2,   // votou em outro e impostor escapou
-  absteve_escapou:     -3,   // não votou e impostor escapou
-
-  // Impostor
-  imp_pego_unanimidade:-3,   // pego por unanimidade
-  imp_pego_maioria:    -2,   // pego por maioria
-  imp_pego_minoria:    -1,   // pego por minoria (poucos o identificaram)
-  imp_escapou_zerovoto: 6,   // ninguém votou nele
-  imp_escapou_minoria:  4,   // minoria votou nele mas escapou
-  imp_escapou_empate:   2,   // empate nos votos
+  acertou_unanimidade:  2,
+  acertou_maioria:      3,
+  acertou_minoria:      4,
+  absteve_impegou:      2,
+  errou_impegou:        -1,
+  acertou_escapou:     0,
+  errou_escapou:       -2,
+  absteve_escapou:     -3,
+  imp_pego_unanimidade:-3,
+  imp_pego_maioria:    -2,
+  imp_pego_minoria:    -1,
+  imp_escapou_zerovoto: 6,
+  imp_escapou_minoria:  4,
+  imp_escapou_empate:   2,
 };
 
-// ══════════════════════════════════════════════════════
-//  RANKS — 5 níveis com imagens pixel art
-// ══════════════════════════════════════════════════════
-// Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
   {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
   {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  color:'#0072ff'},
@@ -945,32 +840,26 @@ function getPrestigeStyle(pts){
     pts:p, ptsParaProx, progressPct, isMax:t.tier===5};
 }
 
-
-// Nome sempre branco — legibilidade sobre pixel art
 function nomeHTML(nome, pts){
   return `<span style="color:#fff;font-weight:500">${nome}</span>`;
 }
 
-// Rank title — branco dentro do chip (CSS cuida), colorido fora
 function rankBoxHTML(pts){
   const s=getPrestigeStyle(pts||0);
   return `<span style="font-size:.9rem;color:${s.color};letter-spacing:.5px;text-transform:uppercase">${s.title} · ${s.pts}pt</span>`;
 }
 
-// Borda do avatar com cor do rank
 function avatarTierStyle(pts){
   const s=getPrestigeStyle(pts||0);
   return `border-color:${s.color}!important;box-shadow:0 0 0 2px ${s.color}44!important;`;
 }
 
-// Aplica imagem pixel art cobrindo o chip inteiro + borda colorida do rank
 function applyChipStyle(el, pts, isMe){
   const s=getPrestigeStyle(pts||0);
   const c=s.color;
   el.style.borderColor=c;
   el.style.boxShadow=`0 0 8px ${c}66`;
 
-  // Usa <img> como background real — cobre tudo (object-fit:fill mantém pixel art sem distorção)
   let bg=el.querySelector('.chip-bg');
   if(!bg){
     bg=document.createElement('img');
@@ -980,14 +869,12 @@ function applyChipStyle(el, pts, isMe){
   }
   bg.src=s.img;
 
-  // z-index no conteúdo para ficar sobre a imagem
   el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(n=>{
     n.style.position='relative';
     n.style.zIndex='1';
   });
 }
 
-// Card de rank grande pro menu principal
 function rankCardHTML(pts){
   const s=getPrestigeStyle(pts||0);
   const c=s.color;
@@ -1010,7 +897,6 @@ function rankCardHTML(pts){
     </div>
   </div>`;
 }
-
 
 const $ = id => document.getElementById(id);
 function showScreen(id){
@@ -1039,9 +925,6 @@ function switchAuthTab(tab){
 
 function avatarImg(url){ return url||AVATAR_PLACEHOLDER; }
 
-// ══════════════════════════════════════════════════════
-//  FIREBASE HELPERS
-// ══════════════════════════════════════════════════════
 const get  = path => db.ref(path).get().then(s=>s.val());
 const set  = (path,val) => db.ref(path).set(val);
 const upd  = (path,val) => db.ref(path).update(val);
@@ -1060,57 +943,6 @@ function stopListeners(){
   if(connectedListener){ db.ref('.info/connected').off('value', connectedListener); connectedListener=null; }
 }
 
-// ══════════════════════════════════════════════════════
-//  PALAVRAS
-// ══════════════════════════════════════════════════════
-function parseCSV(text){
-  const linhas=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  if(linhas.length<2) throw new Error('CSV vazio');
-  function parseLinha(linha){
-    const cols=[];let cur='',inQ=false;
-    for(let i=0;i<linha.length;i++){
-      const c=linha[i];
-      if(c==='"'){inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
-      else cur+=c;
-    }
-    cols.push(cur.trim());return cols;
-  }
-  const cats=parseLinha(linhas[0]);
-  const res={};
-  cats.forEach(c=>{if(c)res[c]=[];});
-  for(let r=1;r<linhas.length;r++){
-    const cols=parseLinha(linhas[r]);
-    cols.forEach((p,i)=>{if(cats[i]&&p)res[cats[i]].push(p);});
-  }
-  Object.keys(res).forEach(k=>{if(!res[k].length)delete res[k];});
-  if(!Object.keys(res).length) throw new Error('Sem categorias');
-  return res;
-}
-
-async function carregarPalavras(){
-  if(palavrasCache) return palavrasCache;
-  const wsEl=$('words-status2')||$('words-status');
-  try{
-    const res=await fetch(SHEETS_CSV+'&dummy='+Date.now());
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    palavrasCache=parseCSV(await res.text());
-    const total=Object.values(palavrasCache).reduce((s,a)=>s+a.length,0);
-    if(wsEl){wsEl.className='words-info ok';wsEl.textContent=`✓ ${Object.keys(palavrasCache).length} cat · ${total} palavras`;}
-  }catch(e){
-    if(wsEl){wsEl.className='words-info err';wsEl.textContent='⚠ Usando banco local';}
-    palavrasCache=PALAVRAS_FALLBACK;
-  }
-  return palavrasCache;
-}
-
-// ══════════════════════════════════════════════════════
-//  AUTH
-// ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-//  AUTH
-// ══════════════════════════════════════════════════════
-// Debounce para ignorar null temporário ao voltar do background
 let _authNullTimer = null;
 
 auth.onAuthStateChanged(async user=>{
@@ -1120,37 +952,24 @@ auth.onAuthStateChanged(async user=>{
   if(user){
     try{
       ME=user;
-      devlog(`user ok: ${user.email} | displayName="${user.displayName}"`, 'auth');
       if(!ME_PROFILE || ME_PROFILE._uid !== user.uid){
-        devlog('carregando perfil do Firebase…','info');
         ME_PROFILE = await carregarPerfil(user.uid);
         ME_PROFILE._uid = user.uid;
-        devlog(`perfil carregado: nome="${ME_PROFILE.nome}" placarTotal=${ME_PROFILE.placarTotal}`, ME_PROFILE.nome?'ok':'err');
-      } else {
-        devlog('perfil já em cache, pulando reload','info');
       }
       devlogStartRemoteListener();
       mostrarSetup();
     }catch(e){
-      devlog(`ERRO ao carregar perfil: ${e.message}`, 'err');
       if(!ME_PROFILE){
         const nomeFallback = user.displayName || user.email?.split('@')[0] || 'Jogador';
-        devlog(`usando fallback nome="${nomeFallback}"`, 'warn');
-        ME_PROFILE = {
-          nome: nomeFallback,
-          avatarUrl: user.photoURL || '',
-          placarTotal: 0
-        };
+        ME_PROFILE = { nome: nomeFallback, avatarUrl: user.photoURL || '', placarTotal: 0 };
       }
       mostrarSetup();
     }finally{
       $('loader').classList.add('hide');
     }
   } else {
-    devlog(`auth NULL — aguardando 2s antes de deslogar | SALA=${SALA}`, 'warn');
     _authNullTimer = setTimeout(()=>{
       _authNullTimer = null;
-      devlog('auth NULL confirmado após 2s — limpando estado e indo para login', 'err');
       ME=null; ME_PROFILE=null;
       $('loader').classList.add('hide');
       showScreen('s-auth');
@@ -1162,26 +981,18 @@ auth.onAuthStateChanged(async user=>{
 async function carregarPerfil(uid){
   let prof = null;
   for(let i=0; i<3; i++){
-    devlog(`carregarPerfil tentativa ${i+1}/3 uid=${uid.slice(0,6)}`, 'info');
-    try{ prof = await get(`users/${uid}`); } catch(e){ devlog(`tentativa ${i+1} erro: ${e.message}`, 'err'); }
-    if(prof){ devlog(`perfil encontrado na tentativa ${i+1}: nome="${prof.nome}"`, 'ok'); break; }
+    try{ prof = await get(`users/${uid}`); } catch(e){}
+    if(prof) break;
     if(i<2) await new Promise(r=>setTimeout(r, 800));
   }
-
   const nomeFirebase = ME.displayName || ME.email?.split('@')[0] || '';
-  devlog(`nomeFirebase="${nomeFirebase}" | prof=${prof?JSON.stringify({nome:prof.nome,placarTotal:prof.placarTotal}):'null'}`, 'info');
-
   if(!prof){
-    if(!nomeFirebase){ devlog('sem nome e sem perfil — throw Sem conexão', 'err'); throw new Error('Sem conexão para carregar perfil'); }
-    devlog(`criando perfil novo nome="${nomeFirebase}"`, 'warn');
+    if(!nomeFirebase) throw new Error('Sem conexão para carregar perfil');
     prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
     await set(`users/${uid}`, prof);
   } else if(!prof.nome && nomeFirebase){
-    devlog(`perfil com nome vazio — reparando para "${nomeFirebase}"`, 'warn');
     prof.nome = nomeFirebase;
     await upd(`users/${uid}`, { nome: nomeFirebase });
-  } else if(!prof.nome && !nomeFirebase){
-    devlog('perfil com nome vazio E sem nomeFirebase — nome ficará vazio!', 'err');
   }
   return prof;
 }
@@ -1191,11 +1002,7 @@ async function loginEmail(){
   const senha=$('li-senha').value;
   if(!email||!senha) return setErr('st-auth','Preencha e-mail e senha.');
   clearErr('st-auth');
-  try{
-    await auth.signInWithEmailAndPassword(email,senha);
-  }catch(e){
-    setErr('st-auth', traduzirErroAuth(e.code));
-  }
+  try{ await auth.signInWithEmailAndPassword(email,senha); }catch(e){ setErr('st-auth', traduzirErroAuth(e.code)); }
 }
 
 async function cadastrar(){
@@ -1209,21 +1016,13 @@ async function cadastrar(){
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,senha);
     await cred.user.updateProfile({displayName:nome});
-    await set(`users/${cred.user.uid}`,{
-      nome, avatarUrl:'', placarTotal:0, criadoEm:Date.now()
-    });
-  }catch(e){
-    setErr('st-auth', traduzirErroAuth(e.code));
-  }
+    await set(`users/${cred.user.uid}`,{ nome, avatarUrl:'', placarTotal:0, criadoEm:Date.now() });
+  }catch(e){ setErr('st-auth', traduzirErroAuth(e.code)); }
 }
 
 async function loginGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
-  try{
-    await auth.signInWithPopup(provider);
-  }catch(e){
-    setErr('st-auth', traduzirErroAuth(e.code));
-  }
+  try{ await auth.signInWithPopup(provider); }catch(e){ setErr('st-auth', traduzirErroAuth(e.code)); }
 }
 
 async function esqueciSenha(){
@@ -1232,16 +1031,18 @@ async function esqueciSenha(){
   try{
     await auth.sendPasswordResetEmail(email);
     setOk('st-auth','E-mail de recuperação enviado!');
-  }catch(e){
-    setErr('st-auth', traduzirErroAuth(e.code));
-  }
+  }catch(e){ setErr('st-auth', traduzirErroAuth(e.code)); }
 }
 
-async function logout(){
+async function sairDaSala(){
+  SFX.sair();[cite: 1]
+  if(SALA && ME){
+    try{ await del(`salas/${SALA}/jogadores/${idKey(ME.uid)}`); }catch(_){}
+  }
   stopListeners();
   SALA='';
   localStorage.removeItem('_imp_sala');
-  await auth.signOut();
+  mostrarSetup();[cite: 1]
 }
 
 function traduzirErroAuth(code){
@@ -1258,32 +1059,22 @@ function traduzirErroAuth(code){
   return map[code]||'Erro: '+code;
 }
 
-// ══════════════════════════════════════════════════════
-//  SETUP (após login)
-// ══════════════════════════════════════════════════════
 function mostrarSetup(){
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || '';
-  devlog(`mostrarSetup: nome="${nome}" ME_PROFILE.nome="${ME_PROFILE?.nome}" ME.displayName="${ME.displayName}"`, nome?'ok':'err');
   const avatar = ME_PROFILE?.avatarUrl || ME.photoURL || '';
   const pts = ME_PROFILE?.placarTotal || 0;
   $('setup-nome-display').textContent = nome || '(sem nome)';
   $('setup-email-display').textContent = ME.email||'';
   $('inp-displayname').value = nome;
-  // Se nome vazio, avisa e foca o campo
   if(!nome){
     setErr('st-nome','Seu nome foi perdido. Digite e salve novamente.');
     setTimeout(()=>{ try{ $('inp-displayname').focus(); }catch(_){} }, 300);
   }
-  $('setup-email-display').textContent = ME.email||'';
-  $('inp-displayname').value = nome;
-  // Avatar com borda de tier
   const av=$('setup-avatar');
   av.src = avatarImg(avatar);
   av.style.cssText += ';'+avatarTierStyle(pts);
-  // Rank card grande
   const rankCard=$('setup-rank-card');
   if(rankCard) rankCard.innerHTML = rankCardHTML(pts);
-  // Botão de rejoin se havia sala ativa
   const ultimaSala = localStorage.getItem('_imp_sala');
   const btnRejoin = $('btn-rejoin');
   if(ultimaSala && btnRejoin){
@@ -1292,12 +1083,10 @@ function mostrarSetup(){
   } else if(btnRejoin){
     btnRejoin.style.display = 'none';
   }
-  // preenche código se vier na URL
   const params=new URLSearchParams(location.search);
   const salaParam=params.get('sala');
   if(salaParam) $('inp-codigo').value=salaParam.toUpperCase();
   showScreen('s-setup');
-  // Listener em tempo real do próprio placarTotal
   if(ME?.uid) iniciarListenerMeuPlacar();
 }
 
@@ -1313,8 +1102,6 @@ async function salvarNome(){
   }catch(e){ setErr('st-nome','Erro ao salvar.'); }
 }
 
-// ──── AVATAR UPLOAD ────
-// Converte o arquivo para blob JPEG 128x128 via canvas
 function comprimirImagem(file){
   return new Promise((res,rej)=>{
     const reader=new FileReader();
@@ -1343,7 +1130,7 @@ function comprimirImagem(file){
 
 async function uploadAvatar(input){
   const file=input.files[0];
-  input.value=''; // reseta input imediatamente para permitir nova seleção
+  input.value='';
   if(!file) return;
   if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
 
@@ -1351,16 +1138,13 @@ async function uploadAvatar(input){
   statusEl.textContent='Comprimindo…';
 
   try{
-    // 1. Comprimir antes de qualquer chamada de rede
     const blob=await comprimirImagem(file);
-
     statusEl.textContent='Enviando…';
     const uid=ME.uid;
     const ts=Date.now();
     const path=`avatares/${uid}/${ts}.jpg`;
     const storageRef=storage.ref(path);
 
-    // 2. Upload com timeout de 20s
     const url=await Promise.race([
       (async()=>{
         const snap=await storageRef.put(blob,{contentType:'image/jpeg'});
@@ -1369,41 +1153,21 @@ async function uploadAvatar(input){
       new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido. Verifique sua conexão.')),20000))
     ]);
 
-    // 3. Atualiza perfil
     await upd(`users/${uid}`,{avatarUrl:url});
     ME_PROFILE.avatarUrl=url;
     $('setup-avatar').src=url;
     statusEl.textContent='';
-    setOk('st-nome','Avatar atualizado!');
+    setOk('st-nome','Avatar updated!');
     setTimeout(()=>clearErr('st-nome'),2500);
 
-    // 4. Atualiza avatar na sala ativa se existir
     if(SALA){
       await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
     }
   }catch(e){
-    console.error('uploadAvatar erro:',e);
-    // Traduz erros comuns do Firebase Storage
-    const msg=e.code==='storage/unauthorized'
-      ? 'Sem permissão. Configure as regras do Firebase Storage.'
-      : e.code==='storage/canceled'
-      ? 'Upload cancelado.'
-      : e.message||'Erro no upload.';
+    const msg=e.code=='storage/unauthorized' ? 'Sem permissão.' : e.message||'Erro no upload.';
     statusEl.textContent='';
     setErr('st-nome', msg);
   }
-}
-
-// ══════════════════════════════════════════════════════
-//  ENTRAR / CRIAR SALA
-// ══════════════════════════════════════════════════════
-function _bindInputListeners(){
-  const bind=(id,ev,fn)=>{ const el=$(id); if(el) el.addEventListener(ev,fn); };
-  bind('inp-codigo','keydown',e=>{if(e.key==='Enter')entrarOuCriar();});
-  bind('inp-codigo','input',  e=>{e.target.value=e.target.value.toUpperCase();});
-  bind('li-email',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
-  bind('li-senha',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
-  bind('ca-senha',  'keydown',e=>{if(e.key==='Enter')cadastrar();});
 }
 
 async function rejoinSala(){
@@ -1413,7 +1177,7 @@ async function rejoinSala(){
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || 'Jogador';
   try{
     const info = await get(`salas/${cod}/info`);
-    if(!info){ localStorage.removeItem('_imp_sala'); $('btn-rejoin').style.display='none'; throw new Error('Sala não existe mais.'); }
+    if(!info){ localStorage.removeItem('_imp_sala'); $('btn-rejoin').style.display='none'; throw new Error('Sala não existe.'); }
     await entrarSala(nome, cod);
   }catch(e){ setErr('st-setup', e.message); }
 }
@@ -1422,17 +1186,15 @@ async function entrarOuCriar(){
   const raw=$('inp-codigo').value.trim().toUpperCase();
   clearErr('st-setup');
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
-  devlog(`entrarOuCriar: codigo="${raw}" nome="${nome}"`, nome?'info':'err');
   try{
     if(!raw){
       await criarSala(nome);
     } else {
       const existing=await get(`salas/${raw}/info`);
-      devlog(`sala ${raw} existe=${!!existing}`, 'info');
       if(existing) await entrarSala(nome,raw);
       else          await criarSala(nome, raw);
     }
-  }catch(e){ devlog(`entrarOuCriar ERRO: ${e.message}`, 'err'); setErr('st-setup',e.message); }
+  }catch(e){ setErr('st-setup',e.message); }
 }
 
 async function criarSala(nome, codCustom){
@@ -1467,7 +1229,6 @@ async function entrarSala(nome, cod){
 }
 
 async function _gravarJogador(cod, uid, nome){
-  devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
   const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
@@ -1506,9 +1267,6 @@ function compartilharCodigo(){
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  LISTENERS
-// ══════════════════════════════════════════════════════
 function iniciarListeners(){
   listen('info',      `salas/${SALA}/info`,      onInfoChanged);
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
@@ -1518,7 +1276,6 @@ function iniciarListeners(){
   showScreen('s-lobby');
 }
 
-// ── Listener em tempo real do próprio placarTotal (atualiza setup screen)
 let _meuPlacarListener = null;
 function iniciarListenerMeuPlacar(){
   if(_meuPlacarListener) _meuPlacarListener.off('value');
@@ -1526,7 +1283,6 @@ function iniciarListenerMeuPlacar(){
   _meuPlacarListener.on('value', snap=>{
     const val = snap.val()||0;
     if(ME_PROFILE) ME_PROFILE.placarTotal = val;
-    // Atualiza rank card se setup estiver visível
     const rankCard=$('setup-rank-card');
     if(rankCard && document.querySelector('.screen.active')?.id==='s-setup'){
       rankCard.innerHTML = rankCardHTML(val);
@@ -1536,16 +1292,14 @@ function iniciarListenerMeuPlacar(){
   });
 }
 
-
 let _userListeners = {};
 function iniciarListenerPlacarTotal(){
-  // limpa listeners anteriores
   Object.values(_userListeners).forEach(r=>r.off('value'));
   _userListeners={};
 }
 function sincronizarPlacarTotalJogador(uid){
   const key=idKey(uid);
-  if(_userListeners[key]) return; // já tem listener
+  if(_userListeners[key]) return;
   _userListeners[key]=db.ref(`users/${uid}/placarTotal`);
   _userListeners[key].on('value', snap=>{
     const val=snap.val()||0;
@@ -1559,22 +1313,17 @@ function sincronizarPlacarTotalJogador(uid){
 }
 
 function onInfoChanged(info){
-  if(!info){ devlog('onInfoChanged: sala removida — saindo', 'err'); sairDaSala(); return; }
+  if(!info){ sairDaSala(); return; }
   const prev=_info;
   _info=info;
   const fase=info.fase;
-  devlog(`onInfoChanged: fase ${prev?.fase||'?'} → ${fase} | host=${info.host?.slice(0,6)}`, 'info');
 
   if(fase==='revealed'){
     listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
-    // Para timers e flash em TODOS os clientes quando a rodada é revelada
     pararTimerLocal();
     stopFlashPulse();
   }
 
-  // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
-  // O host não tem permissão de escrever em users/$outroUid pelas regras do Firebase,
-  // então cada jogador grava apenas seu próprio nó.
   if(prev?.fase!=='revealed' && fase==='revealed'){
     (async()=>{
       try{
@@ -1588,14 +1337,13 @@ function onInfoChanged(info){
         const isImp=ME.uid===info.impostorId;
         const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
         if(pts!==0){
-          const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
-          await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
+          const updatedVal = Math.max(0, (ME_PROFILE?.placarTotal||0) + pts);
+          await upd(`users/${ME.uid}`,{placarTotal:updatedVal});
         }
-      }catch(e){ console.warn('Erro ao atualizar placarTotal:',e); }
+      }catch(e){ console.warn(e); }
     })();
   }
 
-  // Detecta transições para tocar sons para todos
   if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
   if(prev?.fase==='questioning' && fase==='playing') SFX.palavra();
   if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
@@ -1624,9 +1372,7 @@ function onJogadoresChanged(jogadores){
   });
   _jogadores=normalized;
   const cur=Object.keys(_jogadores).length;
-  devlog(`onJogadoresChanged: ${prev}→${cur} jogadores: ${Object.values(_jogadores).map(j=>`${j.nome||'?'}(${j.id?.slice(0,4)||'?'})`).join(', ')}`, 'info');
   if(cur>prev) SFX.join();
-  // Inicia listener de placarTotal para cada jogador (sem duplicar)
   Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
   renderFase();
 }
@@ -1640,13 +1386,9 @@ function onVotosChanged(votos){
 
 function onHistoricoChanged(hist){ _historico=hist||{}; renderHistorico(); }
 
-// ══════════════════════════════════════════════════════
-//  TIMER — sincronizado via Firebase
-// ══════════════════════════════════════════════════════
 function onTimerChanged(data){
   if(!data) return;
-  // data = { ts: <timestamp do reset>, ativo: bool }
-  if(data.ts===lastTimerTs && timerRunning) return; // mesmo reset, ignora
+  if(data.ts===lastTimerTs && timerRunning) return;
   lastTimerTs=data.ts;
   if(data.ativo){
     iniciarTimerLocal(data.ts);
@@ -1664,7 +1406,6 @@ function iniciarTimerLocal(startTs){
   pararTimerLocal();
   timerRunning=true;
   const DURACAO=15;
-
   let lastTickSeg=-1;
   function tick(){
     const elapsed=(serverNow()-startTs)/1000;
@@ -1678,17 +1419,14 @@ function iniciarTimerLocal(startTs){
     $('timer-bar').classList.toggle('urgent',urgent);
     $('timer-label').textContent=timerRunning?'respondendo…':'';
 
-    // Flash sincronizado com o timer (cada segundo = pulso)
     setFlashByRestante(restante);
 
-    // Tick sonoro uma vez por segundo (quando o display muda)
     if(restante>0 && segsDisplay!==lastTickSeg){
       lastTickSeg=segsDisplay;
       SFX.tick(restante);
     }
 
     if(restante<=0){
-      // Mantém flash vermelho sólido por 300ms depois que zera, depois some
       setTimeout(()=>{ stopFlashPulse(); },300);
       pararTimerLocal();
       $('timer-display').textContent='15';
@@ -1703,26 +1441,12 @@ function iniciarTimerLocal(startTs){
   timerInterval=requestAnimationFrame(tick);
 }
 
-// Flash sincronizado com o tick do timer.
-// Recebe restante (segundos, float). Calcula se deve estar ON ou OFF
-// com base na metade do segundo atual.
-// Regra: abaixo de 5s, pisca na "primeira metade" de cada segundo
-// (frac >= 0.5), fica apagado na segunda metade.
-// Quando restante = 0 exatamente: fica vermelho sólido até o timer parar.
 function setFlashByRestante(restante){
   const ov=$('flash-overlay');
   if(!ov) return;
-  if(restante<=0){
-    ov.classList.add('flash'); // sólido até parar
-    return;
-  }
-  if(restante>=5){
-    ov.classList.remove('flash');
-    return;
-  }
+  if(restante<=0){ ov.classList.add('flash'); return; }
+  if(restante>=5){ ov.classList.remove('flash'); return; }
   const frac=restante-Math.floor(restante);
-  // frac próximo de 1.0 = início do segundo (flash ON)
-  // frac próximo de 0.0 = fim do segundo (flash OFF)
   frac>=0.5 ? ov.classList.add('flash') : ov.classList.remove('flash');
 }
 function stopFlashPulse(){
@@ -1730,7 +1454,6 @@ function stopFlashPulse(){
   const ov=$('flash-overlay');
   if(ov) ov.classList.remove('flash');
 }
-// Mantido para compatibilidade com código que chama startFlashPulse (qtimer resposta)
 function startFlashPulse(){
   if(flashPulseInterval) return;
   let on=false;
@@ -1748,15 +1471,11 @@ function pararTimerLocal(){
 }
 
 async function resetarTimer(){
-  // Só host pode resetar
   if(!_info||_info.host!==ME.uid) return;
   const ts=Date.now();
   await set(`salas/${SALA}/timer`,{ts, ativo:true});
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER DISPATCH
-// ══════════════════════════════════════════════════════
 function renderFase(){
   if(!_info) return;
   const fase=_info.fase;
@@ -1767,15 +1486,11 @@ function renderFase(){
   else if(fase==='revealed')    renderResultado();
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER — LOBBY
-// ══════════════════════════════════════════════════════
 function renderLobby(){
   if(document.querySelector('.screen.active')?.id!=='s-lobby') showScreen('s-lobby');
   $('lobby-code').textContent=SALA;
 
   const lista=Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
-
   const container=$('lobby-players');
   container.innerHTML='';
   lista.forEach(j=>{
@@ -1808,9 +1523,6 @@ function renderLobby(){
   $('btn-sortear').disabled=false;
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER — PLAYING
-// ══════════════════════════════════════════════════════
 function renderPlaying(){
   const cur=document.querySelector('.screen.active')?.id;
   if(cur!=='s-palavra'){
@@ -1826,17 +1538,15 @@ function renderPlaying(){
   }
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
+  $('btn-cancelar-palavra').style.display=isHost?'':'none';[cite: 1]
+  $('btn-reiniciar-palavra').style.display=isHost?'':'none';[cite: 1]
   const votAberta=_info.votacaoAberta;
   $('card-votacao').style.display=votAberta?'flex':'none';
   if(votAberta) renderVoteGrid('vote-grid');
 }
 
-// ══════════════════════════════════════════════════════
-//  QUESTIONING — sem fila de pares
-// ══════════════════════════════════════════════════════
 let qWordShown = false;
-
-function pararQTimerLocal(){ /* mantido para compatibilidade com revelarImpostor */ }
+function pararQTimerLocal(){}
 
 async function renderQuestioning(){
   if(document.querySelector('.screen.active')?.id!=='s-questioning'){
@@ -1852,6 +1562,8 @@ async function renderQuestioning(){
   const isHost=_info.host===ME.uid;
   const revelarQ=$('btn-revelar-q');
   if(revelarQ) revelarQ.style.display=isHost?'':'none';
+  $('btn-cancelar-questioning').style.display=isHost?'':'none';[cite: 1]
+  $('btn-reiniciar-questioning').style.display=isHost?'':'none';[cite: 1]
 
   renderVoteGrid('q-vote-grid');
   const qVoteStatus=$('q-vote-status');
@@ -1878,9 +1590,6 @@ function toggleWordQ(){
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER — VOTING
-// ══════════════════════════════════════════════════════
 function renderVoting(){
   const cur=document.querySelector('.screen.active')?.id;
   if(cur!=='s-palavra'){
@@ -1894,15 +1603,13 @@ function renderVoting(){
   }
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
+  $('btn-cancelar-palavra').style.display=isHost?'':'none';[cite: 1]
+  $('btn-reiniciar-palavra').style.display=isHost?'':'none';[cite: 1]
   $('card-votacao').style.display='flex';
   renderVoteGrid('vote-grid');
 }
 
-// ══════════════════════════════════════════════════════
-//  VOTE GRID
-// ══════════════════════════════════════════════════════
 function renderVoteGrid(gridId){
-  // Usa snapshot para manter jogadores mesmo que alguém tenha saído
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
   const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
   const totalVotos=Object.keys(_votos).length;
@@ -1924,203 +1631,133 @@ function renderVoteGrid(gridId){
     row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
     const offlineBadge=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
     const votantes = Object.entries(_votos)
-  .filter(([,v]) => v.votadoId === j.id)
-  .map(([k]) => {
-    const uid = keyToId(k);
-    return Object.values(fonteJogadores).find(x => x.id === uid) || null;
-  })
-  .filter(Boolean);
+      .filter(([,v]) => v.votadoId === j.id)
+      .map(([k]) => {
+        const uid = keyToId(k);
+        return Object.values(fonteJogadores).find(x => x.id === uid) || null;
+      })
+      .filter(Boolean);
 
-const BASE_SIZE = 30;
-const MIN_OVERLAP = 2;
-const MAX_OVERLAP = 14;
-const overlap = votantes.length <= 4
-  ? MIN_OVERLAP
-  : Math.min(MAX_OVERLAP, MIN_OVERLAP + (votantes.length - 4) * 3);
+    const BASE_SIZE = 30;
+    const MIN_OVERLAP = 2;
+    const MAX_OVERLAP = 14;
+    const overlap = votantes.length <= 4
+      ? MIN_OVERLAP
+      : Math.min(MAX_OVERLAP, MIN_OVERLAP + (votantes.length - 4) * 3);
 
-const miniFotos = votantes.map((vt, i) => {
-  const right = i * (BASE_SIZE - overlap);
-  return `<img src="${avatarImg(vt.avatarUrl)}" alt=""
-    onerror="this.src='${AVATAR_PLACEHOLDER}'"
-    style="position:absolute;bottom:4px;right:${right}px;
-    width:${BASE_SIZE}px;height:${BASE_SIZE}px;
-    object-fit:cover;image-rendering:pixelated;
-    border:1px solid rgba(0,0,0,.6);
-    border-radius:2px;z-index:${10+i};">`;
-}).reverse().join('');
+    const miniFotos = votantes.map((vt, i) => {
+      const right = i * (BASE_SIZE - overlap);
+      return `<img src="${avatarImg(vt.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'"
+        style="position:absolute;bottom:4px;right:${right}px;
+        width:${BASE_SIZE}px;height:${BASE_SIZE}px;
+        object-fit:cover;image-rendering:pixelated;
+        border:1px solid rgba(0,0,0,.6);
+        border-radius:2px;z-index:${10+i};">`;
+    }).reverse().join('');
 
-const miniFotosWrap = votantes.length
-  ? `<div style="position:absolute;bottom:0;right:0;
-      height:100%;pointer-events:none;z-index:2;
-      width:${Math.max(BASE_SIZE, BASE_SIZE + (votantes.length-1)*(BASE_SIZE-overlap))}px;">
-      ${miniFotos}
-    </div>`
-  : '';
+    const miniFotosWrap = votantes.length
+      ? `<div style="position:absolute;bottom:0;right:0;
+          height:100%;pointer-events:none;z-index:2;
+          width:${Math.max(BASE_SIZE, BASE_SIZE + (votantes.length-1)*(BASE_SIZE-overlap))}px;">
+          ${miniFotos}
+        </div>`
+      : '';
     row.innerHTML=`
-  <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
-  <div style="position:relative;z-index:1;flex-shrink:0;width:22px;display:flex;align-items:center;justify-content:center;">
-    ${jaVotou
-      ? '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4CAF50" stroke-width="2"/><polyline points="4,10 8,14 16,6" fill="none" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-      : '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4A4A6A" stroke-width="2"/></svg>'
-    }
-  </div>
-  <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-    onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
-  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px;">
-    <div style="font-size:1.1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
-    <div style="font-size:.85rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
-    <div style="height:3px;background:rgba(255,255,255,.08);overflow:hidden;width:100%;max-width:120px">
-      <div style="height:100%;background:${rankStyle.color};width:${pct}%;transition:width .35s ease;opacity:.8"></div>
-    </div>
-  </div>
-  ${miniFotosWrap}`;
- grid.appendChild(row);  // ← linha que estava faltando
-  });  // fecha ativos.forEach
+      <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
+      <div style="position:relative;z-index:1;flex-shrink:0;width:22px;display:flex;align-items:center;justify-content:center;">
+        ${jaVotou
+          ? '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4CAF50" stroke-width="2"/><polyline points="4,10 8,14 16,6" fill="none" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4A4A6A" stroke-width="2"/></svg>'
+        }
+      </div>
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
+      <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:1.1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
+        <div style="font-size:.85rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
+        <div style="height:3px;background:rgba(255,255,255,.08);overflow:hidden;width:100%;max-width:120px">
+          <div style="height:100%;background:${rankStyle.color};width:${pct}%;transition:width .35s ease;opacity:.8"></div>
+        </div>
+      </div>
+      ${miniFotosWrap}`;
+    grid.appendChild(row);
+  });
 
   const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
-  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
-}  // fecha renderVoteGrid
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos computados`;
+}
 
+async function sortear(){
+  if(_info.host!==ME.uid) return;
+  $('btn-sortear').disabled=true;
+  try{
+    const banco=await carregarPalavras();
+    const cats=Object.keys(banco);
+    const cat=cats[Math.floor(Math.random()*cats.length)];
+    const pals=banco[cat];
+    const palavra=pals[Math.floor(Math.random()*pals.length)];
 
-// ══════════════════════════════════════════════════════
-//  RESULTADO
-// ══════════════════════════════════════════════════════
-function renderResultado(){
-  if(document.querySelector('.screen.active')?.id!=='s-resultado') showScreen('s-resultado');
-  if(!_info.impostorId) return;
+    const lista=Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
+    const ativos=lista.filter(j=>j.online!==false);
+    if(ativos.length<2) throw new Error('Mínimo 2 jogadores online.');
 
-  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
-  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-  const assignments=_assignments||{};
-  const contagem={};
-  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+    const impIdx=Math.floor(Math.random()*ativos.length);
+    const imp=ativos[impIdx];
 
-  // Calcula resultado da votação para exibir cenário
-  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos);
-
-  const list=$('res-list');
-  list.innerHTML='';
-
-  const resTitulo = $('res-titulo');
-if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + (_info.palavra||'—') + '</span>';
-
-  // ── Impostor em destaque no topo
-  const imp=ativos.find(j=>j.id===_info.impostorId);
-  if(imp){
-    const impPts=cenarioImpostor.pts;
-    const impPtsClass=impPts>0?'pts-pos':impPts<0?'pts-neg':'pts-zero';
-    const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
-    const impCard=document.createElement('div');
-    impCard.className='res-impostor-card';
-    const impStyle=getPrestigeStyle(imp.placarTotal||0);
-    impCard.innerHTML=`
-      <img class="res-rank-bg" src="${impStyle.img}" alt="">
-      <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
-      <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
-      <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
-    list.appendChild(impCard);
-  }
-
-  // ── Demais jogadores em grid de tiles
-  const outros=ativos.filter(j=>j.id!==_info.impostorId);
-  if(outros.length){
-    const grid=document.createElement('div');
-    grid.className='res-players-grid';
-    outros.forEach(j=>{
-      const pts=(cenarioJogadores[j.id]||{pts:0}).pts;
-      const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
-      const ptsLabel=pts>0?`+${pts}`:String(pts);
-      const isMe=j.id===ME.uid;
-      const tileStyle=getPrestigeStyle(j.placarTotal||0);
-      const tile=document.createElement('div');
-      tile.className='res-player-tile';
-      tile.innerHTML=`
-        <img class="res-rank-bg" src="${tileStyle.img}" alt="">
-        <img src="${avatarImg(j.avatarUrl)}" alt=""
-          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
-        <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
-      grid.appendChild(tile);
+    const assignments={};
+    const snapObj={};
+    lista.forEach(j=>{
+      const isSpec=j.online===false;
+      snapObj[idKey(j.id)]={...j, espectador:isSpec};
+      if(!isSpec){
+        assignments[idKey(j.id)]=(j.id===imp.id)?'IMPOSTOR':palavra;
+      }
     });
-    list.appendChild(grid);
-  }
 
-  renderHistorico();
-  renderPlacar();
-  $('btn-nova').style.display=ME.uid===_info.host?'':'none';
+    const rodada=(_info.rodada||0)+1;
 
-  // Som de resultado — toca apenas uma vez por rodada
-  if(!resultadoSomTocado){
-    resultadoSomTocado=true;
-    const euSouImpostor=ME.uid===_info.impostorId;
-    if(euSouImpostor){
-      impostorPegou ? SFX.derrota() : SFX.vitoria();
-    } else {
-      const meuVotoObj=_votos[idKey(ME.uid)];
-      meuVotoObj?.votadoId===_info.impostorId ? SFX.vitoria() : SFX.derrota();
-    }
-  }
+    await del(`salas/${SALA}/votos`);
+    await set(`salas/${SALA}/assignments`, assignments);
+    await set(`salas/${SALA}/snapshot`, snapObj);
+    await set(`salas/${SALA}/timer`, {ts:0, ativo:false});
+    await upd(`salas/${SALA}/info`, {
+      fase:'questioning',
+      categoria:cat,
+      palavra,
+      impostorId:imp.id,
+      impostorNome:imp.nome,
+      votacaoAberta:true,
+      rodada
+    });
+  }catch(e){ alert(e.message); $('btn-sortear').disabled=false; }
 }
 
-function renderHistorico(){
-  const rodadas=Object.values(_historico).sort((a,b)=>b.rodada-a.rodada);
-  const container=$('hist-list');
-  container.innerHTML='';
-  if(!rodadas.length){
-    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Nenhuma rodada ainda</div>';
-    return;
-  }
-  rodadas.forEach(r=>{
-    const div=document.createElement('div');
-    div.className='hist-item'+(r.impostorPegou?' win':' lose');
-    div.innerHTML=`
-      <div class="hist-rodada">Rodada ${r.rodada}</div>
-      <div class="hist-palavra">${r.palavra} <span style="color:var(--sub);font-weight:400;font-size:.75rem">· ${r.categoria}</span></div>
-      <div class="hist-detalhe">Impostor: ${r.impostorNome} · ${r.impostorPegou?'✓ pego':'✗ escapou'}</div>`;
-    container.appendChild(div);
-  });
+async function reiniciarRodada(){[cite: 1]
+  if(_info.host!==ME.uid) return;[cite: 1]
+  SFX.novaRodada();[cite: 1]
+  await sortear();[cite: 1]
 }
 
-async function renderPlacar(){
-  const listaBase=Object.values(_jogadores).filter(j=>!j.espectador);
-  // Carrega placarTotal de cada jogador para mostrar prestígio real
-  await Promise.all(listaBase.map(async j=>{
-    if(j.placarTotal==null){
-      try{ j.placarTotal=(await get(`users/${j.id}/placarTotal`))||0; }catch(_){ j.placarTotal=0; }
-    }
-  }));
-  const lista=listaBase.sort((a,b)=>(b.placar||0)-(a.placar||0));
-  const container=$('placar-list');
-  container.innerHTML='';
-  if(!lista.length){
-    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';
-    return;
-  }
-  lista.forEach((j,i)=>{
-    const div=document.createElement('div');
-    div.className='placar-row';
-    const pts=j.placarTotal||0;
-    const avStyle=avatarTierStyle(pts);
-    const voceLabel=j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':'';
-    div.innerHTML=`
-      <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
-      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
-      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts)}${voceLabel}</span>
-      ${rankBoxHTML(pts)}
-      <span class="placar-pts">${j.placar||0}pt</span>`;
-    container.appendChild(div);
-  });
+async function cancelarRodada(){[cite: 1]
+  if(_info.host!==ME.uid) return;[cite: 1]
+  SFX.sair();[cite: 1]
+  await del(`salas/${SALA}/votos`);[cite: 1]
+  await del(`salas/${SALA}/assignments`);[cite: 1]
+  await del(`salas/${SALA}/snapshot`);[cite: 1]
+  await set(`salas/${SALA}/timer`, {ts:0, ativo:false});[cite: 1]
+  await upd(`salas/${SALA}/info`, {[cite: 1]
+    fase:'lobby',[cite: 1]
+    categoria:'',[cite: 1]
+    palavra:'',[cite: 1]
+    impostorId:'',[cite: 1]
+    impostorNome:'',[cite: 1]
+    votacaoAberta:false[cite: 1]
+  });[cite: 1]
 }
 
-// ══════════════════════════════════════════════════════
-//  PALAVRA toggle
-// ══════════════════════════════════════════════════════
 function toggleWord(){
-  const el=$('word-el'),hint=$('word-hint');
+  const el=$('word-el'), hint=$('word-hint');
   if(!wordShown){
     SFX.palavra();
     const isImp=myWord==='IMPOSTOR';
@@ -2136,268 +1773,256 @@ function toggleWord(){
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  SORTEAR
-// ══════════════════════════════════════════════════════
-async function sortear(){
-  $('btn-sortear').disabled=true;
-  clearErr('st-lobby');
-  try{
-    if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
-    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
-    if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
-
-    const cats=await carregarPalavras();
-    const catNames=Object.keys(cats);
-    const cat=catNames[Math.floor(Math.random()*catNames.length)];
-    const words=cats[cat];
-    const palavra=words[Math.floor(Math.random()*words.length)];
-    const impostorIdx=Math.floor(Math.random()*ativos.length);
-    const impostorJ=ativos[impostorIdx];
-
-    const assignments={};
-    ativos.forEach((j,i)=>{
-      assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
-    });
-
-    // Snapshot dos jogadores neste momento
-    const snapshot={};
-    ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
-
-    await del(`salas/${SALA}/votos`);
-    await set(`salas/${SALA}/assignments`, assignments);
-    await set(`salas/${SALA}/snapshot`, snapshot);
-    await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
-    _assignments=assignments;
-    _snapshot=snapshot;
-
-    await upd(`salas/${SALA}/info`,{
-      fase:'questioning', categoria:cat, palavra,
-      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
-      votacaoAberta:false,
-      rodada:(_info.rodada||0)+1
-    });
-  }catch(e){
-    setErr('st-lobby',e.message);
-    $('btn-sortear').disabled=false;
-  }
-}
-
-// ══════════════════════════════════════════════════════
-//  VOTAÇÃO
-// ══════════════════════════════════════════════════════
-async function abrirVotacao(){
-  await upd(`salas/${SALA}/info`,{votacaoAberta:true, fase:'voting'});
-  // SFX.votacaoAberta() é disparado pelo onInfoChanged (para todos os jogadores inclusive o host)
-}
-
-async function votar(votadoId, votadoNome){
-  meuVoto=votadoId;
-  await set(`salas/${SALA}/votos/${idKey(ME.uid)}`,{votadoId, votadoNome, ts:Date.now()});
-}
-
-// ══════════════════════════════════════════════════════
-//  CÁLCULO DE PONTUAÇÃO (tabela dos 14 cenários)
-// ══════════════════════════════════════════════════════
-function calcularResultado(ativos, contagem, impostorId, votos){
-  const totalVotantes=Object.keys(votos).length;
-  const impostorVotos=contagem[impostorId]||0;
-  const maxVotos=Math.max(...ativos.map(j=>contagem[j.id]||0),0);
-
-  const impostorTemMaioria=impostorVotos>0&&impostorVotos===maxVotos;
-  const empatados=ativos.filter(j=>(contagem[j.id]||0)===maxVotos&&maxVotos>0);
-  const empate=empatados.length>1;
-  const impostorPegou=impostorTemMaioria&&!empate;
-
-  // ── Impostor
-  let cenarioImpostor;
-  if(impostorPegou){
-    if(impostorVotos===totalVotantes&&totalVotantes>0)
-      cenarioImpostor={num:9,  pts:PTS.imp_pego_unanimidade, desc:'pego por unanimidade'};
-    else if(impostorVotos>totalVotantes/2)
-      cenarioImpostor={num:10, pts:PTS.imp_pego_maioria,    desc:'pego por maioria'};
-    else
-      cenarioImpostor={num:11, pts:PTS.imp_pego_minoria,    desc:'pego por minoria'};
+async function votar(alvoId, alvoNome){
+  if(!_info.votacaoAberta) return;
+  const meuKey=idKey(ME.uid);
+  if(_snapshot[meuKey]?.espectador) return;
+  if(meuVoto===alvoId){
+    await del(`salas/${SALA}/votos/${meuKey}`);
   } else {
-    if(impostorVotos===0)
-      cenarioImpostor={num:12, pts:PTS.imp_escapou_zerovoto, desc:'ninguém votou nele'};
-    else if(empate)
-      cenarioImpostor={num:13, pts:PTS.imp_escapou_empate,   desc:'votos empatados'};
-    else
-      cenarioImpostor={num:14, pts:PTS.imp_escapou_minoria,  desc:'minoria votou nele'};
+    await set(`salas/${SALA}/votos/${meuKey}`, {votadoId:alvoId, votadoNome:alvoNome});
   }
+}
 
-  // ── Jogadores
-  const cenarioJogadores={};
-  ativos.forEach(j=>{
-    if(j.id===impostorId) return;
-    const votou=votos[idKey(j.id)];
-    if(!votou){
-      cenarioJogadores[j.id]={num:impostorPegou?7:8,
-        pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
-      return;
-    }
-    const acertou=votou.votadoId===impostorId;
-    if(acertou){
-      if(!impostorPegou){
-        cenarioJogadores[j.id]={num:4, pts:PTS.acertou_escapou};
-      } else {
-        const qtdAcertaram=ativos.filter(j2=>j2.id!==impostorId&&votos[idKey(j2.id)]?.votadoId===impostorId).length;
-        const qtdAtivos=ativos.filter(j2=>j2.id!==impostorId).length;
-        if(qtdAcertaram===qtdAtivos)
-          cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
-        else if(qtdAcertaram>qtdAtivos/2)
-          cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
-        else
-          cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
-      }
-    } else {
-      cenarioJogadores[j.id]={num:impostorPegou?5:6,
-        pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
-    }
+function calcularResultado(ativos, contagem, impId, todosVotos){
+  const totalAtivos=ativos.length;
+  const totalVotosEfetuados=Object.keys(todosVotos).length;
+  const votosImp=contagem[impId]||0;
+
+  let impPego=false;
+  let maisVotadoId=null;
+  let maxVotos=-1;
+  let empate=false;
+
+  Object.entries(contagem).forEach(([id,qtd])=>{
+    if(qtd>maxVotos){ maxVotos=qtd; maisVotadoId=id; empate=false; }
+    else if(qtd===maxVotos){ empate=true; }
   });
 
-  return {impostorPegou, cenarioImpostor, cenarioJogadores};
+  if(!empate && maisVotadoId===impId && maxVotos>0) impPego=true;
+
+  let cenarioImpostor={pts:0, txt:''};
+  let cenarioJogadores={};
+
+  ativos.forEach(j=>{ if(j.id!==impId) cenarioJogadores[j.id]={pts:0, txt:''}; });
+
+  if(impPego){
+    const todosAcertaram = (votosImp === totalAtivos - 1);
+    const maioriaAcertou = (votosImp > (totalAtivos - 1)/2);
+
+    if(todosAcertaram){
+      cenarioImpostor={pts:PTS.imp_pego_unanimidade, txt:`Pego por unanimidade! (${PTS.imp_pego_unanimidade}pt)`};
+      ativos.forEach(j=>{
+        if(j.id!==impId){
+          const v=todosVotos[idKey(j.id)];
+          if(v&&v.votadoId===impId) cenarioJogadores[j.id]={pts:PTS.acertou_unanimidade, txt:`Acertou com unanimidade! (+${PTS.acertou_unanimidade}pt)`};
+          else                      cenarioJogadores[j.id]={pts:PTS.errou_impegou, txt:`Errou o voto. (${PTS.errou_impegou}pt)`};
+        }
+      });
+    } else if(maioriaAcertou){
+      cenarioImpostor={pts:PTS.imp_pego_maioria, txt:`Pego pela maioria. (${PTS.imp_pego_maioria}pt)`};
+      ativos.forEach(j=>{
+        if(j.id!==impId){
+          const v=todosVotos[idKey(j.id)];
+          if(v&&v.votadoId===impId) cenarioJogadores[j.id]={pts:PTS.acertou_maioria, txt:`Acertou com a maioria! (+${PTS.acertou_maioria}pt)`};
+          else if(!v)               cenarioJogadores[j.id]={pts:PTS.absteve_impegou, txt:`Não votou. (+${PTS.absteve_impegou}pt)`};
+          else                      cenarioJogadores[j.id]={pts:PTS.errou_impegou, txt:`Errou o voto. (${PTS.errou_impegou}pt)`};
+        }
+      });
+    } else {
+      cenarioImpostor={pts:PTS.imp_pego_minoria, txt:`Pego por minoria! (${PTS.imp_pego_minoria}pt)`};
+      ativos.forEach(j=>{
+        if(j.id!==impId){
+          const v=todosVotos[idKey(j.id)];
+          if(v&&v.votadoId===impId) cenarioJogadores[j.id]={pts:PTS.acertou_minoria, txt:`Acertou heroico em minoria! (+${PTS.acertou_minoria}pt)`};
+          else if(!v)               cenarioJogadores[j.id]={pts:PTS.absteve_impegou, txt:`Não votou. (+${PTS.absteve_impegou}pt)`};
+          else                      cenarioJogadores[j.id]={pts:PTS.errou_impegou, txt:`Errou o voto. (${PTS.errou_impegou}pt)`};
+        }
+      });
+    }
+  } else {
+    if(votosImp===0){
+      cenarioImpostor={pts:PTS.imp_escapou_zerovoto, txt:`Escapou indetectável! (+${PTS.imp_escapou_zerovoto}pt)`};
+    } else if(empate && maisVotadoId===impId){
+      cenarioImpostor={pts:PTS.imp_escapou_empate, txt:`Escapou por empate nos votos! (+${PTS.imp_escapou_empate}pt)`};
+    } else {
+      cenarioImpostor={pts:PTS.imp_escapou_minoria, txt:`Escapou enganando a banca! (+${PTS.imp_escapou_minoria}pt)`};
+    }
+    ativos.forEach(j=>{
+      if(j.id!==impId){
+        const v=todosVotos[idKey(j.id)];
+        if(v&&v.votadoId===impId) cenarioJogadores[j.id]={pts:PTS.acertou_escapou, txt:`Você acertou, mas ele escapou. (${PTS.acertou_escapou}pt)`};
+        else if(!v)               cenarioJogadores[j.id]={pts:PTS.absteve_escapou, txt:`Não votou e ele escapou. (${PTS.absteve_escapou}pt)`};
+        else                      cenarioJogadores[j.id]={pts:PTS.errou_escapou, txt:`Foi enganado pelo impostor. (${PTS.errou_escapou}pt)`};
+      }
+    });
+  }
+  return {impPego, cenarioImpostor, cenarioJogadores};
 }
 
-// ══════════════════════════════════════════════════════
-//  REVELAR IMPOSTOR
-// ══════════════════════════════════════════════════════
 async function revelarImpostor(){
-  if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
+  if(_info.host!==ME.uid) return;
   pararTimerLocal();
+  pararQTimerLocal();
   stopFlashPulse();
-  SFX.revelar();
 
+  const impId=_info.impostorId;
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
   const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+
   const contagem={};
   Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
 
-  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos);
+  const {impPego,cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,impId,_votos);
 
-  // Aplica pontos na sala (host tem permissão de escrever em salas/)
-  // O update do placar global de cada usuário em users/ é feito por cada cliente
-  // no próprio listener de fase, pois as regras do Firebase só permitem
-  // que o próprio usuário escreva em users/$uid.
-  const updates={};
-  for(const j of ativos){
-    const isImp=j.id===_info.impostorId;
-    const pts=isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]?.pts||0);
-    if(pts!==0){
-      const atualSala=(_jogadores[idKey(j.id)]?.placar||0);
-      updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
-    }
-  }
-  if(Object.keys(updates).length) await db.ref().update(updates);
-
-  // Historico
-  const rodadaKey=`r${_info.rodada||1}`;
-  await set(`salas/${SALA}/historico/${rodadaKey}`,{
-    rodada:_info.rodada||1,
-    categoria:_info.categoria,
-    palavra:_info.palavra,
-    impostorNome:_info.impostorNome,
-    impostorPegou,
-    cenarioImpostor: cenarioImpostor.num,
-    ts:Date.now()
-  });
-
-  // Para timer
-  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
-  await upd(`salas/${SALA}/info`,{fase:'revealed'});
-}
-
-// ══════════════════════════════════════════════════════
-//  NOVA RODADA / SAIR / KICK
-// ══════════════════════════════════════════════════════
-async function novaRodada(){
-  SFX.novaRodada();
-  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
-  pararTimerLocal();
-
-  await del(`salas/${SALA}/votos`);
-  await del(`salas/${SALA}/assignments`);
-  await del(`salas/${SALA}/snapshot`);
-  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
-  await upd(`salas/${SALA}/info`,{
-    fase:'lobby', categoria:'', palavra:'',
-    impostorId:'', impostorNome:'', votacaoAberta:false
-  });
-}
-
-async function kickar(playerId){
-  await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
-}
-
-async function sairDaSala(){
-  SFX.sair();
-  // Para listeners ANTES de deletar para não disparar re-render que remove jogador do resultado
-  stopListeners();
-  pararTimerLocal();
-  if(!SALA){ mostrarSetup(); return; }
   try{
-    await db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`).onDisconnect().cancel();
-    await del(`salas/${SALA}/jogadores/${idKey(ME.uid)}`);
-    if(_info&&_info.host===ME.uid){
-      const restantes=Object.values(_jogadores).filter(j=>j.id!==ME.uid);
-      if(restantes.length>0){
-        restantes.sort((a,b)=>a.ts-b.ts);
-        await upd(`salas/${SALA}/info`,{host:restantes[0].id,hostNome:restantes[0].nome});
-      } else {
-        await del(`salas/${SALA}`);
-      }
-    }
-  }catch(e){}
+    const batch={};
+    ativos.forEach(j=>{
+      const k=idKey(j.id);
+      const ptsRodada=(j.id===impId)?cenarioImpostor.pts:(cenarioJogadores[j.id]?.pts||0);
+      const novoPlacar=Math.max(0,(_jogadores[k]?.placar||0)+ptsRodada);
+      batch[`jogadores/${k}/placar`]=novoPlacar;
+    });
 
-  SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
-  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
-  qWordShown=false;
-  localStorage.removeItem('_imp_sala');
-  $('inp-codigo').value='';
-  mostrarSetup();
+    const histRef=db.ref(`salas/${SALA}/historico`).push();
+    await histRef.set({
+      rodada:_info.rodada,
+      categoria:_info.categoria,
+      palavra:_info.palavra,
+      impostorNome:_info.impostorNome,
+      impostorId:impId,
+      pego:impPego,
+      ts:Date.now()
+    });
+
+    batch['info/fase']='revealed';
+    batch['info/votacaoAberta']=false;
+    await upd(`salas/${SALA}`, batch);
+  }catch(e){ alert('Erro ao revelar: '+e.message); }
 }
 
-// ══════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════
-window.addEventListener('load', async()=>{
-  if(!DEVLOG_ENABLED) document.body.classList.add('devlog-hidden');
-  devlog(`APP INIT | session=${_DEVLOG_SESSION} | userAgent=${navigator.userAgent.slice(0,80)}`, 'auth');
-  // Registra listeners de teclado aqui — garante que o DOM existe
-  _bindInputListeners();
-
-  const params=new URLSearchParams(location.search);
-  const salaParam=params.get('sala');
-  if(salaParam) { try{ $('inp-codigo').value=salaParam.toUpperCase(); }catch(_){} }
-  await carregarPalavras();
-
-  // Fallback: se o Firebase não responder em 8s, mostra tela de login mesmo assim
-  setTimeout(()=>{
-    const loader=$('loader');
-    if(loader && !loader.classList.contains('hide')){
-      console.warn('Firebase auth timeout — exibindo tela de login como fallback.');
-      loader.classList.add('hide');
-      showScreen('s-auth');
-    }
-  }, 8000);
-  // loader esconde quando auth.onAuthStateChanged resolver
-});
-
-// Ajusta padding-top do .wrap ao tamanho real do header
-(function(){
-  function ajustarHeader(){
-    const h = document.getElementById('site-header');
-    const w = document.querySelector('.wrap');
-    if(h && w){ w.style.paddingTop = h.offsetHeight + 'px'; }
+function renderResultado(){
+  if(document.querySelector('.screen.active')?.id!=='s-resultado'){
+    showScreen('s-resultado');
+    resultadoSomTocado=false;
   }
-  window.addEventListener('load', ajustarHeader);
-  window.addEventListener('resize', ajustarHeader);
-  // Tenta logo cedo também
-  document.addEventListener('DOMContentLoaded', ajustarHeader);
-})();
 
+  const impId=_info.impostorId;
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const {impPego,cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,impId,_votos);
+
+  if(!resultadoSomTocado){
+    resultadoSomTocado=true;
+    const souImp=ME.uid===impId;
+    if(impPego) souImp?SFX.derrota():SFX.vitoria();
+    else          souImp?SFX.vitoria():SFX.derrota();
+  }
+
+  const impCardStyle=getPrestigeStyle(_jogadores[idKey(impId)]?.placarTotal||0);
+  const container=$('res-list');
+  container.innerHTML=`
+    <div class="res-impostor-card" style="border-color:${impPego?'var(--green)':'var(--red)'}">
+      <img class="res-rank-bg" src="${impCardStyle.img}" alt="">
+      <div style="font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#fff;position:relative;z-index:1;text-shadow:0 1px 3px #000">O Impostor era</div>
+      <img class="res-impostor-avatar" src="${avatarImg(_snapshot[idKey(impId)]?.avatarUrl)}" alt="" onerror="this.src='${AVATAR_PLACEHOLDER}'" style="border-color:${impPego?'var(--green)':'var(--red)'}">
+      <div class="res-impostor-name" style="color:${impPego?'var(--green)':'var(--red)'}">${_info.impostorNome}</div>
+      <div style="font-size:1.1rem;color:#fff;position:relative;z-index:1;text-shadow:0 1px 4px #000;text-align:center;margin-top:2px;font-weight:bold;">
+        Palavra: <span style="color:var(--accent)">${_info.palavra||'—'}</span>
+      </div>
+      <div style="font-size:.9rem;color:#fff;position:relative;z-index:1;text-shadow:0 1px 3px #000;text-align:center;margin-top:4px;opacity:.95">
+        ${cenarioImpostor.txt}
+      </div>
+    </div>
+    <div class="card-label" style="margin-top:6px;margin-bottom:4px;">Sobreviventes</div>
+    <div class="res-players-grid"></div>`;
+
+  const grid=container.querySelector('.res-players-grid');
+  ativos.forEach(j=>{
+    if(j.id===impId) return;
+    const c=cenarioJogadores[j.id]||{pts:0, txt:''};
+    const pillClass=c.pts>0?'pts-pos':c.pts<0?'pts-neg':'pts-zero';
+    const sinal=c.pts>0?'+':'';
+    const tileStyle=getPrestigeStyle(_jogadores[idKey(j.id)]?.placarTotal||0);
+    const tile=document.createElement('div');
+    tile.className='res-player-tile';
+    tile.innerHTML=`
+      <img class="res-rank-bg" src="${tileStyle.img}" alt="">
+      <img src="${avatarImg(j.avatarUrl)}" alt="" onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avatarTierStyle(_jogadores[idKey(j.id)]?.placarTotal||0)}">
+      <div class="res-player-name${j.id===ME.uid?' is-me':''}">${j.nome}</div>
+      <span class="pts-badge ${pillClass}">${sinal}${c.pts}pt</span>`;
+    grid.appendChild(tile);
+  });
+
+  const isHost=_info.host===ME.uid;
+  $('btn-nova').style.display=isHost?'':'none';
+
+  renderPlacar();
+}
+
+function renderPlacar(){
+  const lista=Object.values(_jogadores).sort((a,b)=>(b.placar||0)-(a.placar||0));
+  const container=$('placar-list');
+  container.innerHTML='';
+  lista.forEach((j,idx)=>{
+    const row=document.createElement('div');
+    row.className='placar-row';
+    const isGold=idx===0&&(j.placar||0)>0;
+    const rankTxt=isGold?'🥇':`#${idx+1}`;
+    row.innerHTML=`
+      <span class="placar-rank${isGold?' gold':''}">${rankTxt}</span>
+      <span class="placar-nome">${j.nome}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}</span>
+      <span class="placar-pts">${j.placar||0} pt</span>`;
+    container.appendChild(row);
+  });
+}
+
+function renderHistorico(){
+  const lista=Object.values(_historico).sort((a,b)=>b.ts-a.ts);
+  const container=$('hist-list');
+  container.innerHTML='';
+  if(!lista.length){ container.innerHTML='<div style="color:var(--muted);text-align:center;padding:12px">Nenhuma rodada registrada.</div>'; return; }
+  lista.forEach(h=>{
+    const item=document.createElement('div');
+    item.className='hist-item '+(h.pego?'win':'lose');
+    item.innerHTML=`
+      <div class="hist-rodada">Rodada ${h.rodada} · ${h.categoria||'—'}</div>
+      <div class="hist-palavra">${h.palavra||'—'}</div>
+      <div class="hist-detalhe">Impostor: <strong>${h.impostorNome||'?'}</strong> (${h.pego?'PEGO':'ESCAPOU'})</div>`;
+    container.appendChild(item);
+  });
+}
+
+async function novaRodada(){
+  if(_info.host!==ME.uid) return;
+  SFX.novaRodada();
+  try{
+    await del(`salas/${SALA}/votos`);
+    await del(`salas/${SALA}/assignments`);
+    await del(`salas/${SALA}/snapshot`);
+    await set(`salas/${SALA}/timer`, {ts:0, ativo:false});
+    await upd(`salas/${SALA}/info`, {
+      fase:'lobby',
+      categoria:'', palavra:'',
+      impostorId:'', impostorNome:'',
+      votacaoAberta:false
+    });
+  }catch(e){ alert(e.message); }
+}
+
+async function kickar(uid){
+  if(_info.host!==ME.uid||uid===ME.uid) return;
+  if(confirm('Remover este jogador da sala?')){
+    try{ await del(`salas/${SALA}/jogadores/${idKey(uid)}`); }catch(e){}
+  }
+}
+
+_bindInputListeners();
+carregarPalavras().catch(()=>{});
 </script>
 </body>
 </html>
