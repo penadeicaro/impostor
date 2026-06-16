@@ -1974,9 +1974,11 @@ const miniFotosWrap = votantes.length
     </div>
   </div>
   ${miniFotosWrap}`;
-  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
-    if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
+ grid.appendChild(row);  // ← linha que estava faltando
   });  // fecha ativos.forEach
+
+  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
 }  // fecha renderVoteGrid
 
 
