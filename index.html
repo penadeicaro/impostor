@@ -1662,4 +1662,542 @@ async function renderQuestioning(){
 
 function fitWordFont(el, text){
   // Ajusta font-size para o texto caber no word-box (máx 2.4rem, mín 1.1rem)
-  const len = text.replace(/[^
+  const len = [...text].length; // conta caracteres unicode
+  const size = len <= 10 ? 2.4
+             : len <= 16 ? 2.0
+             : len <= 22 ? 1.6
+             : 1.2;
+  el.style.fontSize = size + 'rem';
+}
+
+function toggleWordQ(){
+  const el=$('q-word-el'), hint=$('q-word-hint');
+  if(!qWordShown){
+    SFX.palavra();
+    const isImp=myWord==='IMPOSTOR';
+    const texto=isImp?'🕵️ IMPOSTOR':myWord;
+    el.className='word-revealed';
+    el.textContent=texto;
+    fitWordFont(el, texto);
+    hint.textContent='toque para esconder';
+    qWordShown=true;
+    setTimeout(()=>{
+      if(qWordShown){
+        el.className='word-hidden';el.textContent='● ● ●';
+        el.style.fontSize='';
+        hint.textContent='toque aqui para revelar';qWordShown=false;
+      }
+    },4000);
+  } else {
+    el.className='word-hidden';el.textContent='● ● ●';
+    el.style.fontSize='';
+    hint.textContent='toque aqui para revelar';qWordShown=false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  VOTE GRID
+// ══════════════════════════════════════════════════════
+function renderVoteGrid(gridId){
+  // Usa snapshot para manter jogadores mesmo que alguém tenha saído
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const totalVotos=Object.keys(_votos).length;
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const grid=$(gridId);
+  grid.innerHTML='';
+  ativos.forEach(j=>{
+    const jaVotou=!!_votos[idKey(j.id)];
+    const nome=j.nome||'(sem nome)';
+    const qtd=contagem[j.id]||0;
+    const pct=totalVotos>0?Math.round(qtd/totalVotos*100):0;
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const rankStyle=getPrestigeStyle(pts);
+    const row=document.createElement('div');
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(j.online===false?' offline':'');
+    row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
+    const offlineBadge=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
+    const votantes = Object.entries(_votos)
+  .filter(([,v]) => v.votadoId === j.id)
+  .map(([k]) => {
+    const uid = keyToId(k);
+    return Object.values(fonteJogadores).find(x => x.id === uid) || null;
+  })
+  .filter(Boolean);
+
+const BASE_SIZE = 30;
+const MIN_OVERLAP = 2;
+const MAX_OVERLAP = 14;
+const overlap = votantes.length <= 4
+  ? MIN_OVERLAP
+  : Math.min(MAX_OVERLAP, MIN_OVERLAP + (votantes.length - 4) * 3);
+
+const miniFotos = votantes.map((vt, i) => {
+  const right = i * (BASE_SIZE - overlap);
+  return `<img src="${avatarImg(vt.avatarUrl)}" alt=""
+    onerror="this.src='${AVATAR_PLACEHOLDER}'"
+    style="position:absolute;bottom:4px;right:${right}px;
+    width:${BASE_SIZE}px;height:${BASE_SIZE}px;
+    object-fit:cover;image-rendering:pixelated;
+    border:1px solid rgba(0,0,0,.6);
+    border-radius:2px;z-index:${10+i};">`;
+}).reverse().join('');
+
+const miniFotosWrap = votantes.length
+  ? `<div style="position:absolute;bottom:0;right:0;
+      height:100%;pointer-events:none;z-index:2;
+      width:${Math.max(BASE_SIZE, BASE_SIZE + (votantes.length-1)*(BASE_SIZE-overlap))}px;">
+      ${miniFotos}
+    </div>`
+  : '';
+    row.innerHTML=`
+  <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
+  <div style="position:relative;z-index:1;flex-shrink:0;width:22px;display:flex;align-items:center;justify-content:center;">
+    ${jaVotou
+      ? '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4CAF50" stroke-width="2"/><polyline points="4,10 8,14 16,6" fill="none" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4A4A6A" stroke-width="2"/></svg>'
+    }
+  </div>
+  <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+    onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
+  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px;">
+    <div style="font-size:1.1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
+    <div style="font-size:.85rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
+    <div style="height:3px;background:rgba(255,255,255,.08);overflow:hidden;width:100%;max-width:120px">
+      <div style="height:100%;background:${rankStyle.color};width:${pct}%;transition:width .35s ease;opacity:.8"></div>
+    </div>
+  </div>
+  ${miniFotosWrap}`;
+ grid.appendChild(row);  // ← linha que estava faltando
+  });  // fecha ativos.forEach
+
+  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
+}  // fecha renderVoteGrid
+
+
+// ══════════════════════════════════════════════════════
+//  RESULTADO
+// ══════════════════════════════════════════════════════
+function renderResultado(){
+  if(document.querySelector('.screen.active')?.id!=='s-resultado') showScreen('s-resultado');
+  if(!_info.impostorId) return;
+
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const assignments=_assignments||{};
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  // Calcula resultado da votação para exibir cenário
+  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos);
+
+  const list=$('res-list');
+  list.innerHTML='';
+
+  const resTitulo = $('res-titulo');
+if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + (_info.palavra||'—') + '</span>';
+
+  // ── Impostor em destaque no topo
+  const imp=ativos.find(j=>j.id===_info.impostorId);
+  if(imp){
+    const impPts=cenarioImpostor.pts;
+    const impPtsClass=impPts>0?'pts-pos':impPts<0?'pts-neg':'pts-zero';
+    const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
+    const impCard=document.createElement('div');
+    impCard.className='res-impostor-card';
+    const impStyle=getPrestigeStyle(imp.placarTotal||0);
+    impCard.innerHTML=`
+      <img class="res-rank-bg" src="${impStyle.img}" alt="">
+      <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
+      <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+      <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
+    list.appendChild(impCard);
+  }
+
+  // ── Demais jogadores em grid de tiles
+  const outros=ativos.filter(j=>j.id!==_info.impostorId);
+  if(outros.length){
+    const grid=document.createElement('div');
+    grid.className='res-players-grid';
+    outros.forEach(j=>{
+      const pts=(cenarioJogadores[j.id]||{pts:0}).pts;
+      const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
+      const ptsLabel=pts>0?`+${pts}`:String(pts);
+      const isMe=j.id===ME.uid;
+      const tileStyle=getPrestigeStyle(j.placarTotal||0);
+      const tile=document.createElement('div');
+      tile.className='res-player-tile';
+      tile.innerHTML=`
+        <img class="res-rank-bg" src="${tileStyle.img}" alt="">
+        <img src="${avatarImg(j.avatarUrl)}" alt=""
+          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
+        <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
+      grid.appendChild(tile);
+    });
+    list.appendChild(grid);
+  }
+
+  renderHistorico();
+  renderPlacar();
+  $('btn-nova').style.display=ME.uid===_info.host?'':'none';
+
+  // Som de resultado — toca apenas uma vez por rodada
+  if(!resultadoSomTocado){
+    resultadoSomTocado=true;
+    const euSouImpostor=ME.uid===_info.impostorId;
+    if(euSouImpostor){
+      impostorPegou ? SFX.derrota() : SFX.vitoria();
+    } else {
+      const meuVotoObj=_votos[idKey(ME.uid)];
+      meuVotoObj?.votadoId===_info.impostorId ? SFX.vitoria() : SFX.derrota();
+    }
+  }
+}
+
+function renderHistorico(){
+  const rodadas=Object.values(_historico).sort((a,b)=>b.rodada-a.rodada);
+  const container=$('hist-list');
+  container.innerHTML='';
+  if(!rodadas.length){
+    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Nenhuma rodada ainda</div>';
+    return;
+  }
+  rodadas.forEach(r=>{
+    const div=document.createElement('div');
+    div.className='hist-item'+(r.impostorPegou?' win':' lose');
+    div.innerHTML=`
+      <div class="hist-rodada">Rodada ${r.rodada}</div>
+      <div class="hist-palavra">${r.palavra} <span style="color:var(--sub);font-weight:400;font-size:.75rem">· ${r.categoria}</span></div>
+      <div class="hist-detalhe">Impostor: ${r.impostorNome} · ${r.impostorPegou?'✓ pego':'✗ escapou'}</div>`;
+    container.appendChild(div);
+  });
+}
+
+async function renderPlacar(){
+  const listaBase=Object.values(_jogadores).filter(j=>!j.espectador);
+  // Carrega placarTotal de cada jogador para mostrar prestígio real
+  await Promise.all(listaBase.map(async j=>{
+    if(j.placarTotal==null){
+      try{ j.placarTotal=(await get(`users/${j.id}/placarTotal`))||0; }catch(_){ j.placarTotal=0; }
+    }
+  }));
+  const lista=listaBase.sort((a,b)=>(b.placar||0)-(a.placar||0));
+  const container=$('placar-list');
+  container.innerHTML='';
+  if(!lista.length){
+    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';
+    return;
+  }
+  lista.forEach((j,i)=>{
+    const div=document.createElement('div');
+    div.className='placar-row';
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const voceLabel=j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':'';
+    div.innerHTML=`
+      <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
+      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts)}${voceLabel}</span>
+      ${rankBoxHTML(pts)}
+      <span class="placar-pts">${j.placar||0}pt</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  SORTEAR
+// ══════════════════════════════════════════════════════
+async function sortearAssignments(){
+  const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+  if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
+
+  const cats=await carregarPalavras();
+  const catNames=Object.keys(cats);
+  const cat=catNames[Math.floor(Math.random()*catNames.length)];
+  const words=cats[cat];
+  const palavra=words[Math.floor(Math.random()*words.length)];
+  const impostorIdx=Math.floor(Math.random()*ativos.length);
+  const impostorJ=ativos[impostorIdx];
+
+  const assignments={};
+  ativos.forEach((j,i)=>{
+    assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
+  });
+
+  // Snapshot dos jogadores neste momento
+  const snapshot={};
+  ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
+
+  await del(`salas/${SALA}/votos`);
+  await set(`salas/${SALA}/assignments`, assignments);
+  await set(`salas/${SALA}/snapshot`, snapshot);
+  await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
+  _assignments=assignments;
+  _snapshot=snapshot;
+
+  return {cat, palavra, impostorJ};
+}
+
+async function sortear(){
+  $('btn-sortear').disabled=true;
+  clearErr('st-lobby');
+  try{
+    if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
+    const {cat,palavra,impostorJ}=await sortearAssignments();
+
+    await upd(`salas/${SALA}/info`,{
+      fase:'questioning', categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      votacaoAberta:false,
+      rodada:(_info.rodada||0)+1
+    });
+  }catch(e){
+    setErr('st-lobby',e.message);
+    $('btn-sortear').disabled=false;
+  }
+}
+
+// Gera uma nova palavra/impostor sem voltar ao lobby e sem alterar pontos ou contagem de rodada.
+async function reiniciarJogo(){
+  if(_info.host!==ME.uid) return;
+  const btn=$('btn-reiniciar-q');
+  btn.disabled=true;
+  try{
+    const {cat,palavra,impostorJ}=await sortearAssignments();
+    await upd(`salas/${SALA}/info`,{
+      categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      votacaoAberta:false
+    });
+  }catch(e){
+    alert(e.message);
+  }
+  btn.disabled=false;
+}
+
+// Volta todos ao lobby sem expulsar ninguém e sem alterar pontos — mesmo efeito de novaRodada().
+async function cancelarJogo(){
+  if(_info.host!==ME.uid) return;
+  await novaRodada();
+}
+
+// ══════════════════════════════════════════════════════
+//  VOTAÇÃO
+// ══════════════════════════════════════════════════════
+
+async function votar(votadoId, votadoNome){
+  meuVoto=votadoId;
+  await set(`salas/${SALA}/votos/${idKey(ME.uid)}`,{votadoId, votadoNome, ts:Date.now()});
+}
+
+// ══════════════════════════════════════════════════════
+//  CÁLCULO DE PONTUAÇÃO (tabela dos 14 cenários)
+// ══════════════════════════════════════════════════════
+function calcularResultado(ativos, contagem, impostorId, votos){
+  const totalVotantes=Object.keys(votos).length;
+  const impostorVotos=contagem[impostorId]||0;
+  const maxVotos=Math.max(...ativos.map(j=>contagem[j.id]||0),0);
+
+  const impostorTemMaioria=impostorVotos>0&&impostorVotos===maxVotos;
+  const empatados=ativos.filter(j=>(contagem[j.id]||0)===maxVotos&&maxVotos>0);
+  const empate=empatados.length>1;
+  const impostorPegou=impostorTemMaioria&&!empate;
+
+  // ── Impostor
+  let cenarioImpostor;
+  if(impostorPegou){
+    if(impostorVotos===totalVotantes&&totalVotantes>0)
+      cenarioImpostor={num:9,  pts:PTS.imp_pego_unanimidade, desc:'pego por unanimidade'};
+    else if(impostorVotos>totalVotantes/2)
+      cenarioImpostor={num:10, pts:PTS.imp_pego_maioria,    desc:'pego por maioria'};
+    else
+      cenarioImpostor={num:11, pts:PTS.imp_pego_minoria,    desc:'pego por minoria'};
+  } else {
+    if(impostorVotos===0)
+      cenarioImpostor={num:12, pts:PTS.imp_escapou_zerovoto, desc:'ninguém votou nele'};
+    else if(empate)
+      cenarioImpostor={num:13, pts:PTS.imp_escapou_empate,   desc:'votos empatados'};
+    else
+      cenarioImpostor={num:14, pts:PTS.imp_escapou_minoria,  desc:'minoria votou nele'};
+  }
+
+  // ── Jogadores
+  const cenarioJogadores={};
+  ativos.forEach(j=>{
+    if(j.id===impostorId) return;
+    const votou=votos[idKey(j.id)];
+    if(!votou){
+      cenarioJogadores[j.id]={num:impostorPegou?7:8,
+        pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
+      return;
+    }
+    const acertou=votou.votadoId===impostorId;
+    if(acertou){
+      if(!impostorPegou){
+        cenarioJogadores[j.id]={num:4, pts:PTS.acertou_escapou};
+      } else {
+        const qtdAcertaram=ativos.filter(j2=>j2.id!==impostorId&&votos[idKey(j2.id)]?.votadoId===impostorId).length;
+        const qtdAtivos=ativos.filter(j2=>j2.id!==impostorId).length;
+        if(qtdAcertaram===qtdAtivos)
+          cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
+        else if(qtdAcertaram>qtdAtivos/2)
+          cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
+        else
+          cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
+      }
+    } else {
+      cenarioJogadores[j.id]={num:impostorPegou?5:6,
+        pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
+    }
+  });
+
+  return {impostorPegou, cenarioImpostor, cenarioJogadores};
+}
+
+// ══════════════════════════════════════════════════════
+//  REVELAR IMPOSTOR
+// ══════════════════════════════════════════════════════
+async function revelarImpostor(){
+  if(_info.host!==ME.uid) return setErr('st-questioning','Só o host pode revelar.');
+  SFX.revelar();
+
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos);
+
+  // Aplica pontos na sala (host tem permissão de escrever em salas/)
+  // O update do placar global de cada usuário em users/ é feito por cada cliente
+  // no próprio listener de fase, pois as regras do Firebase só permitem
+  // que o próprio usuário escreva em users/$uid.
+  const updates={};
+  for(const j of ativos){
+    const isImp=j.id===_info.impostorId;
+    const pts=isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]?.pts||0);
+    if(pts!==0){
+      const atualSala=(_jogadores[idKey(j.id)]?.placar||0);
+      updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
+    }
+  }
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  // Historico
+  const rodadaKey=`r${_info.rodada||1}`;
+  await set(`salas/${SALA}/historico/${rodadaKey}`,{
+    rodada:_info.rodada||1,
+    categoria:_info.categoria,
+    palavra:_info.palavra,
+    impostorNome:_info.impostorNome,
+    impostorPegou,
+    cenarioImpostor: cenarioImpostor.num,
+    ts:Date.now()
+  });
+
+  // Para timer
+  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await upd(`salas/${SALA}/info`,{fase:'revealed'});
+}
+
+// ══════════════════════════════════════════════════════
+//  NOVA RODADA / SAIR / KICK
+// ══════════════════════════════════════════════════════
+async function novaRodada(){
+  SFX.novaRodada();
+  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
+
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await del(`salas/${SALA}/snapshot`);
+  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await upd(`salas/${SALA}/info`,{
+    fase:'lobby', categoria:'', palavra:'',
+    impostorId:'', impostorNome:'', votacaoAberta:false
+  });
+}
+
+async function kickar(playerId){
+  await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
+}
+
+async function sairDaSala(){
+  SFX.sair();
+  // Para listeners ANTES de deletar para não disparar re-render que remove jogador do resultado
+  stopListeners();
+  if(!SALA){ mostrarSetup(); return; }
+  try{
+    await db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`).onDisconnect().cancel();
+    await del(`salas/${SALA}/jogadores/${idKey(ME.uid)}`);
+    if(_info&&_info.host===ME.uid){
+      const restantes=Object.values(_jogadores).filter(j=>j.id!==ME.uid);
+      if(restantes.length>0){
+        restantes.sort((a,b)=>a.ts-b.ts);
+        await upd(`salas/${SALA}/info`,{host:restantes[0].id,hostNome:restantes[0].nome});
+      } else {
+        await del(`salas/${SALA}`);
+      }
+    }
+  }catch(e){}
+
+  SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
+  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
+  qWordShown=false;
+  localStorage.removeItem('_imp_sala');
+  $('inp-codigo').value='';
+  mostrarSetup();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', async()=>{
+  if(!DEVLOG_ENABLED) document.body.classList.add('devlog-hidden');
+  devlog(`APP INIT | session=${_DEVLOG_SESSION} | userAgent=${navigator.userAgent.slice(0,80)}`, 'auth');
+  // Registra listeners de teclado aqui — garante que o DOM existe
+  _bindInputListeners();
+
+  const params=new URLSearchParams(location.search);
+  const salaParam=params.get('sala');
+  if(salaParam) { try{ $('inp-codigo').value=salaParam.toUpperCase(); }catch(_){} }
+  await carregarPalavras();
+
+  // Fallback: se o Firebase não responder em 8s, mostra tela de login mesmo assim
+  setTimeout(()=>{
+    const loader=$('loader');
+    if(loader && !loader.classList.contains('hide')){
+      console.warn('Firebase auth timeout — exibindo tela de login como fallback.');
+      loader.classList.add('hide');
+      showScreen('s-auth');
+    }
+  }, 8000);
+  // loader esconde quando auth.onAuthStateChanged resolver
+});
+
+// Ajusta padding-top do .wrap ao tamanho real do header
+(function(){
+  function ajustarHeader(){
+    const h = document.getElementById('site-header');
+    const w = document.querySelector('.wrap');
+    if(h && w){ w.style.paddingTop = h.offsetHeight + 'px'; }
+  }
+  window.addEventListener('load', ajustarHeader);
+  window.addEventListener('resize', ajustarHeader);
+  // Tenta logo cedo também
+  document.addEventListener('DOMContentLoaded', ajustarHeader);
+})();
+
+</script>
+</body>
+</html>
