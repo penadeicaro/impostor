@@ -560,7 +560,7 @@ input::placeholder{color:var(--muted);}
   <div id="s-resultado" class="screen" style="gap:8px;">
     <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;">
       <div class="card" style="padding:12px;flex-shrink:0;">
-        <div class="card-label">🔍 Resultado da rodada</div>
+        <div class="card-label">A palavra era: <span style="color:var(--accent);font-family:'VT323',monospace;font-size:1.1em;letter-spacing:2px">${_info.palavra||'—'}</span></div>
         <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
       </div>
       <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
