@@ -1968,7 +1968,9 @@ row.innerHTML=`
     </div>
   </div>`;
   });
-  if(!isEspectador) $('vote-status-txt').textContent=`${totalVotos} de ${ativos.length} votos`;
+  if(!isEspectador){
+  const statusEl = $('vote-status-txt') || $('q-vote-status');
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
 }
 
 // ══════════════════════════════════════════════════════
