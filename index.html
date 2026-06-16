@@ -1975,8 +1975,9 @@ const miniFotosWrap = votantes.length
   </div>
   ${miniFotosWrap}`;
   const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
-  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
-}}
+    if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
+  });  // fecha ativos.forEach
+}  // fecha renderVoteGrid
 
 
 // ══════════════════════════════════════════════════════
