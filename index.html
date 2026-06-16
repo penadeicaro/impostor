@@ -392,10 +392,36 @@ input::placeholder{color:var(--muted);}
 .player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
 #hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
 .tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
+  /* Modal de confirmação */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:990;display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.confirm-box{
+  background:var(--card);border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  padding:20px;width:100%;max-width:340px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.confirm-msg{
+  font-family:'VT323',monospace;font-size:1.2rem;
+  color:var(--text);text-align:center;line-height:1.5;
+}
+.confirm-btns{display:flex;gap:8px;}
 </style>
 </head>
 <body>
 <div id="flash-overlay"></div>
+  <div id="confirm-overlay" class="confirm-overlay" style="display:none">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg">Tem certeza?</div>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" style="flex:1" onclick="fecharConfirm()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirm-ok-btn" onclick="confirmarAcao()">Confirmar</button>
+    </div>
+  </div>
+</div>
 <div id="loader">carregando…</div>
 <img src="header.png" alt="Impostor" id="site-header" style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;display:block;z-index:0;pointer-events:none;">
 <div class="wrap">
@@ -491,7 +517,8 @@ input::placeholder{color:var(--muted);}
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <div class="btn-pair-row">
-        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-ghost" onclick="pedirConfirm('sair')">Sair da sala</button>
+        <button class="btn btn-danger" id="btn-cancelar" onclick="pedirConfirm('cancelar')" style="display:none">✕ CANCELAR</button>
         <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
       </div>
       <!-- Código + botão compartilhar -->
@@ -530,7 +557,7 @@ input::placeholder{color:var(--muted);}
     <!-- Rodapé -->
     <div class="status err" id="st-palavra"></div>
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-ghost" onclick="pedirConfirm('sair')">Sair da sala</button>
       <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
   </div>
@@ -551,7 +578,7 @@ input::placeholder{color:var(--muted);}
     </div>
     <!-- Rodapé -->
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-ghost" onclick="pedirConfirm('sair')">Sair da sala</button>
       <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
   </div>
@@ -577,7 +604,8 @@ input::placeholder{color:var(--muted);}
       </div>
     </div>
     <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+      <button class="btn btn-ghost" onclick="pedirConfirm('sair')">Sair da sala</button>
+      <button class="btn btn-secondary" id="btn-reiniciar" onclick="pedirConfirm('reiniciar')" style="display:none">↩ REINICIAR</button>
       <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
     </div>
   </div>
@@ -1802,9 +1830,12 @@ function renderLobby(){
     container.appendChild(chip);
   });
 
-  const podeSort=_info.host===ME.uid&&lista.length>=2;
+  const isHost=_info.host===ME.uid;
+  const podeSort=isHost&&lista.length>=2;
   $('btn-sortear').style.display=podeSort?'':'none';
   $('btn-sortear').disabled=false;
+  const btnCancelar=$('btn-cancelar');
+  if(btnCancelar) btnCancelar.style.display=isHost?'':'none';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2049,7 +2080,10 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
 
   renderHistorico();
   renderPlacar();
-  $('btn-nova').style.display=ME.uid===_info.host?'':'none';
+  const ehHost=ME.uid===_info.host;
+  $('btn-nova').style.display=ehHost?'':'none';
+  const btnRei=$('btn-reiniciar');
+  if(btnRei) btnRei.style.display=ehHost?'':'none';
 
   // Som de resultado — toca apenas uma vez por rodada
   if(!resultadoSomTocado){
@@ -2311,7 +2345,69 @@ async function revelarImpostor(){
 // ══════════════════════════════════════════════════════
 //  NOVA RODADA / SAIR / KICK
 // ══════════════════════════════════════════════════════
-async function novaRodada(){
+// ══════════════════════════════════════════════════════
+//  CONFIRM MODAL
+// ══════════════════════════════════════════════════════
+let _acaoPendente = null;
+
+const CONFIRM_MSGS = {
+  sair:      'Sair da sala?\nVocê perderá seu lugar na partida atual.',
+  cancelar:  'Cancelar a rodada?\nTodos voltarão ao lobby.',
+  reiniciar: 'Reiniciar o jogo?\nTodos voltarão ao lobby.',
+};
+
+function pedirConfirm(acao){
+  _acaoPendente = acao;
+  $('confirm-msg').textContent = CONFIRM_MSGS[acao] || 'Tem certeza?';
+  const okBtn = $('confirm-ok-btn');
+  okBtn.className = (acao === 'sair') ? 'btn btn-danger' : 'btn btn-danger';
+  okBtn.textContent = acao === 'sair' ? 'Sair' : acao === 'cancelar' ? 'Cancelar rodada' : 'Reiniciar';
+  $('confirm-overlay').style.display = 'flex';
+}
+
+function fecharConfirm(){
+  $('confirm-overlay').style.display = 'none';
+  _acaoPendente = null;
+}
+
+async function confirmarAcao(){
+  const acao = _acaoPendente;
+  fecharConfirm();
+  if(acao === 'sair')      await sairDaSala();
+  else if(acao === 'cancelar')  await cancelarJogo();
+  else if(acao === 'reiniciar') await reiniciarJogo();
+}
+
+async function cancelarJogo(){
+  if(_info?.host !== ME.uid) return;
+  SFX.novaRodada();
+  meuVoto=null; _assignments=null; _snapshot={}; resultadoSomTocado=false;
+  pararTimerLocal();
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await del(`salas/${SALA}/snapshot`);
+  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await upd(`salas/${SALA}/info`,{
+    fase:'lobby', categoria:'', palavra:'',
+    impostorId:'', impostorNome:'', votacaoAberta:false
+  });
+}
+
+async function reiniciarJogo(){
+  if(_info?.host !== ME.uid) return;
+  SFX.novaRodada();
+  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
+  pararTimerLocal();
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await del(`salas/${SALA}/snapshot`);
+  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await upd(`salas/${SALA}/info`,{
+    fase:'lobby', categoria:'', palavra:'',
+    impostorId:'', impostorNome:'', votacaoAberta:false
+  });
+}
+  async function novaRodada(){
   SFX.novaRodada();
   meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
   pararTimerLocal();
