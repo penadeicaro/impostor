@@ -182,15 +182,13 @@ input::placeholder{color:var(--muted);}
 /* Controle do offset vertical da imagem de rank no vote-row.
    --vote-img-top: 0px = centralizado; negativo = sobe (corta topo); positivo = desce (corta fundo) */
 :root{ --vote-img-top: 0px; }
-.vote-row{
-  display:flex;align-items:center;gap:10px;background:var(--surface);
+.vote-row{display:flex;align-items:center;gap:10px;background:var(--surface);
   padding:10px 13px;cursor:pointer;
   border:2px solid rgba(255,255,255,.06);
   border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
   transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;
-  min-height:52px;
-}
+  min-height:52px;}
 .vote-row-rankbg{
   position:absolute;left:0;top:0;
   width:100%;height:100%;
@@ -533,23 +531,6 @@ input::placeholder{color:var(--muted);}
       <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
       <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
     </div>
-  </div>
-
-  <!-- ══ ESPECTADOR ══ -->
-  <div id="s-espectador" class="screen" style="gap:8px;">
-    <div class="card" style="padding:12px">
-      <div class="card-label"><span class="dot"></span>Modo espectador</div>
-      <div class="spec-banner">Você entrou como espectador.<br>Aguarde a próxima rodada para participar!</div>
-    </div>
-    <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
-      <div class="card-label">Jogadores ativos</div>
-      <div class="player-list" id="spec-players" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
-    </div>
-    <div class="card" id="spec-voto-card" style="display:none;padding:12px">
-      <div class="card-label">🗳️ Votos em tempo real</div>
-      <div class="vote-grid" id="spec-vote-grid"></div>
-    </div>
-    <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
   </div>
 
   <!-- ══ QUESTIONING ══ -->
@@ -1466,7 +1447,7 @@ async function criarSala(nome, codCustom){
     votacaoAberta:false, criadoEm:Date.now(), rodada:0,
     timerTs:0, timerAtivo:false
   });
-  await _gravarJogador(cod, uid, nome, false);
+  await _gravarJogador(cod, uid, nome);
   SALA=cod;
   localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
@@ -1476,23 +1457,22 @@ async function criarSala(nome, codCustom){
 async function entrarSala(nome, cod){
   const info=await get(`salas/${cod}/info`);
   if(!info) throw new Error('Sala não encontrada.');
-  await _gravarJogador(cod, ME.uid, nome, false);
+  await _gravarJogador(cod, ME.uid, nome);
   SALA=cod;
   localStorage.setItem('_imp_sala', cod);
   configurarPresenca();
   iniciarListeners();
 }
 
-async function _gravarJogador(cod, uid, nome, espectador){
-  devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}" espectador=${espectador}`, nome?'info':'err');
+async function _gravarJogador(cod, uid, nome){
+  devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
   const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
     avatarUrl: ME_PROFILE?.avatarUrl||ME.photoURL||'',
     ts:Date.now(),
-    placar:0,          // pontos desta sessão de sala
+    placar:0,
     placarTotal:placarExistente,
-    espectador,
     online:true
   });
 }
@@ -1778,14 +1758,6 @@ async function resetarTimer(){
 function renderFase(){
   if(!_info) return;
   const fase=_info.fase;
-  const eu=_jogadores[idKey(ME.uid)];
-  const euSouEspectador=eu?.espectador===true;
-
-  if(euSouEspectador){
-    if(fase==='revealed') renderResultado();
-    else renderEspectador();
-    return;
-  }
   if(fase==='lobby')          renderLobby();
   else if(fase==='questioning') renderQuestioning();
   else if(fase==='playing')     renderPlaying();
@@ -1801,19 +1773,16 @@ function renderLobby(){
   $('lobby-code').textContent=SALA;
 
   const lista=Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
-  const ativos=lista.filter(j=>!j.espectador);
-  const specs=lista.filter(j=>j.espectador);
 
   const container=$('lobby-players');
   container.innerHTML='';
-  [...ativos,...specs].forEach(j=>{
+  lista.forEach(j=>{
     const nome=j.nome||'(sem nome)';
     const chip=document.createElement('div');
     chip.className='player-chip'+(j.online===false?' offline':'');
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
-    if(j.espectador) badgesInner+='<span class="badge badge-spec">Espectador</span>';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
     if((j.placar||0)>0) badgesInner+=`<span class="score-pill">${j.placar}pt</span>`;
     if(_info.host===ME.uid&&j.id!==ME.uid)
@@ -1857,7 +1826,7 @@ function renderPlaying(){
   $('btn-revelar').style.display=isHost?'':'none';
   const votAberta=_info.votacaoAberta;
   $('card-votacao').style.display=votAberta?'flex':'none';
-  if(votAberta) renderVoteGrid('vote-grid',false);
+  if(votAberta) renderVoteGrid('vote-grid');
 }
 
 // ══════════════════════════════════════════════════════
@@ -1882,7 +1851,7 @@ async function renderQuestioning(){
   const revelarQ=$('btn-revelar-q');
   if(revelarQ) revelarQ.style.display=isHost?'':'none';
 
-  renderVoteGrid('q-vote-grid', false);
+  renderVoteGrid('q-vote-grid');
   const qVoteStatus=$('q-vote-status');
   if(qVoteStatus){
     const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
@@ -1924,13 +1893,13 @@ function renderVoting(){
   const isHost=_info.host===ME.uid;
   $('btn-revelar').style.display=isHost?'':'none';
   $('card-votacao').style.display='flex';
-  renderVoteGrid('vote-grid',false);
+  renderVoteGrid('vote-grid');
 }
 
 // ══════════════════════════════════════════════════════
 //  VOTE GRID
 // ══════════════════════════════════════════════════════
-function renderVoteGrid(gridId, isEspectador){
+function renderVoteGrid(gridId){
   // Usa snapshot para manter jogadores mesmo que alguém tenha saído
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
   const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
@@ -1941,69 +1910,36 @@ function renderVoteGrid(gridId, isEspectador){
   const grid=$(gridId);
   grid.innerHTML='';
   ativos.forEach(j=>{
-    const jaVotou = !!_votos[idKey(j.id)];
+    const jaVotou=!!_votos[idKey(j.id)];
     const nome=j.nome||'(sem nome)';
     const qtd=contagem[j.id]||0;
     const pct=totalVotos>0?Math.round(qtd/totalVotos*100):0;
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
+    const rankStyle=getPrestigeStyle(pts);
     const row=document.createElement('div');
-    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(isEspectador?' already-voted':'')+(j.online===false?' offline':'');
-    if(!isEspectador) row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(j.online===false?' offline':'');
+    row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
     const offlineBadge=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
-    const rankStyle = getPrestigeStyle(pts);
-row.innerHTML=`
-  <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
-  <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-    onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
-  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;">
-    <div style="font-size:1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
-    <div style="font-size:.82rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
-  </div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;position:relative;z-index:1;flex-shrink:0">
-    <div class="vote-bar-wrap" style="width:60px"><div class="vote-bar" style="width:${pct}%"></div></div>
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="vote-count">${qtd}</span>
-      ${jaVotou ? '<span style="font-size:1rem;color:var(--green);text-shadow:0 0 6px #4CAF5088">✓</span>' : '<span style="font-size:1rem;color:var(--muted)">·</span>'}
-    </div>
-  </div>`;
-  });
-  if(!isEspectador){
-  const statusEl = $('vote-status-txt') || $('q-vote-status');
-  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
-}}
-
-// ══════════════════════════════════════════════════════
-//  ESPECTADOR
-// ══════════════════════════════════════════════════════
-function renderEspectador(){
-  if(document.querySelector('.screen.active')?.id!=='s-espectador') showScreen('s-espectador');
-  const ativos=Object.values(_jogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-  const container=$('spec-players');
-  container.innerHTML='';
-  ativos.forEach(j=>{
-    const chip=document.createElement('div');
-    chip.className='player-chip';
-    const pts=j.placarTotal||0;
-    const avStyle=avatarTierStyle(pts);
-    const hostCrown=j.id===_info.host?' 👑':'';
-    chip.innerHTML=`
+    row.innerHTML=`
+      <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
-      <div class="chip-info">
-        <div class="chip-name">${nomeHTML(j.nome||'(sem nome)', pts)}${hostCrown}</div>
-        <div class="chip-rank">${rankBoxHTML(pts)}</div>
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
+      <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;">
+        <div style="font-size:1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
+        <div style="font-size:.82rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
       </div>
-      <div class="badges-right">
-        ${(j.placar||0)>0?`<span class="score-pill">${j.placar}pt</span>`:''}
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;position:relative;z-index:1;flex-shrink:0">
+        <div class="vote-bar-wrap" style="width:60px"><div class="vote-bar" style="width:${pct}%"></div></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span class="vote-count">${qtd}</span>
+          ${jaVotou?'<span style="font-size:1rem;color:var(--green);text-shadow:0 0 6px #4CAF5088">✓</span>':'<span style="font-size:1rem;color:var(--muted)">·</span>'}
+        </div>
       </div>`;
-    applyChipStyle(chip, pts, false);
-    container.appendChild(chip);
+    grid.appendChild(row);
   });
-  if(_info.fase==='voting'||_info.fase==='playing'){
-    $('spec-voto-card').style.display='';
-    renderVoteGrid('spec-vote-grid',true);
-  } else $('spec-voto-card').style.display='none';
+  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -2337,12 +2273,6 @@ async function novaRodada(){
   SFX.novaRodada();
   meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
   pararTimerLocal();
-
-  const updates={};
-  Object.values(_jogadores).forEach(j=>{
-    if(j.espectador) updates[`salas/${SALA}/jogadores/${idKey(j.id)}/espectador`]=false;
-  });
-  if(Object.keys(updates).length) await db.ref().update(updates);
 
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
