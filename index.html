@@ -110,7 +110,6 @@ input::placeholder{color:var(--muted);}
   aspect-ratio:130/35;
   position:relative;overflow:hidden;
   background:var(--surface);}
-.player-chip.espectador{opacity:.6;border-style:dashed!important;}
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
 .vote-row.offline{opacity:.4;filter:grayscale(1);}
 /* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
@@ -139,21 +138,7 @@ input::placeholder{color:var(--muted);}
 .score-pill{background:rgba(232,255,71,.1);color:var(--accent);
   padding:2px 8px;font-size:.9rem;border:1px solid rgba(232,255,71,.25);}
 
-/* Timer — oculto, mantido apenas para compatibilidade */
-.timer-wrap{display:none!important;}
-.timer-display{font-family:'VT323',monospace;font-size:2.4rem;
-  color:var(--accent);min-width:52px;transition:color .3s;}
-.timer-display.urgent{color:var(--red);}
-.timer-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.08);overflow:hidden;}
-.timer-bar{height:100%;background:var(--accent);
-  transition:width 1s linear,background .3s;}
-.timer-bar.urgent{background:var(--red);}
-.timer-reset-btn{display:none!important;}
 
-/* Flash overlay */
-#flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:998;
-  background:rgba(255,71,87,0);transition:background .1s;}
-#flash-overlay.flash{background:rgba(255,71,87,.18);}
 
 /* Word screen */
 .word-box{text-align:center;padding:20px 16px;}
@@ -395,7 +380,6 @@ input::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
-<div id="flash-overlay"></div>
 <div id="loader">carregando…</div>
 <img src="header.png" alt="Impostor" id="site-header" style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;display:block;z-index:0;pointer-events:none;">
 <div class="wrap">
@@ -501,38 +485,6 @@ input::placeholder{color:var(--muted);}
       </div>
     </div>
     <div class="status err" id="st-lobby" style="min-height:0"></div>
-  </div>
-
-  <!-- ══ PALAVRA ══ -->
-  <div id="s-palavra" class="screen" style="gap:8px;">
-    <!-- Timer oculto — mantido no DOM para compatibilidade com JS -->
-    <div class="timer-wrap" id="timer-card" style="display:none!important">
-      <div class="timer-display" id="timer-display">15</div>
-      <div style="flex:1">
-        <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
-        <div style="font-size:.6rem;color:var(--sub);margin-top:5px" id="timer-label">aguardando host…</div>
-      </div>
-      <button class="timer-reset-btn" id="btn-timer-reset" onclick="resetarTimer()" style="display:none">▶ Iniciar</button>
-    </div>
-    <!-- Votação — flex:1 e scroll interno -->
-    <div class="card" id="card-votacao" style="display:none;flex-direction:column;padding:12px;flex:1;min-height:0;">
-      <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
-      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="vote-status-txt"></div>
-      <div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:4px">Toque para votar · toque novamente para mudar</div>
-    </div>
-    <!-- Word box — penúltimo fixo, clicável para revelar -->
-    <div class="card word-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;cursor:pointer" onclick="toggleWord()">
-      <div class="cat-pill" id="word-cat">—</div>
-      <div id="word-el" class="word-hidden">● ● ●</div>
-      <div class="word-hint" id="word-hint">toque aqui para revelar</div>
-    </div>
-    <!-- Rodapé -->
-    <div class="status err" id="st-palavra"></div>
-    <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-      <button class="btn btn-danger" id="btn-revelar" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
-    </div>
   </div>
 
   <!-- ══ QUESTIONING ══ -->
@@ -822,36 +774,11 @@ const SFX = {
     [440,415,392,330].forEach((f,i)=>playTone(f,'triangle',.22,0.15,i*0.14));
   },
 
-  // Votação aberta — ping duplo
-  votacaoAberta(){ playTone(660,'sine',.1,0.15); playTone(880,'sine',.12,0.12,0.14); },
-
   // Nova rodada — acorde ascendente limpo
   novaRodada(){ playTone(392,'sine',.15,0.15); playTone(523,'sine',.15,0.13,0.12); playTone(659,'sine',.2,0.15,0.24); },
 
   // Sair da sala — swoosh descendente
   sair(){ playTone(600,'sine',.08,0.14); playTone(400,'sine',.12,0.12,0.08); playTone(250,'sine',.18,0.1,0.18); },
-
-  // Questioning tick na fase de PERGUNTA — tick neutro (880 Hz fixo)
-  tickPergunta(){ playTone(880,'sine',.04,0.05); },
-
-  // Questioning tick na fase de RESPOSTA — pitch sobe 6 semitons nos últimos 10s
-  // 880 Hz → 880*2^(6/12) = 1244 Hz. Nos primeiros 10s: tick normal 880 Hz.
-  tickResposta(restante){
-    if(restante>10){
-      playTone(880,'sine',.04,0.05);
-    } else {
-      const BASE=880, TOPO=880*Math.pow(2,6/12);
-      const t=Math.max(0,Math.min(1,(10-restante)/10));
-      const freq=BASE+(TOPO-BASE)*t;
-      playTone(freq,'sine',.05,0.06);
-    }
-  },
-
-  // Transição pergunta → resposta
-  transicaoPar(){ playTone(523,'sine',.06,0.12); playTone(659,'sine',.08,0.14,0.07); },
-
-  // Próximo par
-  proximoPar(){ playNoise(0.05,0.06); playTone(440,'sine',.06,0.1,0.04); },
 };
 
 // ══════════════════════════════════════════════════════
@@ -876,16 +803,9 @@ let ME_PROFILE = null; // { nome, avatarUrl, placarTotal }
 let SALA = '';
 let meuVoto = null;
 let myWord  = '';
-let wordShown = false;
 let palavrasCache = null;
 let listeners = {};
 let connectedListener = null; // listener de presença — gerenciado separadamente
-
-// timer local
-let timerInterval = null;
-let timerSegs = 15;
-let timerRunning = false;
-let lastTimerTs = 0;  // timestamp do último reset (do Firebase)
 
 // ── cached state
 let _info      = null;
@@ -895,7 +815,6 @@ let _assignments = null;
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
-let flashPulseInterval = null;   // intervalo do pisca-pisca urgente
 
 // ══════════════════════════════════════════════════════
 //  PONTUAÇÃO — edite aqui para ajustar os valores
@@ -1518,7 +1437,6 @@ function iniciarListeners(){
   listen('info',      `salas/${SALA}/info`,      onInfoChanged);
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
   listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
-  listen('timer',     `salas/${SALA}/timer`,     onTimerChanged);
   iniciarListenerPlacarTotal();
   showScreen('s-lobby');
 }
@@ -1572,9 +1490,6 @@ function onInfoChanged(info){
 
   if(fase==='revealed'){
     listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
-    // Para timers e flash em TODOS os clientes quando a rodada é revelada
-    pararTimerLocal();
-    stopFlashPulse();
   }
 
   // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
@@ -1602,8 +1517,6 @@ function onInfoChanged(info){
 
   // Detecta transições para tocar sons para todos
   if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
-  if(prev?.fase==='questioning' && fase==='playing') SFX.palavra();
-  if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
 
   // Reinício de rodada: fase continua 'questioning', mas a palavra mudou — recarrega assignments/snapshot pra todos
   if(fase==='questioning' && prev?.fase==='questioning' && prev.palavra!==info.palavra){
@@ -1618,7 +1531,7 @@ function onInfoChanged(info){
     return;
   }
 
-  if((fase==='playing'||fase==='voting'||fase==='revealed') && !_assignments){
+  if(fase==='revealed' && !_assignments){
     Promise.all([
       get(`salas/${SALA}/assignments`),
       get(`salas/${SALA}/snapshot`)
@@ -1659,120 +1572,6 @@ function onVotosChanged(votos){
 function onHistoricoChanged(hist){ _historico=hist||{}; renderHistorico(); }
 
 // ══════════════════════════════════════════════════════
-//  TIMER — sincronizado via Firebase
-// ══════════════════════════════════════════════════════
-function onTimerChanged(data){
-  if(!data) return;
-  // data = { ts: <timestamp do reset>, ativo: bool }
-  if(data.ts===lastTimerTs && timerRunning) return; // mesmo reset, ignora
-  lastTimerTs=data.ts;
-  if(data.ativo){
-    iniciarTimerLocal(data.ts);
-  } else {
-    pararTimerLocal();
-    $('timer-display').textContent='15';
-    $('timer-bar').style.width='100%';
-    $('timer-display').classList.remove('urgent');
-    $('timer-bar').classList.remove('urgent');
-    $('timer-label').textContent='aguardando host…';
-  }
-}
-
-function iniciarTimerLocal(startTs){
-  pararTimerLocal();
-  timerRunning=true;
-  const DURACAO=15;
-
-  let lastTickSeg=-1;
-  function tick(){
-    const elapsed=(serverNow()-startTs)/1000;
-    const restante=Math.max(0, DURACAO-elapsed);
-    const segsDisplay=Math.ceil(restante);
-    const urgent=restante<=5;
-
-    $('timer-display').textContent=segsDisplay;
-    $('timer-bar').style.width=(restante/DURACAO*100)+'%';
-    $('timer-display').classList.toggle('urgent',urgent);
-    $('timer-bar').classList.toggle('urgent',urgent);
-    $('timer-label').textContent=timerRunning?'respondendo…':'';
-
-    // Flash sincronizado com o timer (cada segundo = pulso)
-    setFlashByRestante(restante);
-
-    // Tick sonoro uma vez por segundo (quando o display muda)
-    if(restante>0 && segsDisplay!==lastTickSeg){
-      lastTickSeg=segsDisplay;
-      SFX.tick(restante);
-    }
-
-    if(restante<=0){
-      // Mantém flash vermelho sólido por 300ms depois que zera, depois some
-      setTimeout(()=>{ stopFlashPulse(); },300);
-      pararTimerLocal();
-      $('timer-display').textContent='15';
-      $('timer-bar').style.width='100%';
-      $('timer-display').classList.remove('urgent');
-      $('timer-bar').classList.remove('urgent');
-      $('timer-label').textContent='tempo esgotado!';
-      return;
-    }
-    timerInterval=requestAnimationFrame(tick);
-  }
-  timerInterval=requestAnimationFrame(tick);
-}
-
-// Flash sincronizado com o tick do timer.
-// Recebe restante (segundos, float). Calcula se deve estar ON ou OFF
-// com base na metade do segundo atual.
-// Regra: abaixo de 5s, pisca na "primeira metade" de cada segundo
-// (frac >= 0.5), fica apagado na segunda metade.
-// Quando restante = 0 exatamente: fica vermelho sólido até o timer parar.
-function setFlashByRestante(restante){
-  const ov=$('flash-overlay');
-  if(!ov) return;
-  if(restante<=0){
-    ov.classList.add('flash'); // sólido até parar
-    return;
-  }
-  if(restante>=5){
-    ov.classList.remove('flash');
-    return;
-  }
-  const frac=restante-Math.floor(restante);
-  // frac próximo de 1.0 = início do segundo (flash ON)
-  // frac próximo de 0.0 = fim do segundo (flash OFF)
-  frac>=0.5 ? ov.classList.add('flash') : ov.classList.remove('flash');
-}
-function stopFlashPulse(){
-  if(flashPulseInterval){ clearInterval(flashPulseInterval); flashPulseInterval=null; }
-  const ov=$('flash-overlay');
-  if(ov) ov.classList.remove('flash');
-}
-// Mantido para compatibilidade com código que chama startFlashPulse (qtimer resposta)
-function startFlashPulse(){
-  if(flashPulseInterval) return;
-  let on=false;
-  flashPulseInterval=setInterval(()=>{
-    on=!on;
-    const ov=$('flash-overlay');
-    if(ov) on ? ov.classList.add('flash') : ov.classList.remove('flash');
-  },450);
-}
-function pararTimerLocal(){
-  if(timerInterval) cancelAnimationFrame(timerInterval);
-  timerInterval=null;
-  timerRunning=false;
-  stopFlashPulse();
-}
-
-async function resetarTimer(){
-  // Só host pode resetar
-  if(!_info||_info.host!==ME.uid) return;
-  const ts=Date.now();
-  await set(`salas/${SALA}/timer`,{ts, ativo:true});
-}
-
-// ══════════════════════════════════════════════════════
 //  RENDER DISPATCH
 // ══════════════════════════════════════════════════════
 function renderFase(){
@@ -1780,9 +1579,8 @@ function renderFase(){
   const fase=_info.fase;
   if(fase==='lobby')          renderLobby();
   else if(fase==='questioning') renderQuestioning();
-  else if(fase==='playing')     renderPlaying();
-  else if(fase==='voting')      renderVoting();
   else if(fase==='revealed')    renderResultado();
+}
 }
 
 // ══════════════════════════════════════════════════════
@@ -1827,34 +1625,9 @@ function renderLobby(){
 }
 
 // ══════════════════════════════════════════════════════
-//  RENDER — PLAYING
-// ══════════════════════════════════════════════════════
-function renderPlaying(){
-  const cur=document.querySelector('.screen.active')?.id;
-  if(cur!=='s-palavra'){
-    myWord=''; wordShown=false;
-    if(_assignments&&Object.keys(_assignments).length>0)
-      myWord=_assignments[idKey(ME.uid)]||'';
-    $('word-cat').textContent=_info.categoria||'—';
-    const el=$('word-el');
-    el.className='word-hidden'; el.textContent='● ● ●';
-    $('word-hint').textContent='toque para revelar';
-    showScreen('s-palavra');
-    SFX.palavra();
-  }
-  const isHost=_info.host===ME.uid;
-  $('btn-revelar').style.display=isHost?'':'none';
-  const votAberta=_info.votacaoAberta;
-  $('card-votacao').style.display=votAberta?'flex':'none';
-  if(votAberta) renderVoteGrid('vote-grid');
-}
-
-// ══════════════════════════════════════════════════════
 //  QUESTIONING — sem fila de pares
 // ══════════════════════════════════════════════════════
 let qWordShown = false;
-
-function pararQTimerLocal(){ /* mantido para compatibilidade com revelarImpostor */ }
 
 async function renderQuestioning(){
   const entrandoNaTela=document.querySelector('.screen.active')?.id!=='s-questioning';
@@ -1897,26 +1670,6 @@ function toggleWordQ(){
   } else {
     el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque aqui para revelar';qWordShown=false;
   }
-}
-
-// ══════════════════════════════════════════════════════
-//  RENDER — VOTING
-// ══════════════════════════════════════════════════════
-function renderVoting(){
-  const cur=document.querySelector('.screen.active')?.id;
-  if(cur!=='s-palavra'){
-    myWord=(_assignments&&_assignments[idKey(ME.uid)])||'';
-    wordShown=false;
-    $('word-cat').textContent=_info.categoria||'—';
-    const el=$('word-el');
-    el.className='word-hidden'; el.textContent='● ● ●';
-    $('word-hint').textContent='toque para revelar';
-    showScreen('s-palavra');
-  }
-  const isHost=_info.host===ME.uid;
-  $('btn-revelar').style.display=isHost?'':'none';
-  $('card-votacao').style.display='flex';
-  renderVoteGrid('vote-grid');
 }
 
 // ══════════════════════════════════════════════════════
@@ -2138,25 +1891,6 @@ async function renderPlacar(){
 }
 
 // ══════════════════════════════════════════════════════
-//  PALAVRA toggle
-// ══════════════════════════════════════════════════════
-function toggleWord(){
-  const el=$('word-el'),hint=$('word-hint');
-  if(!wordShown){
-    SFX.palavra();
-    const isImp=myWord==='IMPOSTOR';
-    el.className='word-revealed';
-    el.textContent=isImp?'🕵️ IMPOSTOR':myWord;
-    hint.textContent='toque para esconder';
-    wordShown=true;
-    setTimeout(()=>{
-      if(wordShown){el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;}
-    },4000);
-  } else {
-    el.className='word-hidden';el.textContent='● ● ●';hint.textContent='toque para revelar';wordShown=false;
-  }
-}
-
 // ══════════════════════════════════════════════════════
 //  SORTEAR
 // ══════════════════════════════════════════════════════
@@ -2216,7 +1950,6 @@ async function reiniciarJogo(){
   const btn=$('btn-reiniciar-q');
   btn.disabled=true;
   try{
-    pararTimerLocal();
     const {cat,palavra,impostorJ}=await sortearAssignments();
     await upd(`salas/${SALA}/info`,{
       categoria:cat, palavra,
@@ -2238,10 +1971,6 @@ async function cancelarJogo(){
 // ══════════════════════════════════════════════════════
 //  VOTAÇÃO
 // ══════════════════════════════════════════════════════
-async function abrirVotacao(){
-  await upd(`salas/${SALA}/info`,{votacaoAberta:true, fase:'voting'});
-  // SFX.votacaoAberta() é disparado pelo onInfoChanged (para todos os jogadores inclusive o host)
-}
 
 async function votar(votadoId, votadoNome){
   meuVoto=votadoId;
@@ -2316,9 +2045,7 @@ function calcularResultado(ativos, contagem, impostorId, votos){
 //  REVELAR IMPOSTOR
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
-  if(_info.host!==ME.uid) return setErr('st-palavra','Só o host pode revelar.');
-  pararTimerLocal();
-  stopFlashPulse();
+  if(_info.host!==ME.uid) return setErr('st-questioning','Só o host pode revelar.');
   SFX.revelar();
 
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
@@ -2367,7 +2094,6 @@ async function revelarImpostor(){
 async function novaRodada(){
   SFX.novaRodada();
   meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
-  pararTimerLocal();
 
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
@@ -2387,7 +2113,6 @@ async function sairDaSala(){
   SFX.sair();
   // Para listeners ANTES de deletar para não disparar re-render que remove jogador do resultado
   stopListeners();
-  pararTimerLocal();
   if(!SALA){ mostrarSetup(); return; }
   try{
     await db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`).onDisconnect().cancel();
