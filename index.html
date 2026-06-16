@@ -550,9 +550,15 @@ input::placeholder{color:var(--muted);}
       <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
     </div>
     <!-- Rodapé -->
-    <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-      <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-secondary" id="btn-cancelar-q" onclick="cancelarJogo()" style="display:none">✖ CANCELAR</button>
+      </div>
+      <div class="btn-pair-row">
+        <button class="btn btn-secondary" id="btn-reiniciar-q" onclick="reiniciarJogo()" style="display:none">🔁 REINICIAR</button>
+        <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
+      </div>
     </div>
   </div>
 
@@ -1599,6 +1605,19 @@ function onInfoChanged(info){
   if(prev?.fase==='questioning' && fase==='playing') SFX.palavra();
   if(prev?.fase==='playing' && fase==='voting') SFX.votacaoAberta();
 
+  // Reinício de rodada: fase continua 'questioning', mas a palavra mudou — recarrega assignments/snapshot pra todos
+  if(fase==='questioning' && prev?.fase==='questioning' && prev.palavra!==info.palavra){
+    Promise.all([
+      get(`salas/${SALA}/assignments`),
+      get(`salas/${SALA}/snapshot`)
+    ]).then(([a,s])=>{
+      _assignments=a||{};
+      _snapshot=s||{};
+      renderFase();
+    });
+    return;
+  }
+
   if((fase==='playing'||fase==='voting'||fase==='revealed') && !_assignments){
     Promise.all([
       get(`salas/${SALA}/assignments`),
@@ -1838,19 +1857,22 @@ let qWordShown = false;
 function pararQTimerLocal(){ /* mantido para compatibilidade com revelarImpostor */ }
 
 async function renderQuestioning(){
-  if(document.querySelector('.screen.active')?.id!=='s-questioning'){
+  const entrandoNaTela=document.querySelector('.screen.active')?.id!=='s-questioning';
+  if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
+  const novaPalavra=_assignments[idKey(ME.uid)]||'';
+  if(entrandoNaTela || novaPalavra!==myWord){
     qWordShown=false;
-    if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
-    myWord=_assignments[idKey(ME.uid)]||'';
+    myWord=novaPalavra;
     $('q-word-cat').textContent=_info.categoria||'—';
     const el=$('q-word-el');
     el.className='word-hidden'; el.textContent='● ● ●';
     $('q-word-hint').textContent='toque aqui para revelar';
-    showScreen('s-questioning');
   }
+  if(entrandoNaTela) showScreen('s-questioning');
   const isHost=_info.host===ME.uid;
-  const revelarQ=$('btn-revelar-q');
-  if(revelarQ) revelarQ.style.display=isHost?'':'none';
+  $('btn-revelar-q').style.display=isHost?'':'none';
+  $('btn-cancelar-q').style.display=isHost?'':'none';
+  $('btn-reiniciar-q').style.display=isHost?'':'none';
 
   renderVoteGrid('q-vote-grid');
   const qVoteStatus=$('q-vote-status');
@@ -2138,37 +2160,43 @@ function toggleWord(){
 // ══════════════════════════════════════════════════════
 //  SORTEAR
 // ══════════════════════════════════════════════════════
+async function sortearAssignments(){
+  const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+  if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
+
+  const cats=await carregarPalavras();
+  const catNames=Object.keys(cats);
+  const cat=catNames[Math.floor(Math.random()*catNames.length)];
+  const words=cats[cat];
+  const palavra=words[Math.floor(Math.random()*words.length)];
+  const impostorIdx=Math.floor(Math.random()*ativos.length);
+  const impostorJ=ativos[impostorIdx];
+
+  const assignments={};
+  ativos.forEach((j,i)=>{
+    assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
+  });
+
+  // Snapshot dos jogadores neste momento
+  const snapshot={};
+  ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
+
+  await del(`salas/${SALA}/votos`);
+  await set(`salas/${SALA}/assignments`, assignments);
+  await set(`salas/${SALA}/snapshot`, snapshot);
+  await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
+  _assignments=assignments;
+  _snapshot=snapshot;
+
+  return {cat, palavra, impostorJ};
+}
+
 async function sortear(){
   $('btn-sortear').disabled=true;
   clearErr('st-lobby');
   try{
     if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
-    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
-    if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
-
-    const cats=await carregarPalavras();
-    const catNames=Object.keys(cats);
-    const cat=catNames[Math.floor(Math.random()*catNames.length)];
-    const words=cats[cat];
-    const palavra=words[Math.floor(Math.random()*words.length)];
-    const impostorIdx=Math.floor(Math.random()*ativos.length);
-    const impostorJ=ativos[impostorIdx];
-
-    const assignments={};
-    ativos.forEach((j,i)=>{
-      assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
-    });
-
-    // Snapshot dos jogadores neste momento
-    const snapshot={};
-    ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
-
-    await del(`salas/${SALA}/votos`);
-    await set(`salas/${SALA}/assignments`, assignments);
-    await set(`salas/${SALA}/snapshot`, snapshot);
-    await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
-    _assignments=assignments;
-    _snapshot=snapshot;
+    const {cat,palavra,impostorJ}=await sortearAssignments();
 
     await upd(`salas/${SALA}/info`,{
       fase:'questioning', categoria:cat, palavra,
@@ -2180,6 +2208,31 @@ async function sortear(){
     setErr('st-lobby',e.message);
     $('btn-sortear').disabled=false;
   }
+}
+
+// Gera uma nova palavra/impostor sem voltar ao lobby e sem alterar pontos ou contagem de rodada.
+async function reiniciarJogo(){
+  if(_info.host!==ME.uid) return;
+  const btn=$('btn-reiniciar-q');
+  btn.disabled=true;
+  try{
+    pararTimerLocal();
+    const {cat,palavra,impostorJ}=await sortearAssignments();
+    await upd(`salas/${SALA}/info`,{
+      categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      votacaoAberta:false
+    });
+  }catch(e){
+    alert(e.message);
+  }
+  btn.disabled=false;
+}
+
+// Volta todos ao lobby sem expulsar ninguém e sem alterar pontos — mesmo efeito de novaRodada().
+async function cancelarJogo(){
+  if(_info.host!==ME.uid) return;
+  await novaRodada();
 }
 
 // ══════════════════════════════════════════════════════
