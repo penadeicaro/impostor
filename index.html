@@ -141,7 +141,7 @@ input::placeholder{color:var(--muted);}
 
 
 /* Word screen */
-.word-box{text-align:center;padding:8px 14px;height:88px;display:grid;grid-template-rows:22px 42px 20px;align-items:center;justify-items:center;overflow:hidden;}
+.word-box{text-align:center;padding:8px 14px;height:94px;display:grid;grid-template-rows:22px 44px 24px;align-items:center;justify-items:center;overflow:hidden;}
 .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
   padding:1px 10px;font-size:.85rem;letter-spacing:2px;
   text-transform:uppercase;margin-bottom:0;border:1px solid rgba(232,255,71,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
@@ -493,9 +493,9 @@ input::placeholder{color:var(--muted);}
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
     <!-- Votação — área scrollável interna -->
-    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;max-height:52vh;">
+    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;">
       <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
+      <div class="vote-grid" id="q-vote-grid" style="overflow-y:hidden;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
     </div>
     <!-- Word box — penúltimo item fixo -->
@@ -1775,6 +1775,17 @@ const miniFotosWrap = votantes.length
   ${miniFotosWrap}`;
  grid.appendChild(row);  // ← linha que estava faltando
   });  // fecha ativos.forEach
+
+  // Ajusta altura do q-vote-grid para exatamente caber os rows (sem espaço vazio)
+  if(gridId==='q-vote-grid'){
+    requestAnimationFrame(()=>{
+      const rows=grid.querySelectorAll('.vote-row');
+      if(!rows.length){ grid.style.height='0'; return; }
+      const rowH=rows[0].getBoundingClientRect().height;
+      const gap=8; // gap do .vote-grid
+      grid.style.height=(rowH*rows.length + gap*(rows.length-1)) + 'px';
+    });
+  }
 
   const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
   if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
