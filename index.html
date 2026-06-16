@@ -1801,7 +1801,7 @@ function renderLobby(){
     container.appendChild(chip);
   });
 
-  const podeSort=_info.host===ME.uid&&ativos.length>=2;
+  const podeSort=_info.host===ME.uid&&lista.length>=2;
   $('btn-sortear').style.display=podeSort?'':'none';
   $('btn-sortear').disabled=false;
 }
