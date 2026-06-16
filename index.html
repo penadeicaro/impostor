@@ -1449,6 +1449,12 @@ function iniciarListenerMeuPlacar(){
   _meuPlacarListener.on('value', snap=>{
     const val = snap.val()||0;
     if(ME_PROFILE) ME_PROFILE.placarTotal = val;
+    // Sincroniza no _jogadores para o chip do lobby ficar correto
+    const key = idKey(ME.uid);
+    if(_jogadores[key] && _jogadores[key].placarTotal !== val){
+      _jogadores[key].placarTotal = val;
+      if(document.querySelector('.screen.active')?.id==='s-lobby') renderLobby();
+    }
     // Atualiza rank card se setup estiver visível
     const rankCard=$('setup-rank-card');
     if(rankCard && document.querySelector('.screen.active')?.id==='s-setup'){
@@ -1601,7 +1607,6 @@ function renderLobby(){
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
-    if((j.placar||0)>0) badgesInner+=`<span class="score-pill">${j.placar}pt</span>`;
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     const hostCrown=j.id===_info.host?' 👑':'';
