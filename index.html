@@ -141,22 +141,24 @@ input::placeholder{color:var(--muted);}
 
 
 /* Word screen */
-.word-box{text-align:center;padding:10px 14px;height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.word-box{text-align:center;padding:8px 14px;height:88px;display:grid;grid-template-rows:22px 42px 20px;align-items:center;justify-items:center;overflow:hidden;}
 .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
-  padding:2px 12px;font-size:.9rem;letter-spacing:2px;
-  text-transform:uppercase;margin-bottom:6px;border:1px solid rgba(232,255,71,.25);}
+  padding:1px 10px;font-size:.85rem;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:0;border:1px solid rgba(232,255,71,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .word-hidden, .word-revealed {
   font-family:'VT323',monospace;
   font-size:2.4rem;
   letter-spacing:4px;
+  line-height:42px;
+  height:42px;
+  white-space:nowrap;
+  overflow:hidden;
   transition:font-size .15s;
 }
-.word-hidden{font-family:'VT323',monospace;font-size:2.4rem;
-  letter-spacing:4px;color:var(--muted);cursor:pointer;user-select:none;}
-.word-revealed{font-family:'VT323',monospace;font-size:2.4rem;
-  color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
+.word-hidden{color:var(--muted);cursor:pointer;user-select:none;}
+.word-revealed{color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
 @keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
-.word-hint{font-size:.85rem;color:var(--sub);margin-top:4px;letter-spacing:1px;}
+.word-hint{font-size:.8rem;color:var(--sub);margin-top:0;letter-spacing:1px;line-height:20px;}
 .spec-banner{background:rgba(79,195,247,.08);
   border:2px solid rgba(79,195,247,.25);
   border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
@@ -491,7 +493,7 @@ input::placeholder{color:var(--muted);}
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen" style="gap:8px;">
     <!-- Votação — área scrollável interna -->
-    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;">
+    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;max-height:52vh;">
       <div class="card-label">🗳️ Votação</div>
       <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
       <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
