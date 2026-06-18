@@ -163,16 +163,16 @@ input::placeholder{color:var(--muted);}
 
 
 /* Word screen */
-.word-box{text-align:center;padding:8px 14px;height:94px;display:grid;grid-template-rows:20px 40px 20px;align-items:center;justify-items:center;overflow:hidden;}
+.word-box{text-align:center;padding:10px 16px;height:104px;display:grid;grid-template-rows:24px 52px 24px;align-items:center;justify-items:center;overflow:hidden;}
 .cat-pill{display:inline-block;background:rgba(232,255,71,.1);color:var(--accent);
   padding:1px 10px;font-size:.85rem;letter-spacing:2px;
   text-transform:uppercase;margin-bottom:0;border:1px solid rgba(232,255,71,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .word-hidden, .word-revealed {
   font-family:'VT323',monospace;
-  font-size:2.4rem;
+  font-size:2.6rem;
   letter-spacing:4px;
-  line-height:42px;
-  height:42px;
+  line-height:52px;
+  height:52px;
   white-space:nowrap;
   overflow:hidden;
   transition:font-size .15s;
@@ -180,7 +180,7 @@ input::placeholder{color:var(--muted);}
 .word-hidden{color:var(--muted);cursor:pointer;user-select:none;}
 .word-revealed{color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
 @keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
-.word-hint{font-size:.8rem;color:var(--sub);margin-top:0;letter-spacing:1px;line-height:20px;}
+.word-hint{font-size:.85rem;color:var(--sub);margin-top:0;letter-spacing:1px;line-height:24px;}
 .spec-banner{background:rgba(79,195,247,.08);
   border:2px solid rgba(79,195,247,.25);
   border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
@@ -403,6 +403,44 @@ input::placeholder{color:var(--muted);}
 .player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
 #hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
 .tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
+
+/* Scrollbar visível no container de votação */
+#q-votacao-card{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(232,255,71,.4) transparent;
+}
+#q-votacao-card::-webkit-scrollbar{width:4px;}
+#q-votacao-card::-webkit-scrollbar-track{background:transparent;}
+#q-votacao-card::-webkit-scrollbar-thumb{
+  background:rgba(232,255,71,.35);
+  border-radius:2px;
+}
+#q-votacao-card::-webkit-scrollbar-thumb:hover{
+  background:rgba(232,255,71,.6);
+}
+
+/* Indicador de scroll: fade no topo e fundo do card de votação */
+#q-votacao-card{position:relative;}
+.q-vote-fade-top, .q-vote-fade-bottom{
+  position:sticky;
+  left:0;right:0;
+  height:28px;
+  pointer-events:none;
+  flex-shrink:0;
+  transition:opacity .2s;
+  z-index:2;
+}
+.q-vote-fade-top{
+  top:0;
+  background:linear-gradient(to bottom, var(--card) 0%, transparent 100%);
+  margin-bottom:-28px;
+}
+.q-vote-fade-bottom{
+  bottom:0;
+  background:linear-gradient(to top, var(--card) 0%, transparent 100%);
+  margin-top:-28px;
+}
+.q-vote-fade-top.hidden, .q-vote-fade-bottom.hidden{opacity:0;}
 </style>
 </head>
 <body>
@@ -521,7 +559,9 @@ input::placeholder{color:var(--muted);}
     <div class="screen-scroll inner-scroll">
       <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;overflow-y:auto;">
         <div class="card-label" style="flex-shrink:0;">🗳️ Votação</div>
+        <div class="q-vote-fade-top hidden"></div>
         <div class="vote-grid" id="q-vote-grid" style="padding-right:2px;"></div>
+        <div class="q-vote-fade-bottom hidden"></div>
         <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center;flex-shrink:0;" id="q-vote-status"></div>
       </div>
     </div>
@@ -1806,8 +1846,29 @@ const miniFotosWrap = votantes.length
 
   const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
   if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
+
+  // Atualiza fades e garante listener de scroll no card de votação
+  if(gridId==='q-vote-grid'){
+    const card=$('q-votacao-card');
+    if(card && !card._scrollListenerAdded){
+      card.addEventListener('scroll', atualizarFadesVotacao, {passive:true});
+      card._scrollListenerAdded=true;
+    }
+    requestAnimationFrame(atualizarFadesVotacao);
+  }
 }  // fecha renderVoteGrid
 
+function atualizarFadesVotacao(){
+  const card=$('q-votacao-card');
+  if(!card) return;
+  const fadeTop=card.querySelector('.q-vote-fade-top');
+  const fadeBot=card.querySelector('.q-vote-fade-bottom');
+  if(!fadeTop||!fadeBot) return;
+  const scrollTop=card.scrollTop;
+  const scrollBot=card.scrollHeight-card.clientHeight-scrollTop;
+  fadeTop.classList.toggle('hidden', scrollTop<8);
+  fadeBot.classList.toggle('hidden', scrollBot<8);
+}
 
 // ══════════════════════════════════════════════════════
 //  RESULTADO
