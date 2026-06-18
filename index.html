@@ -955,7 +955,7 @@ function getPrestigeStyle(pts){
   const ptsParaProx=nextTier?nextTier.min-p:0;
   const tierRange=nextTier?(nextTier.min-t.min):1;
   const progressPct=nextTier?Math.min(100,Math.round((p-t.min)/tierRange*100)):100;
-  return {tier:t.tier, title:t.title, color:t.color, img:t.img,
+  return {tier:t.tier, title:t.title, color:t.color, img:t.img, img_xl:t.img_xl,
     pts:p, ptsParaProx, progressPct, isMax:t.tier===5};
 }
 
@@ -1008,7 +1008,7 @@ function rankCardHTML(pts){
   const nextLabel=s.isMax?'Rank máximo atingido!':`${s.ptsParaProx}pt para ${nextTitle}`;
   return `
   <div style="position:relative;overflow:hidden;background:var(--card);
-    padding:16px 20px;border:2px solid ${c};box-shadow:3px 3px 0 rgba(0,0,0,.8);">
+    padding:16px 20px;border:none;">
     <img src="${s.img_xl||s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
