@@ -127,7 +127,7 @@ input::placeholder{color:var(--muted);}
 .player-chip{display:flex;align-items:center;gap:10px;
   padding:0 10px;font-size:.86rem;
   animation:slideIn .22s ease;border:none;
-  aspect-ratio:130/65;
+  aspect-ratio:143/36;
   width:100%;
   position:relative;overflow:hidden;
   background:transparent;}
@@ -227,7 +227,7 @@ input::placeholder{color:var(--muted);}
   border:none;
   transition:opacity .15s;
   position:relative;overflow:hidden;
-  aspect-ratio:130/65;
+  aspect-ratio:143/36;
 }
 .vote-row-rankbg{
   position:absolute;inset:0;
@@ -274,7 +274,7 @@ input::placeholder{color:var(--muted);}
   padding:16px;
   animation:slideIn .25s ease;
   position:relative;overflow:hidden;
-  aspect-ratio:615/260;
+  aspect-ratio:109/70;
   width:100%;
 }
 /* Imagem de fundo — impostor usa xl (615:260), tiles usam normal */
@@ -304,7 +304,7 @@ input::placeholder{color:var(--muted);}
   animation:slideIn .22s ease;
   position:relative;overflow:hidden;
   border:none;
-  aspect-ratio:130/65;
+  aspect-ratio:143/36;
 }
 .res-player-tile img{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
   position:relative;z-index:1;}
@@ -936,11 +936,11 @@ const PTS = {
 // ══════════════════════════════════════════════════════
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
-  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      img_xl:'zumbi_xl.png',      color:'#f0ff00'},
-  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  img_xl:'lobisomem_xl.png',  color:'#0072ff'},
-  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    img_xl:'vampiro_xl.png',    color:'#ff0000'},
-  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  img_xl:'metamorfo_xl.png',  color:'#7b00ff'},
-  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      img_xl:'alien_xl.png',      color:'#06ff00'},
+  {min:0,   max:29,  tier:1, title:'Zumbi',     img_s:'zumbi_s.png',     img_m:'zumbi_m.png',     img_l:'zumbi_l.png',     color:'#f0ff00'},
+  {min:30,  max:79,  tier:2, title:'Lobisomem', img_s:'lobisomem_s.png', img_m:'lobisomem_m.png', img_l:'lobisomem_l.png', color:'#0072ff'},
+  {min:80,  max:159, tier:3, title:'Vampiro',   img_s:'vampiro_s.png',   img_m:'vampiro_m.png',   img_l:'vampiro_l.png',   color:'#ff0000'},
+  {min:160, max:299, tier:4, title:'Metamorfo', img_s:'metamorfo_s.png', img_m:'metamorfo_m.png', img_l:'metamorfo_l.png', color:'#7b00ff'},
+  {min:300, max:Infinity, tier:5, title:'Alien',img_s:'alien_s.png',    img_m:'alien_m.png',     img_l:'alien_l.png',     color:'#06ff00'},
 ];
 
 function getPrestige(pts){
@@ -955,7 +955,7 @@ function getPrestigeStyle(pts){
   const ptsParaProx=nextTier?nextTier.min-p:0;
   const tierRange=nextTier?(nextTier.min-t.min):1;
   const progressPct=nextTier?Math.min(100,Math.round((p-t.min)/tierRange*100)):100;
-  return {tier:t.tier, title:t.title, color:t.color, img:t.img, img_xl:t.img_xl,
+  return {tier:t.tier, title:t.title, color:t.color, img_s:t.img_s, img_m:t.img_m, img_l:t.img_l,
     pts:p, ptsParaProx, progressPct, isMax:t.tier===5};
 }
 
@@ -991,7 +991,7 @@ function applyChipStyle(el, pts, isMe){
     bg.alt='';
     el.insertBefore(bg, el.firstChild);
   }
-  bg.src=s.img;
+  bg.src=s.img_s;
 
   // z-index no conteúdo para ficar sobre a imagem
   el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(n=>{
@@ -1009,7 +1009,7 @@ function rankCardHTML(pts){
   return `
   <div style="position:relative;overflow:hidden;background:var(--card);
     padding:16px 20px;border:none;">
-    <img src="${s.img_xl||s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
+    <img src="${s.img_m}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
@@ -1841,7 +1841,7 @@ const miniFotosWrap = votantes.length
     </div>`
   : '';
     row.innerHTML=`
-  <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
+  <img class="vote-row-rankbg" src="${rankStyle.img_s}" alt="">
   <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
     onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
   <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;overflow:hidden;align-self:flex-start;margin-top:8px;">
@@ -1891,7 +1891,7 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
     impCard.className='res-impostor-card';
     const impStyle=getPrestigeStyle(imp.placarTotal||0);
     impCard.innerHTML=`
-      <img class="res-rank-bg" src="${impStyle.img_xl}" alt="">
+      <img class="res-rank-bg" src="${impStyle.img_l}" alt="">
       <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
       <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
@@ -1914,7 +1914,7 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
       const tile=document.createElement('div');
       tile.className='res-player-tile';
       tile.innerHTML=`
-        <img class="res-rank-bg" src="${tileStyle.img}" alt="">
+        <img class="res-rank-bg" src="${tileStyle.img_s}" alt="">
         <img src="${avatarImg(j.avatarUrl)}" alt=""
           onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
         <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
