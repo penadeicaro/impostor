@@ -304,7 +304,7 @@ input::placeholder{color:var(--muted);}
   animation:slideIn .22s ease;
   position:relative;overflow:hidden;
   border:none;
-  aspect-ratio:143/36;
+  aspect-ratio:209/84;
 }
 .res-player-tile img{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
   position:relative;z-index:1;}
@@ -1007,10 +1007,10 @@ function rankCardHTML(pts){
   const nextTitle=s.isMax?'Rank máximo!':PRESTIGE_TIERS[s.tier]?.title||'';
   const nextLabel=s.isMax?'Rank máximo atingido!':`${s.ptsParaProx}pt para ${nextTitle}`;
   return `
-  <div style="position:relative;overflow:hidden;background:var(--card);
-    padding:16px 20px;border:none;">
-    <img src="${s.img_m}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
-      pointer-events:none;z-index:0;
+  <div style="position:relative;overflow:hidden;background:transparent;
+    aspect-ratio:109/70;width:100%;padding:16px 20px;border:none;">
+    <img src="${s.img_l}" alt="" style="position:absolute;inset:0;width:100%;height:100%;
+      object-fit:fill;pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
       <div style="font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
@@ -1914,7 +1914,7 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
       const tile=document.createElement('div');
       tile.className='res-player-tile';
       tile.innerHTML=`
-        <img class="res-rank-bg" src="${tileStyle.img_s}" alt="">
+        <img class="res-rank-bg" src="${tileStyle.img_m}" alt="">
         <img src="${avatarImg(j.avatarUrl)}" alt=""
           onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
         <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
