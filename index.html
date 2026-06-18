@@ -39,6 +39,11 @@ body::before{content:'';position:fixed;inset:0;
   gap:8px;
   padding:8px 0 12px;
 }
+/* Variante: o próprio scroll-container não rola — filho interno é quem rola */
+.screen-scroll.inner-scroll{
+  overflow-y:hidden;
+  padding-bottom:0;
+}
 .screen-footer{
   flex-shrink:0;
   display:flex;
@@ -512,22 +517,21 @@ input::placeholder{color:var(--muted);}
 
   <!-- ══ QUESTIONING ══ -->
   <div id="s-questioning" class="screen">
-    <div class="screen-scroll">
-      <!-- Votação -->
-      <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;">
+    <!-- Votação: cresce e rola quando necessário -->
+    <div class="screen-scroll inner-scroll">
+      <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;">
         <div class="card-label">🗳️ Votação</div>
-        <div class="vote-grid" id="q-vote-grid" style="padding-right:2px;"></div>
-        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
+        <div class="vote-grid" id="q-vote-grid" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
+        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center;flex-shrink:0;" id="q-vote-status"></div>
       </div>
-      <!-- Word box -->
+    </div>
+    <!-- Word box + botões: sempre fixos no fundo -->
+    <div class="screen-footer">
       <div class="card word-box" id="q-word-box" style="cursor:pointer;" onclick="toggleWordQ()">
         <div class="cat-pill" id="q-word-cat">—</div>
         <div id="q-word-el" class="word-hidden">● ● ●</div>
         <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
       </div>
-    </div>
-    <!-- Botões fixos no fundo -->
-    <div class="screen-footer">
       <div class="btn-pair-row">
         <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
         <button class="btn btn-secondary" id="btn-cancelar-q" onclick="cancelarJogo()" style="display:none">✖ CANCELAR</button>
