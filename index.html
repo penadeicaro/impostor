@@ -27,10 +27,27 @@ body::before{content:'';position:fixed;inset:0;
 .logo span{color:var(--accent);}
 .tagline{text-align:center;color:var(--sub);font-size:1rem;letter-spacing:2px;
   text-transform:uppercase;margin-bottom:10px;}
-.screen{display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden;}
+.screen{display:none;flex-direction:column;gap:0;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
-/* Scroll interno apenas para telas que precisam */
-.screen-scroll{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
+/* Layout padrão das telas: área scrollável + footer fixo */
+.screen-scroll{
+  overflow-y:auto;
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:8px 0 12px;
+}
+.screen-footer{
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+  border-top:1px solid rgba(255,255,255,.06);
+  background:var(--bg);
+}
 .card{background:var(--card);
   border:2px solid rgba(255,255,255,.18);
   border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
@@ -375,8 +392,9 @@ input::placeholder{color:var(--muted);}
 
 
 /* Scrollbars invisíveis mas funcionais */
-.player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
+.screen-scroll, .player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
   scrollbar-width:none;}
+.screen-scroll::-webkit-scrollbar,
 .player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
 #hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
 .tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
@@ -470,42 +488,46 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ LOBBY ══ -->
-  <div id="s-lobby" class="screen" style="gap:8px;">
-    <!-- Lista de jogadores primeiro -->
-    <div class="card" style="padding:12px;display:flex;flex-direction:column;max-height:42vh;">
-      <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
-      <div class="player-list" id="lobby-players" style="overflow-y:auto;flex:1;min-height:0;padding-right:2px;"></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="btn-pair-row">
-        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-        <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
+  <div id="s-lobby" class="screen">
+    <div class="screen-scroll">
+      <!-- Lista de jogadores -->
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;">
+        <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
+        <div class="player-list" id="lobby-players" style="padding-right:2px;"></div>
       </div>
       <!-- Código + botão compartilhar -->
       <div class="sala-badge" style="margin:0">
         <span class="sala-code" id="lobby-code">—</span>
         <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
       </div>
+      <div class="status err" id="st-lobby" style="min-height:0;padding:0"></div>
     </div>
-    <div class="status err" id="st-lobby" style="min-height:0"></div>
+    <div class="screen-footer">
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ QUESTIONING ══ -->
-  <div id="s-questioning" class="screen" style="gap:8px;">
-    <!-- Votação — área scrollável interna -->
-    <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;">
-      <div class="card-label">🗳️ Votação</div>
-      <div class="vote-grid" id="q-vote-grid" style="overflow-y:hidden;padding-right:2px;"></div>
-      <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
+  <div id="s-questioning" class="screen">
+    <div class="screen-scroll">
+      <!-- Votação -->
+      <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;">
+        <div class="card-label">🗳️ Votação</div>
+        <div class="vote-grid" id="q-vote-grid" style="padding-right:2px;"></div>
+        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center" id="q-vote-status"></div>
+      </div>
+      <!-- Word box -->
+      <div class="card word-box" id="q-word-box" style="cursor:pointer;" onclick="toggleWordQ()">
+        <div class="cat-pill" id="q-word-cat">—</div>
+        <div id="q-word-el" class="word-hidden">● ● ●</div>
+        <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
+      </div>
     </div>
-    <!-- Word box — penúltimo item fixo -->
-    <div class="card word-box" id="q-word-box" style="cursor:pointer;" onclick="toggleWordQ()">
-      <div class="cat-pill" id="q-word-cat">—</div>
-      <div id="q-word-el" class="word-hidden">● ● ●</div>
-      <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
-    </div>
-    <!-- Rodapé -->
-    <div style="display:flex;flex-direction:column;gap:8px;">
+    <!-- Botões fixos no fundo -->
+    <div class="screen-footer">
       <div class="btn-pair-row">
         <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
         <button class="btn btn-secondary" id="btn-cancelar-q" onclick="cancelarJogo()" style="display:none">✖ CANCELAR</button>
@@ -518,28 +540,30 @@ input::placeholder{color:var(--muted);}
   </div>
 
   <!-- ══ RESULTADO ══ -->
-  <div id="s-resultado" class="screen" style="gap:8px;">
-    <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;">
-      <div class="card" style="padding:12px;flex-shrink:0;">
+  <div id="s-resultado" class="screen">
+    <div class="screen-scroll">
+      <div class="card" style="padding:12px;">
         <div class="card-label" id="res-titulo">🔍 Resultado da rodada</div>
         <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
       </div>
-      <div class="card" style="padding:12px;flex:1;min-height:0;display:flex;flex-direction:column;">
-        <div class="tabs" style="margin-bottom:10px;flex-shrink:0;">
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;">
+        <div class="tabs" style="margin-bottom:10px;">
           <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
           <button class="tab" onclick="switchTab('placar')">🏆 Placar</button>
         </div>
-        <div class="tab-content active" id="tab-hist" style="flex:1;min-height:0;overflow-y:auto;padding-right:2px;">
+        <div class="tab-content active" id="tab-hist" style="padding-right:2px;">
           <div id="hist-list" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
-        <div class="tab-content" id="tab-placar" style="flex:1;min-height:0;overflow-y:auto;padding-right:2px;">
+        <div class="tab-content" id="tab-placar" style="padding-right:2px;">
           <div id="placar-list"></div>
         </div>
       </div>
     </div>
-    <div class="btn-pair-row">
-      <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
-      <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
+    <div class="screen-footer">
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
+      </div>
     </div>
   </div>
 
@@ -1775,17 +1799,6 @@ const miniFotosWrap = votantes.length
   ${miniFotosWrap}`;
  grid.appendChild(row);  // ← linha que estava faltando
   });  // fecha ativos.forEach
-
-  // Ajusta altura do q-vote-grid para exatamente caber os rows (sem espaço vazio)
-  if(gridId==='q-vote-grid'){
-    requestAnimationFrame(()=>{
-      const rows=grid.querySelectorAll('.vote-row');
-      if(!rows.length){ grid.style.height='0'; return; }
-      const rowH=rows[0].getBoundingClientRect().height;
-      const gap=8; // gap do .vote-grid
-      grid.style.height=(rowH*rows.length + gap*(rows.length-1)) + 'px';
-    });
-  }
 
   const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
   if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
