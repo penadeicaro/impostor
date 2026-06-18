@@ -126,12 +126,11 @@ input::placeholder{color:var(--muted);}
 .player-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
 .player-chip{display:flex;align-items:center;gap:10px;
   padding:0 10px;font-size:.86rem;
-  animation:slideIn .22s ease;border:2px solid transparent;
-  transition:border-color .3s,box-shadow .3s;
+  animation:slideIn .22s ease;border:none;
   aspect-ratio:130/65;
   width:100%;
   position:relative;overflow:hidden;
-  background:var(--surface);}
+  background:transparent;}
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
 .vote-row.offline{opacity:.4;filter:grayscale(1);}
 /* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
@@ -223,11 +222,10 @@ input::placeholder{color:var(--muted);}
    --vote-img-top: 0px = centralizado; negativo = sobe (corta topo); positivo = desce (corta fundo) */
 :root{ --vote-img-top: 0px; }
 .vote-row{
-  display:flex;align-items:center;gap:10px;background:var(--surface);
+  display:flex;align-items:center;gap:10px;background:transparent;
   padding:0 10px;cursor:pointer;
-  border:2px solid rgba(255,255,255,.06);
-  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
-  transition:border-color .15s,background .15s;
+  border:none;
+  transition:opacity .15s;
   position:relative;overflow:hidden;
   aspect-ratio:130/65;
 }
@@ -240,10 +238,10 @@ input::placeholder{color:var(--muted);}
   opacity:.6;
 }
 .vote-row>*:not(.vote-row-rankbg){position:relative;z-index:1;}
-.vote-row:hover:not(.already-voted){border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.04);}
-.vote-row.voted-by-me{border-color:var(--accent);background:rgba(232,255,71,.06);}
+.vote-row:hover:not(.already-voted){opacity:.85;}
+.vote-row.voted-by-me{outline:2px solid var(--accent);outline-offset:-2px;}
 .vote-row.already-voted{cursor:not-allowed;}
-.vote-row img.avatar{width:52px;height:52px;flex-shrink:0;}
+.vote-row img.avatar{width:36px;height:36px;flex-shrink:0;align-self:flex-start;margin-top:8px;}
 .vote-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);overflow:hidden;}
 .vote-bar{height:100%;background:var(--accent);transition:width .35s ease;}
 .vote-count{font-size:1rem;color:var(--sub);min-width:18px;text-align:right;}
@@ -271,22 +269,29 @@ input::placeholder{color:var(--muted);}
 
 /* Result — novo layout */
 .res-impostor-card{
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:transparent;border:2px solid var(--red);
-  padding:20px 16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:transparent;border:none;
+  padding:16px;
   animation:slideIn .25s ease;
   position:relative;overflow:hidden;
+  aspect-ratio:615/260;
+  width:100%;
 }
-/* Imagem de fundo bem visível — sem overlay escuro */
-.res-impostor-card .res-rank-bg,
-.res-player-tile .res-rank-bg{
-  position:absolute;left:0;top:0;height:100%;width:auto;
+/* Imagem de fundo — impostor usa xl (615:260), tiles usam normal */
+.res-impostor-card .res-rank-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;
   pointer-events:none;z-index:0;
   image-rendering:pixelated;image-rendering:-moz-crisp-edges;
-  opacity:.85;
+}
+.res-player-tile .res-rank-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
 }
 .res-impostor-avatar{width:72px;height:72px;object-fit:cover;image-rendering:pixelated;
-  border:3px solid var(--red);position:relative;z-index:1;}
+  border:none;position:relative;z-index:1;}
 .res-impostor-name{font-family:'VT323',monospace;font-size:1.3rem;
   color:var(--red);text-align:center;position:relative;z-index:1;
   text-shadow:0 1px 4px rgba(0,0,0,.9);}
@@ -294,11 +299,12 @@ input::placeholder{color:var(--muted);}
   display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;
 }
 .res-player-tile{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  background:transparent;padding:12px 8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:transparent;padding:8px;
   animation:slideIn .22s ease;
   position:relative;overflow:hidden;
-  border:2px solid rgba(255,255,255,.08);
+  border:none;
+  aspect-ratio:130/65;
 }
 .res-player-tile img{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
   position:relative;z-index:1;}
@@ -930,11 +936,11 @@ const PTS = {
 // ══════════════════════════════════════════════════════
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
-  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
-  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  color:'#0072ff'},
-  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    color:'#ff0000'},
-  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  color:'#7b00ff'},
-  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      color:'#06ff00'},
+  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      img_xl:'zumbi_xl.png',      color:'#f0ff00'},
+  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  img_xl:'lobisomem_xl.png',  color:'#0072ff'},
+  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    img_xl:'vampiro_xl.png',    color:'#ff0000'},
+  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  img_xl:'metamorfo_xl.png',  color:'#7b00ff'},
+  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      img_xl:'alien_xl.png',      color:'#06ff00'},
 ];
 
 function getPrestige(pts){
@@ -967,16 +973,15 @@ function rankBoxHTML(pts){
 
 // Borda do avatar com cor do rank
 function avatarTierStyle(pts){
-  const s=getPrestigeStyle(pts||0);
-  return `border-color:${s.color}!important;box-shadow:0 0 0 2px ${s.color}44!important;`;
+  return 'border:none!important;box-shadow:none!important;';
 }
 
 // Aplica imagem pixel art cobrindo o chip inteiro + borda colorida do rank
 function applyChipStyle(el, pts, isMe){
   const s=getPrestigeStyle(pts||0);
   const c=s.color;
-  el.style.borderColor=c;
-  el.style.boxShadow=`0 0 8px ${c}66`;
+  el.style.borderColor='transparent';
+  el.style.boxShadow='none';
 
   // Usa <img> como background real — cobre tudo (object-fit:fill mantém pixel art sem distorção)
   let bg=el.querySelector('.chip-bg');
@@ -1004,7 +1009,7 @@ function rankCardHTML(pts){
   return `
   <div style="position:relative;overflow:hidden;background:var(--card);
     padding:16px 20px;border:2px solid ${c};box-shadow:3px 3px 0 rgba(0,0,0,.8);">
-    <img src="${s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
+    <img src="${s.img_xl||s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
       pointer-events:none;z-index:0;
       image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
     <div style="position:relative;z-index:1">
@@ -1690,7 +1695,6 @@ function renderLobby(){
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
-    if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
     if(_info.host===ME.uid&&j.id!==ME.uid)
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     const hostCrown=j.id===_info.host?' 👑':'';
@@ -1840,9 +1844,9 @@ const miniFotosWrap = votantes.length
   <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
   <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
     onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
-  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;overflow:hidden;">
-    <div style="font-size:1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
-    <div style="font-size:.82rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rankStyle.title} · ${pts}pt</div>
+  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;overflow:hidden;align-self:flex-start;margin-top:8px;">
+    <div style="font-size:.92rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nomeHTML(nome,pts)}${offlineBadge}</div>
+    <div style="font-size:.76rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rankStyle.title} · ${pts}pt</div>
   </div>
   ${miniFotosWrap}`;
  grid.appendChild(row);  // ← linha que estava faltando
@@ -1887,11 +1891,11 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
     impCard.className='res-impostor-card';
     const impStyle=getPrestigeStyle(imp.placarTotal||0);
     impCard.innerHTML=`
-      <img class="res-rank-bg" src="${impStyle.img}" alt="">
+      <img class="res-rank-bg" src="${impStyle.img_xl}" alt="">
       <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
       <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
         onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}</div>
       <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
     list.appendChild(impCard);
   }
@@ -1976,7 +1980,7 @@ async function renderPlacar(){
     div.className='placar-row';
     const pts=j.placarTotal||0;
     const avStyle=avatarTierStyle(pts);
-    const voceLabel=j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':'';
+    const voceLabel='';
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
