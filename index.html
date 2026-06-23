@@ -1876,15 +1876,24 @@ function renderLobby(){
   const rowPolt = tPolt?.closest('.config-row');
   const rowLun  = tLun?.closest('.config-row');
   const n = lista.length;
-  // desabilita poltergeist se < 4
-  if(rowPolt){ rowPolt.style.opacity = n>=4?'1':'.35'; rowPolt.style.pointerEvents = n>=4?'':'none'; }
-  // desabilita lunático se < 4, ou se poltergeist ativo e < 5
+  // desabilita poltergeist se < 4, ou se lunático já ativo e só há 4 (cabe só um papel especial)
+  const poltBloqueado = n<4 || (_config.lunaticoAtivo && n<5);
+  if(rowPolt){ rowPolt.style.opacity = poltBloqueado?'.35':'1'; rowPolt.style.pointerEvents = poltBloqueado?'none':''; }
+  // desabilita lunático se < 4, ou se poltergeist já ativo e só há 4
   const lunBloqueado = n<4 || (_config.poltergeistAtivo && n<5);
   if(rowLun){ rowLun.style.opacity = lunBloqueado?'.35':'1'; rowLun.style.pointerEvents = lunBloqueado?'none':''; }
   // se ficou bloqueado mas estava ativo, salva no Firebase
-  if(n<4 && (_config.poltergeistAtivo || _config.lunaticoAtivo) && _info?.host===ME.uid){
-    _config.poltergeistAtivo=false; _config.lunaticoAtivo=false;
-    set(`salas/${SALA}/config`, _config);
+  if(_info?.host===ME.uid){
+    let mudou=false;
+    if(n<4 && (_config.poltergeistAtivo || _config.lunaticoAtivo)){
+      _config.poltergeistAtivo=false; _config.lunaticoAtivo=false;
+      mudou=true;
+    } else if(n===4 && _config.poltergeistAtivo && _config.lunaticoAtivo){
+      // ambos ativos simultaneamente com apenas 4 jogadores não é permitido — mantém só o poltergeist
+      _config.lunaticoAtivo=false;
+      mudou=true;
+    }
+    if(mudou) set(`salas/${SALA}/config`, _config);
   }
 }
 
