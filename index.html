@@ -932,23 +932,30 @@ window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
 
 // ══════════════════════════════════════════════════════
-//  SERVER TIME (simples — usa Date.now; offset não é crítico)
+//  SERVER TIME — sincronizado via Firebase .info/serverTimeOffset
 // ══════════════════════════════════════════════════════
-function serverNow(){ return Date.now(); }
+let _serverOffset = 0;
+(function(){
+  const ref = firebase.database().ref('.info/serverTimeOffset');
+  ref.on('value', snap => { _serverOffset = snap.val() || 0; });
+})();
+function serverNow(){ return Date.now() + _serverOffset; }
 
 // ══════════════════════════════════════════════════════
 //  VIBRAÇÃO (Web Vibration API — silenciosa se não suportada)
 // ══════════════════════════════════════════════════════
 function vibrar(padrao){
   try{
-    if(navigator.vibrate) navigator.vibrate(padrao);
-  }catch(_){}
+    const suporta=!!navigator.vibrate;
+    devlog(`vibrar | suporta=${suporta} | padrao=${JSON.stringify(padrao)}`,'info');
+    if(suporta) navigator.vibrate(padrao);
+  }catch(e){ devlog('vibrar err: '+e,'err'); }
 }
 const VIBRA={
-  voto:        80,             // alguém votou
-  timerTick:   60,             // últimos segundos do cronômetro
-  timerFim:    [0,150,80,150,80,250], // cronômetro zerou
-  revelar:     [0,200,100,200,100,300], // impostor/poltergeist revelado
+  voto:        [0,150],                    // alguém votou
+  timerTick:   [0,120],                    // últimos segundos do cronômetro
+  timerFim:    [0,200,100,200,100,400],    // cronômetro zerou
+  revelar:     [0,300,120,300,120,500],    // impostor/poltergeist revelado
 };
 
 // ══════════════════════════════════════════════════════
