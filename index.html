@@ -520,6 +520,48 @@ input::placeholder{color:var(--muted);}
 }
 .modo-tag-poltergeist{color:#FF9800;border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.08);}
 .modo-tag-lunatico{color:#CE93D8;border-color:rgba(206,147,216,.4);background:rgba(206,147,216,.08);}
+.modo-tag-timer{color:#4FC3F7;border-color:rgba(79,195,247,.4);background:rgba(79,195,247,.08);}
+
+/* ── Slider de quadradinhos do cronômetro ── */
+.timer-slider-row{display:flex;gap:4px;margin-top:8px;}
+.timer-sq{
+  flex:1;height:28px;background:var(--muted);
+  border:2px solid rgba(255,255,255,.1);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  cursor:pointer;transition:background .15s;
+}
+.timer-sq.on{background:var(--accent);border-color:rgba(255,255,255,.25);}
+.timer-sq:hover{filter:brightness(1.15);}
+.timer-label-row{display:flex;justify-content:space-between;align-items:baseline;}
+.timer-value{font-family:'VT323',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:1px;}
+
+/* ── Seleção de categorias ── */
+.cat-select-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px;}
+.cat-select-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;background:var(--surface);
+  border:2px solid rgba(255,255,255,.08);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  cursor:pointer;
+}
+.cat-select-row input{width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);}
+.cat-select-row span{font-family:'VT323',monospace;font-size:1rem;letter-spacing:1px;}
+.cat-select-actions{display:flex;gap:8px;}
+.cat-select-actions button{
+  flex:1;font-family:'VT323',monospace;font-size:.85rem;letter-spacing:1px;
+  padding:6px;background:var(--surface);color:var(--sub);
+  border:2px solid rgba(255,255,255,.08);cursor:pointer;
+}
+.cat-select-actions button:hover{color:var(--text);}
+
+/* ── Cronômetro na tela de perguntas ── */
+.q-timer{
+  font-family:'VT323',monospace;font-size:1.4rem;letter-spacing:2px;
+  text-align:center;color:var(--accent);margin-bottom:6px;
+  flex-shrink:0;
+}
+.q-timer.urgente{color:#FF4757;animation:timerPulse .5s infinite;}
+@keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
 </style>
 </head>
@@ -548,6 +590,32 @@ input::placeholder{color:var(--muted);}
         <span class="toggle-slider"></span>
       </label>
     </div>
+
+    <div class="config-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div class="timer-label-row">
+        <div class="config-row-info">
+          <div class="config-row-label">⏱️ Cronômetro</div>
+          <div class="config-row-desc">Revela o impostor automaticamente ao zerar</div>
+        </div>
+        <div class="timer-value" id="timer-value-label">Desativado</div>
+      </div>
+      <div class="timer-slider-row" id="timer-slider-row"></div>
+    </div>
+
+    <div class="config-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div class="config-row-info">
+        <div class="config-row-label">📂 Categorias</div>
+        <div class="config-row-desc">Selecione quais categorias podem ser sorteadas</div>
+      </div>
+      <div class="cat-select-actions">
+        <button type="button" onclick="selecionarTodasCategorias(true)">Marcar todas</button>
+        <button type="button" onclick="selecionarTodasCategorias(false)">Desmarcar todas</button>
+      </div>
+      <div class="cat-select-list" id="cat-select-list">
+        <div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">carregando categorias…</div>
+      </div>
+    </div>
+
     <button class="btn btn-secondary" onclick="fecharConfig()">Fechar</button>
   </div>
 </div>
@@ -668,6 +736,7 @@ input::placeholder{color:var(--muted);}
   <div id="s-questioning" class="screen">
     <!-- Votação: cresce e rola quando necessário -->
     <div class="screen-scroll inner-scroll">
+      <div id="q-timer" class="q-timer" style="display:none"></div>
       <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;overflow-y:auto;">
         <div class="card-label" style="flex-shrink:0;">🗳️ Votação</div>
         <div class="vote-grid" id="q-vote-grid" style="padding-right:2px;"></div>
@@ -863,9 +932,24 @@ window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
 
 // ══════════════════════════════════════════════════════
-//  SERVER TIME (simples — usa Date.now; offset não é crítico pois timer está oculto)
+//  SERVER TIME (simples — usa Date.now; offset não é crítico)
 // ══════════════════════════════════════════════════════
 function serverNow(){ return Date.now(); }
+
+// ══════════════════════════════════════════════════════
+//  VIBRAÇÃO (Web Vibration API — silenciosa se não suportada)
+// ══════════════════════════════════════════════════════
+function vibrar(padrao){
+  try{
+    if(navigator.vibrate) navigator.vibrate(padrao);
+  }catch(_){}
+}
+const VIBRA={
+  voto:        80,             // alguém votou
+  timerTick:   60,             // últimos segundos do cronômetro
+  timerFim:    [0,150,80,150,80,250], // cronômetro zerou
+  revelar:     [0,200,100,200,100,300], // impostor/poltergeist revelado
+};
 
 // ══════════════════════════════════════════════════════
 //  WEB AUDIO SYNTH
@@ -996,7 +1080,11 @@ let _assignments = null;
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
-let _config    = { poltergeistAtivo: false, lunaticoAtivo: false };
+let _config    = { poltergeistAtivo: false, lunaticoAtivo: false, timerMinutos: 0, categorias: [] };
+let _timer     = { ativo:false, fimTs:0 };  // estado local do cronômetro (espelha salas/$SALA/timer)
+let _timerInterval = null;
+let _timerRevelarDisparado = false; // evita o host disparar revelarImpostor() mais de uma vez
+let _ultimoTickVibrado = null;      // evita vibrar repetidamente no mesmo segundo
 let _roles     = {};   // idKey(uid) → 'normal' | 'impostor' | 'poltergeist' | 'lunatico'
 
 // ══════════════════════════════════════════════════════
@@ -1193,6 +1281,10 @@ function stopListeners(){
   Object.values(_userListeners).forEach(r=>r.off());
   _userListeners={};
   if(connectedListener){ db.ref('.info/connected').off('value', connectedListener); connectedListener=null; }
+  if(_timerInterval){ clearInterval(_timerInterval); _timerInterval=null; }
+  _timer={ ativo:false, fimTs:0 }; _timerRevelarDisparado=false; _ultimoTickVibrado=null;
+  _qtdVotosAnterior=0;
+  _votosCarregadoUmaVez=false;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1651,13 +1743,22 @@ function iniciarListeners(){
   listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
   listen('config',    `salas/${SALA}/config`,    onConfigChanged);
   listen('roles',     `salas/${SALA}/roles`,     onRolesChanged);
+  listen('timer',     `salas/${SALA}/timer`,     onTimerChanged);
   iniciarListenerPlacarTotal();
   showScreen('s-lobby');
 }
 
 function onConfigChanged(config){
-  _config = config || { poltergeistAtivo: false, lunaticoAtivo: false };
+  _config = config || { poltergeistAtivo: false, lunaticoAtivo: false, timerMinutos: 0, categorias: [] };
+  if(_config.timerMinutos==null) _config.timerMinutos=0;
+  if(!Array.isArray(_config.categorias)) _config.categorias=[];
   renderFase();
+}
+
+function onTimerChanged(timer){
+  _timer = timer || { ativo:false, fimTs:0 };
+  _timerRevelarDisparado=false;
+  iniciarLoopTimer();
 }
 
 function onRolesChanged(roles){
@@ -1771,7 +1872,7 @@ function onInfoChanged(info){
     });
     return;
   }
-  if(fase==='lobby'){ _assignments=null; meuVoto=null; myWord=''; _snapshot={}; }
+  if(fase==='lobby'){ _assignments=null; meuVoto=null; myWord=''; _snapshot={}; _qtdVotosAnterior=0; _votosCarregadoUmaVez=false; }
   renderFase();
 }
 
@@ -1791,8 +1892,16 @@ function onJogadoresChanged(jogadores){
   renderFase();
 }
 
+let _qtdVotosAnterior = 0;
+let _votosCarregadoUmaVez = false;
 function onVotosChanged(votos){
-  _votos=votos||{};
+  const novosVotos=votos||{};
+  const qtdNova=Object.keys(novosVotos).length;
+  // só vibra em incrementos reais; ignora o primeiro snapshot (entrada/reentrada na sala)
+  if(_votosCarregadoUmaVez && _info?.fase==='questioning' && qtdNova>_qtdVotosAnterior) vibrar(VIBRA.voto);
+  _votosCarregadoUmaVez=true;
+  _qtdVotosAnterior=qtdNova;
+  _votos=novosVotos;
   const meuReg=_votos[idKey(ME.uid)];
   meuVoto=meuReg?meuReg.votadoId:null;
   renderFase();
@@ -1861,6 +1970,7 @@ function renderLobby(){
     const tags=[];
     if(_config.poltergeistAtivo) tags.push('<span class="modo-tag modo-tag-poltergeist">👻 POLTERGEIST</span>');
     if(_config.lunaticoAtivo)    tags.push('<span class="modo-tag modo-tag-lunatico">🌀 LUNÁTICO</span>');
+    if(Number(_config.timerMinutos)>0) tags.push(`<span class="modo-tag modo-tag-timer">⏱️ ${_config.timerMinutos} MIN</span>`);
     if(tags.length){
       modosEl.innerHTML=tags.join('');
       modosEl.style.display='flex';
@@ -1888,6 +1998,57 @@ function renderLobby(){
 }
 
 // ══════════════════════════════════════════════════════
+//  CRONÔMETRO — contagem regressiva sincronizada por timestamp absoluto
+// ══════════════════════════════════════════════════════
+function iniciarLoopTimer(){
+  if(_timerInterval){ clearInterval(_timerInterval); _timerInterval=null; }
+  if(!_timer || !_timer.ativo || !_timer.fimTs){
+    const el=$('q-timer');
+    if(el) el.style.display='none';
+    return;
+  }
+  tickTimer(); // primeira atualização imediata
+  _timerInterval=setInterval(tickTimer, 250);
+}
+
+function tickTimer(){
+  const el=$('q-timer');
+  if(!el) return;
+  if(!_timer || !_timer.ativo || !_timer.fimTs){
+    el.style.display='none';
+    clearInterval(_timerInterval); _timerInterval=null;
+    return;
+  }
+  const restanteMs=_timer.fimTs - serverNow();
+  const restanteSeg=Math.max(0, Math.ceil(restanteMs/1000));
+  const min=Math.floor(restanteSeg/60);
+  const seg=restanteSeg%60;
+  el.style.display='block';
+  el.textContent=`⏱️ ${min}:${String(seg).padStart(2,'0')}`;
+
+  const urgente=restanteSeg<=10 && restanteSeg>0;
+  el.classList.toggle('urgente', urgente);
+
+  // Vibra uma vez por segundo nos últimos 10s (em todos os dispositivos)
+  if(urgente && _ultimoTickVibrado!==restanteSeg){
+    _ultimoTickVibrado=restanteSeg;
+    vibrar(VIBRA.timerTick);
+  }
+
+  if(restanteSeg<=0){
+    clearInterval(_timerInterval); _timerInterval=null;
+    el.classList.remove('urgente');
+    el.textContent='⏱️ 0:00';
+    vibrar(VIBRA.timerFim);
+    // Só o host dispara a revelação automática, evitando corrida entre clientes
+    if(_info?.host===ME.uid && !_timerRevelarDisparado && _info?.fase==='questioning'){
+      _timerRevelarDisparado=true;
+      revelarImpostor();
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════
 //  QUESTIONING — sem fila de pares
 // ══════════════════════════════════════════════════════
 let qWordShown = false;
@@ -1904,7 +2065,10 @@ async function renderQuestioning(){
     el.className='word-hidden'; el.textContent='● ● ●';
     $('q-word-hint').textContent='toque aqui para revelar';
   }
-  if(entrandoNaTela) showScreen('s-questioning');
+  if(entrandoNaTela){
+    showScreen('s-questioning');
+    iniciarLoopTimer();
+  }
   const isHost=_info.host===ME.uid;
   $('btn-revelar-q').style.display=isHost?'':'none';
   $('btn-cancelar-q').style.display=isHost?'':'none';
@@ -2160,9 +2324,10 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
   renderPlacar();
   $('btn-nova').style.display=ME.uid===_info.host?'':'none';
 
-  // Som de resultado — toca apenas uma vez por rodada
+  // Som e vibração de resultado — apenas uma vez por rodada
   if(!resultadoSomTocado){
     resultadoSomTocado=true;
+    vibrar(VIBRA.revelar);
     const euSouImpostor=ME.uid===_info.impostorId;
     if(euSouImpostor){
       impostorPegou ? SFX.derrota() : SFX.vitoria();
@@ -2235,10 +2400,12 @@ async function sortearAssignments(){
   const poltergeistAtivo = !!_config.poltergeistAtivo;
   const lunaticoAtivo    = !!_config.lunaticoAtivo;
 
-  const cats=await carregarPalavras();
-  const catNames=Object.keys(cats);
+  const catsTodas=await carregarPalavras();
+  const selecionadas = Array.isArray(_config.categorias) ? _config.categorias.filter(c=>catsTodas[c]) : [];
+  // Se nenhuma categoria foi selecionada (ou config vazia/desatualizada), usa todas como fallback
+  const catNames = selecionadas.length ? selecionadas : Object.keys(catsTodas);
   const cat=catNames[Math.floor(Math.random()*catNames.length)];
-  const words=cats[cat];
+  const words=catsTodas[cat];
   const palavra=words[Math.floor(Math.random()*words.length)];
 
   // Sorteia impostor primeiro
@@ -2300,7 +2467,14 @@ async function sortearAssignments(){
   await set(`salas/${SALA}/assignments`, assignments);
   await set(`salas/${SALA}/snapshot`, snapshot);
   await set(`salas/${SALA}/roles`, roles);
-  await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
+
+  const timerMinutos=Number(_config.timerMinutos)||0;
+  if(timerMinutos>0){
+    await set(`salas/${SALA}/timer`,{ativo:true, fimTs: serverNow()+timerMinutos*60000});
+  } else {
+    await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  }
+
   _assignments=assignments;
   _snapshot=snapshot;
   _roles=roles;
@@ -2360,6 +2534,8 @@ function abrirConfig(){
   if(_info?.host !== ME.uid) return;
   $('toggle-poltergeist').checked = !!_config.poltergeistAtivo;
   $('toggle-lunatico').checked    = !!_config.lunaticoAtivo;
+  renderTimerSlider();
+  renderCatSelect();
   $('config-overlay').style.display = 'flex';
 }
 
@@ -2373,8 +2549,99 @@ async function salvarConfig(){
   const novoConfig = {
     poltergeistAtivo: $('toggle-poltergeist').checked,
     lunaticoAtivo:    $('toggle-lunatico').checked,
+    timerMinutos:     Number(_config.timerMinutos)||0,
+    categorias:       Array.isArray(_config.categorias) ? _config.categorias : [],
   };
   await set(`salas/${SALA}/config`, novoConfig);
+}
+
+// ── Slider de quadradinhos do cronômetro (1 a 10 min, 0 = desativado) ──
+function renderTimerSlider(){
+  const row=$('timer-slider-row');
+  if(!row) return;
+  row.innerHTML='';
+  const valor=Number(_config.timerMinutos)||0;
+  for(let i=1;i<=10;i++){
+    const sq=document.createElement('div');
+    sq.className='timer-sq'+(i<=valor?' on':'');
+    sq.title=`${i} min`;
+    sq.onclick=()=>selecionarTimer(i);
+    row.appendChild(sq);
+  }
+  atualizarTimerLabel();
+}
+
+function selecionarTimer(minutos){
+  if(_info?.host !== ME.uid) return;
+  const atual=Number(_config.timerMinutos)||0;
+  // clicar no quadrado que já é o valor atual desativa o cronômetro
+  _config.timerMinutos = (atual===minutos) ? 0 : minutos;
+  renderTimerSlider();
+  salvarConfig();
+}
+
+function atualizarTimerLabel(){
+  const label=$('timer-value-label');
+  if(!label) return;
+  const valor=Number(_config.timerMinutos)||0;
+  label.textContent = valor>0 ? `${valor} min` : 'Desativado';
+}
+
+// ── Seleção de categorias ──
+async function renderCatSelect(){
+  const list=$('cat-select-list');
+  if(!list) return;
+  list.innerHTML='<div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">carregando categorias…</div>';
+  let cats={};
+  try{ cats=await carregarPalavras(); }catch(_){ cats={}; }
+  const nomes=Object.keys(cats);
+  if(!nomes.length){
+    list.innerHTML='<div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">nenhuma categoria encontrada</div>';
+    return;
+  }
+  // Se a config ainda não tem categorias (sala nova ou nunca configurada), todas começam marcadas
+  if(!Array.isArray(_config.categorias) || !_config.categorias.length){
+    _config.categorias=[...nomes];
+  }
+  list.innerHTML='';
+  nomes.forEach(nome=>{
+    const marcado=_config.categorias.includes(nome);
+    const row=document.createElement('label');
+    row.className='cat-select-row';
+    row.innerHTML=`<input type="checkbox" ${marcado?'checked':''}> <span>${nome}</span>`;
+    row.querySelector('input').onchange=(e)=>toggleCategoria(nome, e.target.checked);
+    list.appendChild(row);
+  });
+}
+
+function toggleCategoria(nome, marcado){
+  if(_info?.host !== ME.uid) return;
+  const set_=new Set(_config.categorias||[]);
+  if(marcado) set_.add(nome); else set_.delete(nome);
+  // Nunca permite ficar com zero categorias selecionadas — pelo menos uma precisa estar ativa
+  if(set_.size===0){
+    renderCatSelect(); // reverte visualmente
+    return;
+  }
+  _config.categorias=[...set_];
+  salvarConfig();
+}
+
+function selecionarTodasCategorias(marcarTodas){
+  if(_info?.host !== ME.uid) return;
+  if(!palavrasCache){
+    carregarPalavras().then(cats=>{
+      _config.categorias = marcarTodas ? Object.keys(cats) : [Object.keys(cats)[0]];
+      renderCatSelect();
+      salvarConfig();
+    });
+    return;
+  }
+  const nomes=Object.keys(palavrasCache);
+  // Não permite desmarcar todas — "desmarcar todas" deixa só a primeira categoria marcada
+  _config.categorias = marcarTodas ? [...nomes] : [nomes[0]];
+  renderCatSelect();
+  salvarConfig();
 }
 
 // Volta todos ao lobby sem expulsar ninguém e sem alterar pontos — mesmo efeito de novaRodada().
@@ -2575,7 +2842,7 @@ async function revelarImpostor(){
   });
 
   // Para timer
-  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
   await upd(`salas/${SALA}/info`,{fase:'revealed'});
   await del(`salas/${SALA}/roles`);
 }
@@ -2591,7 +2858,7 @@ async function novaRodada(){
   await del(`salas/${SALA}/assignments`);
   await del(`salas/${SALA}/snapshot`);
   await del(`salas/${SALA}/roles`);
-  await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
+  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
   await upd(`salas/${SALA}/info`,{
     fase:'lobby', categoria:'', palavra:'',
     impostorId:'', impostorNome:'',
