@@ -157,6 +157,9 @@ input::placeholder{color:var(--muted);}
 .kick-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   font-size:.75rem;padding:2px 5px;transition:color .2s;}
 .kick-btn:hover{color:var(--red);}
+.host-btn{background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:.9rem;padding:2px 5px;transition:color .2s;}
+.host-btn:hover{color:var(--accent);}
 .score-pill{background:rgba(232,255,71,.1);color:var(--accent);
   padding:2px 8px;font-size:.9rem;border:1px solid rgba(232,255,71,.25);}
 
@@ -379,6 +382,8 @@ input::placeholder{color:var(--muted);}
 .player-chip .badge{background:rgba(0,0,0,.45)!important;}
 .player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
 .player-chip .kick-btn:hover{color:#FF4757!important;}
+.player-chip .host-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
+.player-chip .host-btn:hover{color:#E8FF47!important;}
 
 /* ── Offline status ── */
 .player-chip.offline{opacity:.4;filter:grayscale(1);}
@@ -456,10 +461,97 @@ input::placeholder{color:var(--muted);}
   background:rgba(232,255,71,.75);
 }
 
+
+/* ── Menu de configurações da sala ── */
+.config-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.80);
+  z-index:995;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);
+}
+.config-box{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  width:100%;max-width:460px;
+  padding:20px 16px 24px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.config-title{
+  font-family:'VT323',monospace;font-size:1.3rem;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--sub);margin-bottom:2px;
+}
+.config-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;
+  background:var(--surface);
+  border:2px solid rgba(255,255,255,.08);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+}
+.config-row-info{display:flex;flex-direction:column;gap:2px;}
+.config-row-label{font-family:'VT323',monospace;font-size:1.1rem;color:var(--text);}
+.config-row-desc{font-size:.8rem;color:var(--sub);letter-spacing:.5px;}
+/* Toggle switch */
+.toggle-wrap{position:relative;flex-shrink:0;width:44px;height:24px;}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{
+  position:absolute;inset:0;
+  background:var(--muted);cursor:pointer;
+  transition:background .2s;
+  border:2px solid rgba(255,255,255,.1);
+}
+.toggle-slider::after{
+  content:'';position:absolute;
+  width:16px;height:16px;
+  left:2px;top:2px;
+  background:#fff;
+  transition:transform .2s;
+}
+.toggle-wrap input:checked + .toggle-slider{background:var(--accent);}
+.toggle-wrap input:checked + .toggle-slider::after{transform:translateX(20px);}
+/* Indicador de modos ativos no lobby (J) */
+.modos-ativos{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;
+}
+.modo-tag{
+  font-family:'VT323',monospace;font-size:.85rem;
+  padding:2px 8px;letter-spacing:1px;
+  border:1px solid;
+}
+.modo-tag-poltergeist{color:#FF9800;border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.08);}
+.modo-tag-lunatico{color:#CE93D8;border-color:rgba(206,147,216,.4);background:rgba(206,147,216,.08);}
+
 </style>
 </head>
 <body>
 <div id="loader">carregando…</div>
+<div id="config-overlay" class="config-overlay" style="display:none" onclick="fecharConfig(event)">
+  <div class="config-box" onclick="event.stopPropagation()">
+    <div class="config-title">⚙ Configurações da sala</div>
+    <div class="config-row">
+      <div class="config-row-info">
+        <div class="config-row-label">👻 Poltergeist</div>
+        <div class="config-row-desc">Quer ser votado como impostor · 3º time</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="toggle-poltergeist" onchange="salvarConfig()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="config-row">
+      <div class="config-row-info">
+        <div class="config-row-label">🌀 Lunático</div>
+        <div class="config-row-desc">Recebe uma palavra diferente da categoria</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="toggle-lunatico" onchange="salvarConfig()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <button class="btn btn-secondary" onclick="fecharConfig()">Fechar</button>
+  </div>
+</div>
+
 <img src="header.png" alt="Impostor" id="site-header" style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;display:block;z-index:0;pointer-events:none;">
 <div class="wrap">
   <!-- ══ AUTH ══ -->
@@ -554,15 +646,19 @@ input::placeholder{color:var(--muted);}
         <div class="player-list" id="lobby-players" style="padding-right:2px;"></div>
       </div>
       <!-- Código + botão compartilhar -->
-      <div class="sala-badge" style="margin:0">
-        <span class="sala-code" id="lobby-code">—</span>
-        <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
+      <div class="sala-badge" style="margin:0;flex-direction:column;align-items:flex-start;gap:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span class="sala-code" id="lobby-code">—</span>
+          <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
+        </div>
+        <div id="lobby-modos-ativos" class="modos-ativos" style="display:none"></div>
       </div>
       <div class="status err" id="st-lobby" style="min-height:0;padding:0"></div>
     </div>
     <div class="screen-footer">
       <div class="btn-pair-row">
         <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-secondary" id="btn-config" onclick="abrirConfig()" style="display:none;padding:12px 14px;width:auto">⚙</button>
         <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
       </div>
     </div>
@@ -583,6 +679,7 @@ input::placeholder{color:var(--muted);}
       <div class="card word-box" id="q-word-box" onclick="toggleWordQ()">
         <div class="cat-pill" id="q-word-cat">—</div>
         <div id="q-word-el" class="word-hidden">● ● ●</div>
+        <div id="q-word-sub" style="display:none;font-family:'VT323',monospace;font-size:1rem;letter-spacing:2px;margin-top:4px;text-transform:uppercase"></div>
         <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
       </div>
       <div class="btn-pair-row">
@@ -899,30 +996,60 @@ let _assignments = null;
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
+let _config    = { poltergeistAtivo: false, lunaticoAtivo: false };
+let _roles     = {};   // idKey(uid) → 'normal' | 'impostor' | 'poltergeist' | 'lunatico'
 
 // ══════════════════════════════════════════════════════
 //  PONTUAÇÃO — edite aqui para ajustar os valores
 // ══════════════════════════════════════════════════════
 const PTS = {
-  // Jogadores quando IMPOSTOR É PEGO
-  acertou_unanimidade:  2,   // votou no impostor + todo mundo votou junto
-  acertou_maioria:      3,   // votou no impostor + maioria acertou
-  acertou_minoria:      4,   // votou no impostor + poucos acertaram (mais difícil)
-  absteve_impegou:      2,   // não votou, mas impostor foi pego de qualquer forma
-  errou_impegou:        -1,   // votou em outro, mas impostor foi pego
+  // ── JOGADORES NORMAIS — impostor pego ──────────────────
+  acertou_unanimidade:             2,   // votou no impostor + todos acertaram
+  acertou_maioria:                 3,   // votou no impostor + maioria acertou
+  acertou_minoria:                 4,   // votou no impostor + poucos acertaram
+  errou_impegou:                  -1,   // votou em outro, mas impostor foi pego
+  absteve_impegou:                 2,   // não votou, impostor foi pego
 
-  // Jogadores quando IMPOSTOR ESCAPA
-  acertou_escapou:     0,   // votou no impostor, mas ele escapou mesmo assim
-  errou_escapou:       -2,   // votou em outro e impostor escapou
-  absteve_escapou:     -3,   // não votou e impostor escapou
+  // ── JOGADORES NORMAIS — impostor escapou ───────────────
+  acertou_escapou:                 0,   // votou no impostor, mas ele escapou
+  errou_escapou:                  -2,   // votou em outro e impostor escapou
+  absteve_escapou:                -3,   // não votou e impostor escapou
 
-  // Impostor
-  imp_pego_unanimidade:-3,   // pego por unanimidade
-  imp_pego_maioria:    -2,   // pego por maioria
-  imp_pego_minoria:    -1,   // pego por minoria (poucos o identificaram)
-  imp_escapou_zerovoto: 6,   // ninguém votou nele
-  imp_escapou_minoria:  4,   // minoria votou nele mas escapou
-  imp_escapou_empate:   2,   // empate nos votos
+  // ── IMPOSTOR — pego ────────────────────────────────────
+  imp_pego_unanimidade:           -3,   // pego por unanimidade
+  imp_pego_maioria:               -2,   // pego por maioria
+  imp_pego_minoria:               -1,   // pego por minoria
+
+  // ── IMPOSTOR — escapou ─────────────────────────────────
+  imp_escapou_zerovoto:            6,   // ninguém votou nele
+  imp_escapou_minoria:             4,   // minoria votou nele mas escapou
+  imp_escapou_empate:              2,   // empate nos votos, escapou
+
+  // ── IMPOSTOR — poltergeist venceu no lugar dele ────────
+  imp_poltergeist_venceu:          0,   // poltergeist foi eliminado no lugar dele
+
+  // ── POLTERGEIST — venceu (foi o mais votado) ───────────
+  poltergeist_venceu:              5,   // objetivo cumprido
+
+  // ── POLTERGEIST — não venceu ───────────────────────────
+  poltergeist_perdeu_impegou:      0,   // impostor foi pego, poltergeist sobreviveu
+  poltergeist_perdeu_escapou:      0,   // impostor escapou, poltergeist sobreviveu
+
+  // ── JOGADORES — votaram no poltergeist ─────────────────
+  votou_no_poltergeist_venceu:    -2,   // poltergeist venceu e você contribuiu
+  votou_no_poltergeist_perdeu:    -1,   // votou no poltergeist mas ele não venceu
+
+  // ── LUNÁTICO — impostor pego ───────────────────────────
+  lunatico_acertou_unanimidade:    2,
+  lunatico_acertou_maioria:        3,
+  lunatico_acertou_minoria:        4,
+  lunatico_errou_impegou:         -1,
+  lunatico_absteve_impegou:        2,
+
+  // ── LUNÁTICO — impostor escapou ────────────────────────
+  lunatico_acertou_escapou:        0,
+  lunatico_errou_escapou:         -2,
+  lunatico_absteve_escapou:       -3,
 };
 
 // ══════════════════════════════════════════════════════
@@ -1457,6 +1584,7 @@ async function criarSala(nome, codCustom){
     votacaoAberta:false, criadoEm:Date.now(), rodada:0,
     timerTs:0, timerAtivo:false
   });
+  await set(`salas/${cod}/config`, { poltergeistAtivo: false, lunaticoAtivo: false });
   await _gravarJogador(cod, uid, nome);
   SALA=cod;
   localStorage.setItem('_imp_sala', cod);
@@ -1521,8 +1649,19 @@ function iniciarListeners(){
   listen('info',      `salas/${SALA}/info`,      onInfoChanged);
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
   listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
+  listen('config',    `salas/${SALA}/config`,    onConfigChanged);
+  listen('roles',     `salas/${SALA}/roles`,     onRolesChanged);
   iniciarListenerPlacarTotal();
   showScreen('s-lobby');
+}
+
+function onConfigChanged(config){
+  _config = config || { poltergeistAtivo: false, lunaticoAtivo: false };
+  renderFase();
+}
+
+function onRolesChanged(roles){
+  _roles = roles || {};
 }
 
 // ── Listener em tempo real do próprio placarTotal (atualiza setup screen)
@@ -1594,7 +1733,7 @@ function onInfoChanged(info){
         if(!eu||eu.espectador) return;
         const contagem={};
         Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-        const {cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,info.impostorId,_votos);
+        const {cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,info.impostorId,_votos,_roles,info.poltergeistId||'');
         const isImp=ME.uid===info.impostorId;
         const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
         if(pts!==0){
@@ -1691,8 +1830,10 @@ function renderLobby(){
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
-    if(_info.host===ME.uid&&j.id!==ME.uid)
+    if(_info.host===ME.uid&&j.id!==ME.uid){
+      badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}','${(j.nome||'').replace(/'/g,"\\'")}')" title="Passar host para ${nome}">👑</button>`;
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
+    }
     const hostCrown=j.id===_info.host?' 👑':'';
     const offlineLabel=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
     chip.innerHTML=`
@@ -1707,9 +1848,44 @@ function renderLobby(){
     container.appendChild(chip);
   });
 
-  const podeSort=_info.host===ME.uid&&lista.length>=2;
+  const isHost=_info.host===ME.uid;
+  const podeSort=isHost&&lista.length>=2;
   $('btn-sortear').style.display=podeSort?'':'none';
   $('btn-sortear').disabled=false;
+  const btnConfig=$('btn-config');
+  if(btnConfig) btnConfig.style.display=isHost?'':'none';
+
+  // J — indicador de modos ativos para todos
+  const modosEl=$('lobby-modos-ativos');
+  if(modosEl){
+    const tags=[];
+    if(_config.poltergeistAtivo) tags.push('<span class="modo-tag modo-tag-poltergeist">👻 POLTERGEIST</span>');
+    if(_config.lunaticoAtivo)    tags.push('<span class="modo-tag modo-tag-lunatico">🌀 LUNÁTICO</span>');
+    if(tags.length){
+      modosEl.innerHTML=tags.join('');
+      modosEl.style.display='flex';
+    } else {
+      modosEl.innerHTML='';
+      modosEl.style.display='none';
+    }
+  }
+
+  // C — desabilita toggles de modo quando jogadores insuficientes (greyed out retroativo)
+  const tPolt = $('toggle-poltergeist');
+  const tLun  = $('toggle-lunatico');
+  const rowPolt = tPolt?.closest('.config-row');
+  const rowLun  = tLun?.closest('.config-row');
+  const n = lista.length;
+  // desabilita poltergeist se < 4
+  if(rowPolt){ rowPolt.style.opacity = n>=4?'1':'.35'; rowPolt.style.pointerEvents = n>=4?'':'none'; }
+  // desabilita lunático se < 4, ou se poltergeist ativo e < 5
+  const lunBloqueado = n<4 || (_config.poltergeistAtivo && n<5);
+  if(rowLun){ rowLun.style.opacity = lunBloqueado?'.35':'1'; rowLun.style.pointerEvents = lunBloqueado?'none':''; }
+  // se ficou bloqueado mas estava ativo, salva no Firebase
+  if(n<4 && (_config.poltergeistAtivo || _config.lunaticoAtivo) && _info?.host===ME.uid){
+    _config.poltergeistAtivo=false; _config.lunaticoAtivo=false;
+    set(`salas/${SALA}/config`, _config);
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1755,26 +1931,49 @@ function fitWordFont(el, text){
 
 function toggleWordQ(){
   const el=$('q-word-el'), hint=$('q-word-hint');
+  const subEl=$('q-word-sub'); // label de papel abaixo da palavra
+
   if(!qWordShown){
     SFX.palavra();
-    const isImp=myWord==='IMPOSTOR';
-    const texto=isImp?'🕵️ IMPOSTOR':myWord;
+    const meuPapel = _roles[idKey(ME.uid)] || 'normal';
+    let texto, subTexto='', subCor='';
+
+    if(meuPapel==='impostor'){
+      texto    = '🕵️ IMPOSTOR';
+    } else if(meuPapel==='poltergeist'){
+      texto    = myWord;
+      subTexto = '👻 Poltergeist';
+      subCor   = '#FF9800';
+    } else {
+      // normal ou lunatico — lunático não sabe que é lunático
+      texto = myWord;
+    }
+
     el.className='word-revealed';
     el.textContent=texto;
     fitWordFont(el, texto);
+
+    if(subEl){
+      subEl.textContent = subTexto;
+      subEl.style.color = subCor;
+      subEl.style.display = subTexto ? '' : 'none';
+    }
+
     hint.textContent='toque para esconder';
     qWordShown=true;
     setTimeout(()=>{
       if(qWordShown){
-        el.className='word-hidden';el.textContent='● ● ●';
+        el.className='word-hidden'; el.textContent='● ● ●';
         el.style.fontSize='';
-        hint.textContent='toque aqui para revelar';qWordShown=false;
+        if(subEl){ subEl.textContent=''; subEl.style.display='none'; }
+        hint.textContent='toque aqui para revelar'; qWordShown=false;
       }
     },4000);
   } else {
-    el.className='word-hidden';el.textContent='● ● ●';
+    el.className='word-hidden'; el.textContent='● ● ●';
     el.style.fontSize='';
-    hint.textContent='toque aqui para revelar';qWordShown=false;
+    if(subEl){ subEl.textContent=''; subEl.style.display='none'; }
+    hint.textContent='toque aqui para revelar'; qWordShown=false;
   }
 }
 
@@ -1877,14 +2076,41 @@ function renderResultado(){
   Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
 
   // Calcula resultado da votação para exibir cenário
-  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos);
+  // Usa snapshot.role como fallback, já que roles/ é removido do Firebase após revelar
+  const rolesEfetivos = Object.keys(_roles).length ? _roles : Object.fromEntries(
+    Object.entries(_snapshot).map(([k,v])=>[k, v.role||'normal'])
+  );
+  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos, rolesEfetivos, _info.poltergeistId||'');
 
   const list=$('res-list');
   list.innerHTML='';
 
   const resTitulo = $('res-titulo');
 if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + (_info.palavra||'—') + '</span>';
+
+  // ── Poltergeist em destaque (laranja) antes do impostor, se ele venceu
+  const poltergeistId=_info.poltergeistId||'';
+  if(poltergeistId && !impostorPegou && poltergeistVenceu){
+    const polt=ativos.find(j=>j.id===poltergeistId);
+    if(polt){
+      const poltPts=cenarioPoltergeist?.pts||0;
+      const poltPtsClass=poltPts>0?'pts-pos':poltPts<0?'pts-neg':'pts-zero';
+      const poltPtsLabel=poltPts>0?`+${poltPts}`:String(poltPts);
+      const poltCard=document.createElement('div');
+      poltCard.className='res-impostor-card';
+      poltCard.style.borderColor='#FF9800';
+      const poltStyle=getPrestigeStyle(polt.placarTotal||0);
+      poltCard.innerHTML=`
+        <img class="res-rank-bg" src="${poltStyle.img}" alt="">
+        <span class="imp-badge" style="position:relative;z-index:1;background:#FF9800">👻 Poltergeist</span>
+        <img class="res-impostor-avatar" src="${avatarImg(polt.avatarUrl)}" alt=""
+          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1;border-color:#FF9800">
+        <div class="res-impostor-name" style="position:relative;z-index:1;color:#FF9800">${polt.nome||'(sem nome)'}${polt.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,152,0,.8)">(você)</small>':''}</div>
+        <span class="pts-badge ${poltPtsClass}" style="position:relative;z-index:1">${poltPtsLabel}pt</span>`;
+      list.appendChild(poltCard);
+    }
+  }
 
   // ── Impostor em destaque no topo
   const imp=ativos.find(j=>j.id===_info.impostorId);
@@ -1916,13 +2142,15 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
       const ptsLabel=pts>0?`+${pts}`:String(pts);
       const isMe=j.id===ME.uid;
       const tileStyle=getPrestigeStyle(j.placarTotal||0);
+      const papel=rolesEfetivos[idKey(j.id)];
+      const papelLabel = papel==='poltergeist' ? '👻' : papel==='lunatico' ? '🌀' : '';
       const tile=document.createElement('div');
       tile.className='res-player-tile';
       tile.innerHTML=`
         <img class="res-rank-bg" src="${tileStyle.img}" alt="">
         <img src="${avatarImg(j.avatarUrl)}" alt=""
           onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${j.nome||'(sem nome)'}</div>
+        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${papelLabel?papelLabel+' ':''}${j.nome||'(sem nome)'}</div>
         <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
       grid.appendChild(tile);
     });
@@ -2005,31 +2233,81 @@ async function sortearAssignments(){
   const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
   if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
 
+  const poltergeistAtivo = !!_config.poltergeistAtivo;
+  const lunaticoAtivo    = !!_config.lunaticoAtivo;
+
   const cats=await carregarPalavras();
   const catNames=Object.keys(cats);
   const cat=catNames[Math.floor(Math.random()*catNames.length)];
   const words=cats[cat];
   const palavra=words[Math.floor(Math.random()*words.length)];
+
+  // Sorteia impostor primeiro
   const impostorIdx=Math.floor(Math.random()*ativos.length);
   const impostorJ=ativos[impostorIdx];
 
+  // Candidatos restantes (todos exceto o impostor)
+  let restantes=ativos.filter((j,i)=>i!==impostorIdx);
+
+  // Sorteia poltergeist entre os restantes, se ativo e jogadores suficientes
+  let poltergeistJ=null;
+  if(poltergeistAtivo && ativos.length>=4 && restantes.length>0){
+    const idx=Math.floor(Math.random()*restantes.length);
+    poltergeistJ=restantes[idx];
+    restantes=restantes.filter((j,i)=>i!==idx);
+  }
+
+  // Sorteia lunático entre os restantes, se ativo e jogadores suficientes
+  const minParaLunatico = poltergeistAtivo ? 5 : 4;
+  let lunaticoJ=null;
+  let palavraLunatico=null;
+  if(lunaticoAtivo && ativos.length>=minParaLunatico && restantes.length>0){
+    const idx=Math.floor(Math.random()*restantes.length);
+    lunaticoJ=restantes[idx];
+    restantes=restantes.filter((j,i)=>i!==idx);
+    // palavra diferente, mesma categoria
+    const outrasPalavras=words.filter(w=>w!==palavra);
+    palavraLunatico = outrasPalavras.length
+      ? outrasPalavras[Math.floor(Math.random()*outrasPalavras.length)]
+      : palavra;
+  }
+
   const assignments={};
-  ativos.forEach((j,i)=>{
-    assignments[idKey(j.id)]=(i===impostorIdx)?'IMPOSTOR':palavra;
+  const roles={};
+  ativos.forEach(j=>{
+    const key=idKey(j.id);
+    if(j.id===impostorJ.id){
+      assignments[key]='IMPOSTOR';
+      roles[key]='impostor';
+    } else if(poltergeistJ && j.id===poltergeistJ.id){
+      assignments[key]=palavra;
+      roles[key]='poltergeist';
+    } else if(lunaticoJ && j.id===lunaticoJ.id){
+      assignments[key]=palavraLunatico;
+      roles[key]='lunatico';
+    } else {
+      assignments[key]=palavra;
+      roles[key]='normal';
+    }
   });
 
   // Snapshot dos jogadores neste momento
   const snapshot={};
-  ativos.forEach(j=>{ snapshot[idKey(j.id)]={...j}; });
+  ativos.forEach(j=>{
+    const key=idKey(j.id);
+    snapshot[key]={...j, role:roles[key]};
+  });
 
   await del(`salas/${SALA}/votos`);
   await set(`salas/${SALA}/assignments`, assignments);
   await set(`salas/${SALA}/snapshot`, snapshot);
+  await set(`salas/${SALA}/roles`, roles);
   await set(`salas/${SALA}/timer`,{ts:0, ativo:false});
   _assignments=assignments;
   _snapshot=snapshot;
+  _roles=roles;
 
-  return {cat, palavra, impostorJ};
+  return {cat, palavra, impostorJ, poltergeistJ, lunaticoJ};
 }
 
 async function sortear(){
@@ -2037,11 +2315,15 @@ async function sortear(){
   clearErr('st-lobby');
   try{
     if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
-    const {cat,palavra,impostorJ}=await sortearAssignments();
+    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
 
     await upd(`salas/${SALA}/info`,{
       fase:'questioning', categoria:cat, palavra,
       impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      poltergeistId:   poltergeistJ?.id   || '',
+      poltergeistNome: poltergeistJ?.nome || '',
+      lunaticoId:      lunaticoJ?.id      || '',
+      lunaticoNome:    lunaticoJ?.nome    || '',
       votacaoAberta:false,
       rodada:(_info.rodada||0)+1
     });
@@ -2057,16 +2339,44 @@ async function reiniciarJogo(){
   const btn=$('btn-reiniciar-q');
   btn.disabled=true;
   try{
-    const {cat,palavra,impostorJ}=await sortearAssignments();
+    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
     await upd(`salas/${SALA}/info`,{
       categoria:cat, palavra,
       impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      poltergeistId:   poltergeistJ?.id   || '',
+      poltergeistNome: poltergeistJ?.nome || '',
+      lunaticoId:      lunaticoJ?.id      || '',
+      lunaticoNome:    lunaticoJ?.nome    || '',
       votacaoAberta:false
     });
   }catch(e){
     alert(e.message);
   }
   btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════════════
+//  MENU DE CONFIGURAÇÕES DA SALA
+// ══════════════════════════════════════════════════════
+function abrirConfig(){
+  if(_info?.host !== ME.uid) return;
+  $('toggle-poltergeist').checked = !!_config.poltergeistAtivo;
+  $('toggle-lunatico').checked    = !!_config.lunaticoAtivo;
+  $('config-overlay').style.display = 'flex';
+}
+
+function fecharConfig(e){
+  if(e && e.target !== $('config-overlay')) return;
+  $('config-overlay').style.display = 'none';
+}
+
+async function salvarConfig(){
+  if(_info?.host !== ME.uid) return;
+  const novoConfig = {
+    poltergeistAtivo: $('toggle-poltergeist').checked,
+    lunaticoAtivo:    $('toggle-lunatico').checked,
+  };
+  await set(`salas/${SALA}/config`, novoConfig);
 }
 
 // Volta todos ao lobby sem expulsar ninguém e sem alterar pontos — mesmo efeito de novaRodada().
@@ -2087,7 +2397,7 @@ async function votar(votadoId, votadoNome){
 // ══════════════════════════════════════════════════════
 //  CÁLCULO DE PONTUAÇÃO (tabela dos 14 cenários)
 // ══════════════════════════════════════════════════════
-function calcularResultado(ativos, contagem, impostorId, votos){
+function calcularResultado(ativos, contagem, impostorId, votos, roles={}, poltergeistId=''){
   const totalVotantes=Object.keys(votos).length;
   const impostorVotos=contagem[impostorId]||0;
   const maxVotos=Math.max(...ativos.map(j=>contagem[j.id]||0),0);
@@ -2095,11 +2405,21 @@ function calcularResultado(ativos, contagem, impostorId, votos){
   const impostorTemMaioria=impostorVotos>0&&impostorVotos===maxVotos;
   const empatados=ativos.filter(j=>(contagem[j.id]||0)===maxVotos&&maxVotos>0);
   const empate=empatados.length>1;
-  const impostorPegou=impostorTemMaioria&&!empate;
+  let impostorPegou=impostorTemMaioria&&!empate;
+
+  // ── Poltergeist — verifica se foi o mais votado (vence eliminado no lugar do impostor)
+  const poltergeistVotos = poltergeistId ? (contagem[poltergeistId]||0) : 0;
+  const poltergeistTemMaioria = !!poltergeistId && poltergeistVotos>0 && poltergeistVotos===maxVotos;
+  const empateComImpostor = poltergeistTemMaioria && impostorVotos===poltergeistVotos;
+  const poltergeistVenceu = poltergeistTemMaioria && !empate && !empateComImpostor;
+
+  if(poltergeistVenceu) impostorPegou=false;
 
   // ── Impostor
   let cenarioImpostor;
-  if(impostorPegou){
+  if(poltergeistVenceu){
+    cenarioImpostor={num:15, pts:PTS.imp_poltergeist_venceu, desc:'poltergeist foi eliminado no seu lugar'};
+  } else if(impostorPegou){
     if(impostorVotos===totalVotantes&&totalVotantes>0)
       cenarioImpostor={num:9,  pts:PTS.imp_pego_unanimidade, desc:'pego por unanimidade'};
     else if(impostorVotos>totalVotantes/2)
@@ -2115,37 +2435,100 @@ function calcularResultado(ativos, contagem, impostorId, votos){
       cenarioImpostor={num:14, pts:PTS.imp_escapou_minoria,  desc:'minoria votou nele'};
   }
 
+  // ── Poltergeist — pontuação própria (se o papel existir nesta rodada)
+  let cenarioPoltergeist=null;
+  if(poltergeistId){
+    cenarioPoltergeist = poltergeistVenceu
+      ? {num:16, pts:PTS.poltergeist_venceu, desc:'foi o mais votado'}
+      : (impostorPegou
+          ? {num:17, pts:PTS.poltergeist_perdeu_impegou, desc:'impostor foi pego, sobreviveu'}
+          : {num:18, pts:PTS.poltergeist_perdeu_escapou, desc:'impostor escapou, sobreviveu'});
+  }
+
+
   // ── Jogadores
   const cenarioJogadores={};
   ativos.forEach(j=>{
     if(j.id===impostorId) return;
-    const votou=votos[idKey(j.id)];
-    if(!votou){
-      cenarioJogadores[j.id]={num:impostorPegou?7:8,
-        pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
+
+    // Poltergeist tem sua própria pontuação, calculada acima
+    if(poltergeistId && j.id===poltergeistId){
+      cenarioJogadores[j.id]=cenarioPoltergeist;
       return;
     }
+
+    const ehLunatico = roles[idKey(j.id)]==='lunatico';
+    const votou=votos[idKey(j.id)];
+
+    // ── Cenários especiais: poltergeist venceu (vale tanto para normais quanto lunáticos)
+    if(poltergeistVenceu){
+      if(!votou){
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:23, pts:PTS.lunatico_absteve_escapou}
+          : {num:22, pts:PTS.absteve_escapou};
+        return;
+      }
+      if(votou.votadoId===poltergeistId){
+        cenarioJogadores[j.id]={num:19, pts:PTS.votou_no_poltergeist_venceu};
+        return;
+      }
+      if(votou.votadoId===impostorId){
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:24, pts:PTS.lunatico_acertou_escapou}
+          : {num:4,  pts:PTS.acertou_escapou};
+        return;
+      }
+      cenarioJogadores[j.id]={num:20, pts:PTS.votou_no_poltergeist_perdeu};
+      return;
+    }
+
+    // ── Sem poltergeist vencedor — fluxo normal (ou poltergeist perdeu)
+    if(!votou){
+      cenarioJogadores[j.id]=ehLunatico
+        ? {num:impostorPegou?25:23, pts:impostorPegou?PTS.lunatico_absteve_impegou:PTS.lunatico_absteve_escapou}
+        : {num:impostorPegou?7:8,   pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
+      return;
+    }
+
+    // Quem votou no poltergeist mas ele não venceu
+    if(poltergeistId && votou.votadoId===poltergeistId){
+      cenarioJogadores[j.id]={num:21, pts:PTS.votou_no_poltergeist_perdeu};
+      return;
+    }
+
     const acertou=votou.votadoId===impostorId;
     if(acertou){
       if(!impostorPegou){
-        cenarioJogadores[j.id]={num:4, pts:PTS.acertou_escapou};
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:24, pts:PTS.lunatico_acertou_escapou}
+          : {num:4,  pts:PTS.acertou_escapou};
       } else {
         const qtdAcertaram=ativos.filter(j2=>j2.id!==impostorId&&votos[idKey(j2.id)]?.votadoId===impostorId).length;
         const qtdAtivos=ativos.filter(j2=>j2.id!==impostorId).length;
-        if(qtdAcertaram===qtdAtivos)
-          cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
-        else if(qtdAcertaram>qtdAtivos/2)
-          cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
-        else
-          cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
+        if(ehLunatico){
+          if(qtdAcertaram===qtdAtivos)
+            cenarioJogadores[j.id]={num:26, pts:PTS.lunatico_acertou_unanimidade};
+          else if(qtdAcertaram>qtdAtivos/2)
+            cenarioJogadores[j.id]={num:27, pts:PTS.lunatico_acertou_maioria};
+          else
+            cenarioJogadores[j.id]={num:28, pts:PTS.lunatico_acertou_minoria};
+        } else {
+          if(qtdAcertaram===qtdAtivos)
+            cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
+          else if(qtdAcertaram>qtdAtivos/2)
+            cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
+          else
+            cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
+        }
       }
     } else {
-      cenarioJogadores[j.id]={num:impostorPegou?5:6,
-        pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
+      cenarioJogadores[j.id]=ehLunatico
+        ? {num:impostorPegou?29:24, pts:impostorPegou?PTS.lunatico_errou_impegou:PTS.lunatico_errou_escapou}
+        : {num:impostorPegou?5:6,   pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
     }
   });
 
-  return {impostorPegou, cenarioImpostor, cenarioJogadores};
+  return {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores};
 }
 
 // ══════════════════════════════════════════════════════
@@ -2160,8 +2543,8 @@ async function revelarImpostor(){
   const contagem={};
   Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
 
-  const {impostorPegou, cenarioImpostor, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos);
+  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos, _roles, _info.poltergeistId||'');
 
   // Aplica pontos na sala (host tem permissão de escrever em salas/)
   // O update do placar global de cada usuário em users/ é feito por cada cliente
@@ -2187,12 +2570,16 @@ async function revelarImpostor(){
     impostorNome:_info.impostorNome,
     impostorPegou,
     cenarioImpostor: cenarioImpostor.num,
+    poltergeistVenceu: poltergeistVenceu || false,
+    poltergeistNome:   _info.poltergeistNome || '',
+    lunaticoNome:      _info.lunaticoNome    || '',
     ts:Date.now()
   });
 
   // Para timer
   await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
   await upd(`salas/${SALA}/info`,{fase:'revealed'});
+  await del(`salas/${SALA}/roles`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -2200,20 +2587,38 @@ async function revelarImpostor(){
 // ══════════════════════════════════════════════════════
 async function novaRodada(){
   SFX.novaRodada();
-  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false;
+  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false; _roles={};
 
   await del(`salas/${SALA}/votos`);
   await del(`salas/${SALA}/assignments`);
   await del(`salas/${SALA}/snapshot`);
+  await del(`salas/${SALA}/roles`);
   await set(`salas/${SALA}/timer`,{ts:0,ativo:false});
   await upd(`salas/${SALA}/info`,{
     fase:'lobby', categoria:'', palavra:'',
-    impostorId:'', impostorNome:'', votacaoAberta:false
+    impostorId:'', impostorNome:'',
+    poltergeistId:'', poltergeistNome:'',
+    lunaticoId:'', lunaticoNome:'',
+    votacaoAberta:false
   });
 }
 
 async function kickar(playerId){
   await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
+}
+
+async function passarHost(playerId, playerNome){
+  if(_info.host!==ME.uid) return;
+  if(playerId===ME.uid) return;
+  const alvo=_jogadores[idKey(playerId)];
+  if(!alvo){ alert('Jogador não encontrado.'); return; }
+  const confirmado=confirm(`Tornar ${playerNome||alvo.nome||'este jogador'} o novo host da sala?`);
+  if(!confirmado) return;
+  try{
+    await upd(`salas/${SALA}/info`,{host:playerId, hostNome:alvo.nome||''});
+  }catch(e){
+    alert('Não foi possível passar o host: '+e.message);
+  }
 }
 
 async function sairDaSala(){
@@ -2237,6 +2642,7 @@ async function sairDaSala(){
 
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
   _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
+  _config={ poltergeistAtivo: false, lunaticoAtivo: false }; _roles={};
   qWordShown=false;
   localStorage.removeItem('_imp_sala');
   $('inp-codigo').value='';
