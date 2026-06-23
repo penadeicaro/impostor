@@ -1929,7 +1929,10 @@ function onJogadoresChanged(jogadores){
   if(cur>prev) SFX.join();
   // Inicia listener de placarTotal para cada jogador (sem duplicar)
   Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
-  renderFase();
+  // Não re-renderiza a tela de resultado por mudanças em jogadores —
+  // evita que o reset de placar do novaRodada() corrompra visualmente os scores.
+  // renderResultado() já foi chamada por onInfoChanged ao entrar na fase 'revealed'.
+  if(_info?.fase !== 'revealed') renderFase();
 }
 
 let _qtdVotosAnterior = 0;
@@ -2398,7 +2401,13 @@ function renderHistorico(){
 }
 
 async function renderPlacar(){
-  const listaBase=Object.values(_jogadores).filter(j=>!j.espectador);
+  // Na tela de resultado, usa o snapshot congelado do início da rodada para
+  // evitar que o reset de placar do novaRodada() corrompra visualmente os valores.
+  // O snapshot carrega o placar que o host já atualizou (após revelarImpostor).
+  // Fora da tela de resultado, usa _jogadores normalmente.
+  const fonteJogadores = (document.querySelector('.screen.active')?.id==='s-resultado' && Object.keys(_snapshot).length>0)
+    ? _snapshot : _jogadores;
+  const listaBase=Object.values(fonteJogadores).filter(j=>!j.espectador);
   // Carrega placarTotal de cada jogador para mostrar prestígio real
   await Promise.all(listaBase.map(async j=>{
     if(j.placarTotal==null){
