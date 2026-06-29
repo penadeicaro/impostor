@@ -439,134 +439,7 @@ input::placeholder{color:var(--muted);}
 #hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
 .tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
 
-/* ══ AVATAR CROP MODAL ══ */
-#avatar-crop-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.93);
-  z-index:990;display:flex;align-items:center;justify-content:center;padding:16px;
-}
-.crop-box{
-  background:var(--card);
-  border:2px solid rgba(255,255,255,.18);
-  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
-  width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px;padding:16px;
-}
-.crop-title{font-family:'VT323',monospace;font-size:1.2rem;letter-spacing:2px;text-transform:uppercase;color:var(--sub);}
-.crop-viewport{
-  position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;
-  cursor:grab;touch-action:none;
-  border:2px solid rgba(255,255,255,.1);background:#000;
-}
-.crop-viewport:active{cursor:grabbing;}
-#crop-canvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pixelated;}
-.crop-overlay-guide{
-  position:absolute;inset:0;pointer-events:none;
-  border:2px dashed rgba(232,255,71,.4);z-index:2;
-  box-shadow:inset 0 0 0 9999px rgba(0,0,0,.25);
-}
-.crop-controls{display:flex;align-items:center;gap:8px;}
-.crop-zoom-btn{
-  background:var(--surface);border:2px solid rgba(255,255,255,.1);
-  color:var(--text);font-family:'VT323',monospace;font-size:1.3rem;
-  padding:4px 12px;cursor:pointer;flex-shrink:0;line-height:1;
-}
-.crop-zoom-btn:hover{border-color:var(--accent);color:var(--accent);}
-.crop-zoom-track{
-  flex:1;height:6px;background:rgba(255,255,255,.1);position:relative;cursor:pointer;
-}
-.crop-zoom-thumb{height:100%;background:var(--accent);width:30%;pointer-events:none;}
-.crop-animated-notice{
-  font-size:.85rem;color:var(--orange);letter-spacing:1px;
-  text-align:center;padding:6px;background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.2);
-}
-.crop-btn-row{display:flex;gap:8px;}
-
-/* ══ STATS SECTION (s-setup) ══ */
-.stats-section{display:flex;flex-direction:column;gap:0;}
-.stats-toggle-btn{
-  display:flex;align-items:center;justify-content:space-between;
-  width:100%;background:var(--surface);
-  border:2px solid rgba(255,255,255,.08);
-  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
-  padding:10px 14px;cursor:pointer;font-family:'VT323',monospace;
-  font-size:1rem;letter-spacing:1px;color:var(--sub);
-}
-.stats-toggle-btn:hover{color:var(--text);}
-.stats-inner{display:none;flex-direction:column;gap:0;}
-.stats-inner.open{display:flex;}
-.stat-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:7px 14px;background:var(--surface);
-  border-left:2px solid var(--muted);border-bottom:1px solid rgba(255,255,255,.04);
-  font-size:1rem;
-}
-.stat-label{color:var(--sub);}
-.stat-value{color:var(--accent);font-family:'VT323',monospace;font-size:1.1rem;}
-
-/* ══ BADGE SELECTOR ══ */
-.badge-selector-grid{
-  display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;
-  background:var(--surface);
-  border:1px solid rgba(255,255,255,.06);
-  border-top:none;
-}
-.badge-sel-item{
-  font-size:1.5rem;cursor:pointer;padding:5px 7px;
-  border:2px solid transparent;transition:border-color .15s;position:relative;
-}
-.badge-sel-item.selected{border-color:var(--accent);}
-.badge-sel-item:hover:not(.locked){border-color:rgba(232,255,71,.4);}
-.badge-sel-item.locked{opacity:.22;cursor:not-allowed;filter:grayscale(1);}
-.badge-tooltip{
-  position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);
-  background:var(--card);border:1px solid rgba(255,255,255,.15);
-  font-family:'VT323',monospace;font-size:.8rem;letter-spacing:1px;
-  white-space:nowrap;padding:3px 8px;pointer-events:none;z-index:200;display:none;
-}
-.badge-sel-item:hover .badge-tooltip{display:block;}
-
-/* ══ CHIP BADGE EMOJI ══ */
-.chip-badge-emoji{
-  font-size:1.15rem;cursor:pointer;flex-shrink:0;position:relative;z-index:2;
-  padding:2px 4px;transition:transform .15s;
-}
-.chip-badge-emoji:hover{transform:scale(1.25);}
-
-/* ══ STATS MODAL ══ */
-#stats-modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.85);
-  z-index:998;display:flex;align-items:flex-end;justify-content:center;
-  padding:0 0 env(safe-area-inset-bottom,0);
-}
-.stats-modal-box{
-  background:var(--card);
-  border:2px solid rgba(255,255,255,.18);
-  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
-  width:100%;max-width:460px;max-height:80vh;overflow-y:auto;
-  padding:20px 16px 24px;display:flex;flex-direction:column;gap:12px;
-}
-.stats-modal-header{display:flex;align-items:center;gap:12px;}
-.stats-modal-avatar{
-  width:56px;height:56px;object-fit:cover;image-rendering:pixelated;
-  border:3px solid var(--accent);flex-shrink:0;
-}
-.stats-modal-name{font-family:'VT323',monospace;font-size:1.4rem;}
-.stats-modal-rank{font-size:.9rem;margin-top:2px;}
-.stats-modal-section{display:flex;flex-direction:column;gap:0;}
-.stats-modal-section-title{
-  font-family:'VT323',monospace;font-size:1rem;letter-spacing:2px;
-  text-transform:uppercase;color:var(--sub);padding:8px 0 4px;
-  border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px;
-}
-.stats-modal-badges-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
-.stats-modal-badge-item{
-  font-size:1.4rem;padding:5px 8px;border:1px solid rgba(255,255,255,.08);
-  position:relative;cursor:default;
-}
-.stats-modal-badge-item.locked{opacity:.18;filter:grayscale(1);}
-.stats-modal-badge-item .badge-tooltip{display:none;}
-.stats-modal-badge-item:hover .badge-tooltip{display:block;}
-
-/* Scrollbar always visible no container de votação */
+/* Scrollbar sempre visível no container de votação */
 #q-votacao-card{
   scrollbar-width:thin;
   scrollbar-color:rgba(232,255,71,.5) rgba(255,255,255,.05);
@@ -690,10 +563,156 @@ input::placeholder{color:var(--muted);}
 .q-timer.urgente{color:#FF4757;animation:timerPulse .5s infinite;}
 @keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
+/* ── Avatar Crop Modal ── */
+#avatar-crop-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);
+  z-index:1200;display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;padding:16px;
+}
+#avatar-crop-modal.open{display:flex;}
+.crop-viewport{
+  position:relative;width:240px;height:240px;
+  overflow:hidden;background:#111;
+  border:2px solid var(--accent);
+  cursor:grab;touch-action:none;
+  flex-shrink:0;
+}
+.crop-viewport:active{cursor:grabbing;}
+#crop-img-preview{
+  position:absolute;
+  image-rendering:pixelated;
+  pointer-events:none;
+  user-select:none;
+  transform-origin:0 0;
+}
+.crop-controls{
+  display:flex;flex-direction:column;gap:8px;width:240px;
+}
+.crop-zoom-row{
+  display:flex;align-items:center;gap:8px;
+}
+.crop-zoom-row label{font-size:.85rem;color:var(--sub);letter-spacing:1px;flex-shrink:0;}
+.crop-zoom-row input[type=range]{
+  flex:1;accent-color:var(--accent);
+}
+.crop-btn-row{display:flex;gap:8px;}
+.crop-btn-row .btn{flex:1;padding:10px;}
+#crop-hint{font-size:.75rem;color:var(--sub);text-align:center;letter-spacing:1px;}
+
+/* ── Badge emoji no chip ── */
+.chip-badge-emoji{
+  font-size:1.1rem;cursor:pointer;position:relative;z-index:1;
+  padding:2px 4px;border-radius:2px;transition:background .15s;
+  line-height:1;
+}
+.chip-badge-emoji:hover{background:rgba(255,255,255,.12);}
+
+/* ── Modal de Stats ── */
+#stats-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:1100;display:none;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);
+}
+#stats-modal.open{display:flex;}
+.stats-box{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  width:100%;max-width:460px;
+  max-height:82vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.stats-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.stats-header img{width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;}
+.stats-header-info{flex:1;min-width:0;}
+.stats-header-name{font-family:'VT323',monospace;font-size:1.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stats-header-rank{font-size:.85rem;color:var(--sub);}
+.stats-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px 8px;flex-shrink:0;}
+.stats-close:hover{color:var(--text);}
+.stats-body{overflow-y:auto;flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:16px;}
+.stats-section-title{
+  font-family:'VT323',monospace;font-size:.95rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sub);margin-bottom:8px;
+}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stats-cell{
+  background:var(--surface);padding:10px 12px;
+  border:2px solid rgba(255,255,255,.07);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  display:flex;flex-direction:column;gap:2px;
+}
+.stats-cell-value{font-family:'VT323',monospace;font-size:1.5rem;color:var(--accent);}
+.stats-cell-label{font-size:.72rem;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
+.badges-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.badge-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:58px;cursor:pointer;
+}
+.badge-item-emoji{
+  font-size:1.6rem;padding:8px;
+  border:2px solid rgba(255,255,255,.1);
+  background:var(--surface);
+  transition:border-color .15s,background .15s;
+  line-height:1;
+}
+.badge-item.earned .badge-item-emoji{border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.07);}
+.badge-item.not-earned .badge-item-emoji{filter:grayscale(1);opacity:.35;}
+.badge-item-name{font-size:.65rem;color:var(--sub);text-align:center;letter-spacing:.5px;line-height:1.2;}
+.badge-item.selectable .badge-item-emoji:hover{border-color:var(--accent);background:rgba(232,255,71,.15);}
+.badge-item.selected .badge-item-emoji{border-color:var(--accent);background:rgba(232,255,71,.2);box-shadow:0 0 0 2px rgba(232,255,71,.3);}
+
+/* ── Seção de badge no setup ── */
+.setup-badge-section{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  padding:12px;
+}
 </style>
 </head>
 <body>
 <div id="loader">carregando…</div>
+<!-- ══ AVATAR CROP MODAL ══ -->
+<div id="avatar-crop-modal">
+  <div id="crop-hint">arraste para mover · scroll/pinça para zoom</div>
+  <div class="crop-viewport" id="crop-viewport">
+    <img id="crop-img-preview" src="" alt="">
+  </div>
+  <div class="crop-controls">
+    <div class="crop-zoom-row">
+      <label>ZOOM</label>
+      <input type="range" id="crop-zoom" min="1" max="4" step="0.05" value="1">
+    </div>
+    <div class="crop-btn-row">
+      <button class="btn btn-secondary" onclick="cancelarCrop()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarCrop()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATS MODAL ══ -->
+<div id="stats-modal" onclick="fecharStatsModal(event)">
+  <div class="stats-box" onclick="event.stopPropagation()">
+    <div class="stats-header">
+      <img id="stats-modal-avatar" src="" alt="" style="width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;border:2px solid var(--muted)">
+      <div class="stats-header-info">
+        <div class="stats-header-name" id="stats-modal-name">—</div>
+        <div class="stats-header-rank" id="stats-modal-rank">—</div>
+      </div>
+      <button class="stats-close" onclick="fecharStatsModal()">✕</button>
+    </div>
+    <div class="stats-body" id="stats-modal-body">
+      <div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>
+    </div>
+  </div>
+</div>
+
 <div id="config-overlay" class="config-overlay" style="display:none" onclick="fecharConfig(event)">
   <div class="config-box" onclick="event.stopPropagation()">
     <div class="config-title">⚙ Configurações da sala</div>
@@ -816,8 +835,11 @@ input::placeholder{color:var(--muted);}
     </div>
     <!-- Rank card -->
     <div id="setup-rank-card"></div>
-    <!-- Stats & Conquistas -->
-    <div id="setup-stats-section"></div>
+    <!-- Badge exibido -->
+    <div class="setup-badge-section" id="setup-badge-section" style="display:none">
+      <div class="stats-section-title" style="margin-bottom:10px">Badge exibido no chip</div>
+      <div class="badges-grid" id="setup-badge-grid"></div>
+    </div>
     <!-- Sala -->
     <div class="card" style="padding:12px">
       <div class="card-label" style="margin-bottom:6px">Sala</div>
@@ -930,41 +952,6 @@ input::placeholder{color:var(--muted);}
     </div>
   </div>
   <div id="devlog-body"></div>
-</div>
-
-<!-- ══ AVATAR CROP MODAL ══ -->
-<div id="avatar-crop-overlay" style="display:none" onclick="fecharCropModal()">
-  <div class="crop-box" onclick="event.stopPropagation()">
-    <div class="crop-title">✂ Recortar avatar</div>
-    <div class="crop-viewport" id="crop-viewport">
-      <canvas id="crop-canvas"></canvas>
-      <div class="crop-overlay-guide"></div>
-    </div>
-    <div id="crop-animated-notice" class="crop-animated-notice" style="display:none">
-      🎞️ Imagem animada — o arquivo original será enviado
-    </div>
-    <div class="crop-controls">
-      <button class="crop-zoom-btn" onclick="cropZoom(-0.15)">−</button>
-      <div class="crop-zoom-track" id="crop-zoom-track" onclick="cropZoomTrack(event)">
-        <div class="crop-zoom-thumb" id="crop-zoom-thumb"></div>
-      </div>
-      <button class="crop-zoom-btn" onclick="cropZoom(+0.15)">+</button>
-    </div>
-    <div class="crop-btn-row">
-      <button class="btn btn-secondary" onclick="fecharCropModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarCrop()">✓ Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ STATS MODAL ══ -->
-<div id="stats-modal-overlay" style="display:none" onclick="fecharStatsModal()">
-  <div class="stats-modal-box" onclick="event.stopPropagation()">
-    <div class="stats-modal-header" id="stats-modal-header"></div>
-    <div class="stats-modal-section" id="stats-modal-stats"></div>
-    <div class="stats-modal-section" id="stats-modal-badges"></div>
-    <button class="btn btn-secondary" onclick="fecharStatsModal()">Fechar</button>
-  </div>
 </div>
 
 <!-- Firebase SDKs -->
@@ -1094,46 +1081,6 @@ window.addEventListener('online',  ()=> devlog('REDE: online',  'ok'));
 window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
 
 const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
-
-// ══════════════════════════════════════════════════════
-//  BADGES & STATS CONSTANTS
-// ══════════════════════════════════════════════════════
-const BADGES = [
-  { id:'estreante',           emoji:'🎲', nome:'Estreante',            desc:'Jogar a primeira partida',                  permanente:true  },
-  { id:'novato_suspeito',     emoji:'🕵️', nome:'Novato Suspeito',      desc:'Ser impostor pela 1ª vez',                  permanente:true  },
-  { id:'bode_expiatorio',     emoji:'🎭', nome:'Bode Expiatório',      desc:'Ser o mais votado sem ser impostor',        permanente:true  },
-  { id:'palhaco',             emoji:'🤡', nome:'Palhaço',              desc:'Votar em si mesmo',                         permanente:true  },
-  { id:'assombracao',         emoji:'🎃', nome:'Assombração',          desc:'Vencer como Poltergeist pela 1ª vez',       permanente:true  },
-  { id:'confusao_mental',     emoji:'🌀', nome:'Confusão Mental',      desc:'Ser o mais votado sendo Lunático',          permanente:true  },
-  { id:'veterano',            emoji:'🃏', nome:'Veterano',             desc:'50 partidas jogadas',                       permanente:true  },
-  { id:'lendario',            emoji:'💎', nome:'Lendário',             desc:'200 partidas jogadas',                      permanente:true  },
-  { id:'fantasma',            emoji:'👻', nome:'Fantasma',             desc:'Escapar com 0 votos como impostor',         permanente:false,
-    perda:'Ser pego por unanimidade' },
-  { id:'escapista',           emoji:'⛓️', nome:'Escapista',            desc:'Escapar 3× seguidas como impostor',        permanente:false,
-    perda:'Ser pego como impostor' },
-  { id:'ilusionista',         emoji:'🎪', nome:'Ilusionista',          desc:'Escapar com votos unânimes em outro',       permanente:false,
-    perda:'Ser pego por unanimidade' },
-  { id:'intocavel',           emoji:'💀', nome:'Intocável',            desc:'Escapar 5× seguidas como impostor',        permanente:false,
-    perda:'Ser pego como impostor' },
-  { id:'olho_de_aguia',       emoji:'🎯', nome:'Olho de Águia',        desc:'Acertar o impostor 5× seguidas',           permanente:false,
-    perda:'Errar 3× seguidas' },
-  { id:'farejador',           emoji:'🐺', nome:'Farejador',            desc:'Ser unanimidade ao acertar o impostor',     permanente:false,
-    perda:'Votar errado 3× seguidas' },
-  { id:'abstencao_lucrativa', emoji:'🤫', nome:'Abstenção Lucrativa',  desc:'Não votar e o impostor ser pego',           permanente:false,
-    perda:'Ser o único a votar corretamente' },
-  { id:'cacador_veterano',    emoji:'🩸', nome:'Caçador Veterano',     desc:'Acertar o impostor 20× no total',          permanente:false,
-    perda:'Errar 3× seguidas' },
-  { id:'mestre_do_caos',      emoji:'👾', nome:'Mestre do Caos',       desc:'Vencer 5× seguidas como Poltergeist',      permanente:false,
-    perda:'Perder como Poltergeist 3× seguidas' },
-];
-
-const STATS_DEFAULT = {
-  partidas:0, partidasImpostor:0, escapadasImpostor:0, sequenciaEscapadas:0,
-  acertosTotal:0, sequenciaAcertos:0, errosSequencia:0,
-  vitoriasPoltergeist:0, sequenciaVitoriasPoltergeist:0, sequenciaPerdasPoltergeist:0,
-  abstencoes:0, abstencaoAcerto:0,
-  vezesBodeExpiatório:0, votoEmSiMesmo:0, vezesMaisVotadoLunatico:0,
-};
 
 // ══════════════════════════════════════════════════════
 //  SERVER TIME — sincronizado via Firebase .info/serverTimeOffset
@@ -1385,8 +1332,154 @@ const PTS = {
 };
 
 // ══════════════════════════════════════════════════════
-//  RANKS — 5 níveis com imagens pixel art
+//  BADGES — definição e lógica
 // ══════════════════════════════════════════════════════
+const BADGES = [
+  {id:'estreante',       emoji:'🎲', nome:'Estreante',          desc:'Jogue sua 1ª partida'},
+  {id:'novato_suspeito', emoji:'🕵️', nome:'Novato Suspeito',    desc:'Seja o impostor pela 1ª vez'},
+  {id:'assombracao',     emoji:'🎃', nome:'Assombração',        desc:'Ganhe como Poltergeist 1ª vez'},
+  {id:'confusao_mental', emoji:'🌀', nome:'Confusão Mental',    desc:'Seja o mais votado como Lunático'},
+  {id:'bode_expiatorio', emoji:'🎭', nome:'Bode Expiatório',    desc:'Seja o mais votado não sendo impostor'},
+  {id:'palhaco',         emoji:'🤡', nome:'Palhaço',            desc:'Vote em si mesmo'},
+  {id:'veterano',        emoji:'🃏', nome:'Veterano',           desc:'50 partidas jogadas'},
+  {id:'lendario',        emoji:'💎', nome:'Lendário',           desc:'200 partidas jogadas'},
+  {id:'fantasma',        emoji:'👻', nome:'Fantasma',           desc:'Escape com 0 votos como impostor'},
+  {id:'escapista',       emoji:'⛓️‍💥', nome:'Escapista',          desc:'Escape 3x seguidas como impostor'},
+  {id:'ilusionista',     emoji:'🎪', nome:'Ilusionista',        desc:'Escape com voto unânime em outra pessoa'},
+  {id:'intocavel',       emoji:'💀', nome:'Intocável',          desc:'Escape 5x seguidas como impostor'},
+  {id:'olho_de_aguia',   emoji:'🎯', nome:'Olho de Águia',      desc:'Acerte o impostor 5x seguidas'},
+  {id:'farejador',       emoji:'🐺', nome:'Farejador',          desc:'Todos votaram no impostor e você também'},
+  {id:'abstencao_lucrativa',emoji:'🤫',nome:'Abstenção Lucrativa',desc:'Não vote e o impostor seja pego'},
+  {id:'cacador_veterano',emoji:'🩸', nome:'Caçador Veterano',   desc:'Acerte o impostor 20x no total'},
+  {id:'mestre_do_caos',  emoji:'👾', nome:'Mestre do Caos',     desc:'Ganhe 5x seguidas como Poltergeist'},
+];
+
+// Retorna a definição do badge por id
+function getBadge(id){ return BADGES.find(b=>b.id===id)||null; }
+
+// Avalia quais badges ganhar/perder após uma rodada revelada
+// eu: objeto do jogador atual, resultado: {cenarioImpostor, cenarioPoltergeist, cenarioJogadores, impostorPegou, poltergeistVenceu}
+// votos: _votos, roles: roles efetivos, ativosIds: array de ids ativos
+// stats: objeto atual de stats (antes de atualizar)
+// ativosAtual: objeto { id: badge } dos badges ativos
+async function avaliarBadges(eu, resultado, votos, roles, ativos, statsAntes, badgesAtivos){
+  const uid=eu.id;
+  const isImp=uid===_info.impostorId;
+  const isPolt=roles[idKey(uid)]==='poltergeist';
+  const isLun=roles[idKey(uid)]==='lunatico';
+  const meuVotoObj=votos[idKey(uid)];
+  const votouEm=meuVotoObj?.votadoId||null;
+  const impostorId=_info.impostorId;
+  const {impostorPegou,poltergeistVenceu}=resultado;
+
+  const contagem={};
+  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const maxVotos=Math.max(0,...Object.values(contagem));
+  const maisVotados=Object.keys(contagem).filter(id=>contagem[id]===maxVotos);
+
+  const ganhou=[];
+  const perdeu=[];
+
+  function marcar(id, ativo){
+    if(ativo){ if(!badgesAtivos[id]) ganhou.push(id); }
+    else      { if(badgesAtivos[id]) perdeu.push(id); }
+  }
+
+  // ── Permanentes (só ganham, nunca perdem)
+  if(statsAntes.partidas===0) ganhou.push('estreante'); // 1ª partida (stats ainda não incrementada)
+  if(isImp && statsAntes.partidasImpostor===0 && !badgesAtivos['novato_suspeito']) ganhou.push('novato_suspeito');
+  if(isPolt && poltergeistVenceu && !badgesAtivos['assombracao']) ganhou.push('assombracao');
+  if(isLun && maisVotados.includes(uid) && !badgesAtivos['confusao_mental']) ganhou.push('confusao_mental');
+  if(!isImp && maisVotados.includes(uid) && maxVotos>0 && !badgesAtivos['bode_expiatorio']) ganhou.push('bode_expiatorio');
+  if(votouEm===uid && !badgesAtivos['palhaco']) ganhou.push('palhaco');
+  if(statsAntes.partidas+1>=50  && !badgesAtivos['veterano'])  ganhou.push('veterano');
+  if(statsAntes.partidas+1>=200 && !badgesAtivos['lendario'])  ganhou.push('lendario');
+
+  // ── Fantasma (perde se pego com unanimidade)
+  if(isImp){
+    const qtdVotosNele=contagem[uid]||0;
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if(!impostorPegou && qtdVotosNele===0) marcar('fantasma',true);
+    else if(impostorPegou && qtdVotosNele===qtdAtivos) marcar('fantasma',false);
+  }
+
+  // ── Escapista / Intocável (sequência de escapadas)
+  if(isImp){
+    const seq=(statsAntes.sequenciaEscapadas||0)+(impostorPegou?0:1);
+    if(!impostorPegou){
+      if(seq>=3) marcar('escapista',true);
+      if(seq>=5) marcar('intocavel',true);
+    } else {
+      marcar('escapista',false);
+      marcar('intocavel',false);
+    }
+  }
+
+  // ── Ilusionista (escapou com voto unânime em outra pessoa)
+  if(isImp && !impostorPegou){
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if(qtdAtivos>0 && maisVotados.length===1 && maisVotados[0]!==uid && contagem[maisVotados[0]]===qtdAtivos){
+      marcar('ilusionista',true);
+    }
+  } else if(isImp && impostorPegou){
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if((contagem[uid]||0)===qtdAtivos) marcar('ilusionista',false);
+  }
+
+  // ── Olho de Águia (acertos seguidos votando no impostor)
+  if(!isImp && !isPolt){
+    const acertou=votouEm===impostorId;
+    const seq=(statsAntes.sequenciaAcertos||0)+(acertou?1:0);
+    const erros=(statsAntes.errosSequencia||0)+(acertou?0:1);
+    if(acertou && seq>=5) marcar('olho_de_aguia',true);
+    if(!acertou && erros>=3) marcar('olho_de_aguia',false);
+  }
+
+  // ── Farejador (unanimidade no impostor)
+  if(!isImp && !isPolt && votouEm===impostorId){
+    const qtdAtivos=ativos.filter(j=>j.id!==impostorId&&!j.espectador).length;
+    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
+    if(qtdAcertaram===qtdAtivos) marcar('farejador',true);
+  } else if(!isImp && votouEm!==impostorId){
+    const erros=(statsAntes.errosSequencia||0)+1;
+    if(erros>=3) marcar('farejador',false);
+  }
+
+  // ── Abstenção Lucrativa
+  if(!isImp && !votouEm && impostorPegou){
+    marcar('abstencao_lucrativa',true);
+  } else if(!isImp && votouEm===impostorId){
+    // único a acertar = perde o badge
+    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
+    if(qtdAcertaram===1) marcar('abstencao_lucrativa',false);
+  }
+
+  // ── Caçador Veterano (20 acertos totais)
+  if(!isImp && votouEm===impostorId){
+    if((statsAntes.acertosTotal||0)+1>=20) marcar('cacador_veterano',true);
+    const erros=statsAntes.errosSequencia||0;
+    if(erros>=3) marcar('cacador_veterano',false);
+  } else if(!isImp && votouEm && votouEm!==impostorId){
+    if((statsAntes.errosSequencia||0)+1>=3) marcar('cacador_veterano',false);
+  }
+
+  // ── Mestre do Caos (poltergeist 5x seguidas)
+  if(isPolt){
+    const seq=(statsAntes.sequenciaVitoriasPoltergeist||0)+(poltergeistVenceu?1:0);
+    const perda=(statsAntes.sequenciaPerdasPoltergeist||0)+(poltergeistVenceu?0:1);
+    if(poltergeistVenceu && seq>=5) marcar('mestre_do_caos',true);
+    if(!poltergeistVenceu && perda>=3) marcar('mestre_do_caos',false);
+  }
+
+  // Monta update Firebase
+  const updates={};
+  ganhou.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=true; });
+  perdeu.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=false; });
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  return {ganhou, perdeu};
+}
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
   {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
@@ -1770,6 +1863,8 @@ function mostrarSetup(){
   showScreen('s-setup');
   // Listener em tempo real do próprio placarTotal
   if(ME?.uid) iniciarListenerMeuPlacar();
+  // Badge setup section
+  if(ME?.uid) renderBadgeSetup(null, null);
 }
 
 async function salvarNome(){
@@ -1785,168 +1880,129 @@ async function salvarNome(){
 }
 
 // ──── AVATAR UPLOAD ────
-// Detecta WebP animado via header RIFF/ANIM
+// Detecção de WebP animado
 async function isAnimatedWebP(file){
-  const buf = await file.slice(0,100).arrayBuffer();
-  const bytes = new Uint8Array(buf);
+  const buf=await file.slice(0,100).arrayBuffer();
+  const bytes=new Uint8Array(buf);
   for(let i=0;i<bytes.length-4;i++){
     if(bytes[i]===0x41&&bytes[i+1]===0x4E&&bytes[i+2]===0x49&&bytes[i+3]===0x4D) return true;
   }
   return false;
 }
 
-// ── Estado do crop modal ──
-let _cropFile=null, _cropCallback=null, _cropIsAnimated=false;
-let _cropImg=null, _cropScale=1, _cropMinScale=0.3, _cropMaxScale=8;
-let _cropOffX=0, _cropOffY=0;
-let _cropDragging=false, _cropLastX=0, _cropLastY=0;
-let _cropCanvasSize=300, _pinchDist=null;
-
-function abrirCropModal(file, callback, isAnimated){
-  _cropFile=file; _cropCallback=callback; _cropIsAnimated=isAnimated;
-  const overlay=$('avatar-crop-overlay');
-  if(!overlay) return;
-  const notice=$('crop-animated-notice');
-  if(notice) notice.style.display=isAnimated?'':'none';
-  overlay.style.display='flex';
-
-  if(isAnimated){
-    // Preview estático — upload do original
-    const canvas=$('crop-canvas'), vp=$('crop-viewport');
-    const size=vp.offsetWidth||300;
-    canvas.width=size; canvas.height=size; _cropCanvasSize=size;
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#111'; ctx.fillRect(0,0,size,size);
-    ctx.font=`${Math.round(size*.12)}px VT323,monospace`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(232,255,71,.7)';
-    ctx.fillText('🎞️ Animação detectada',size/2,size/2-14);
-    ctx.font=`${Math.round(size*.08)}px VT323,monospace`;
-    ctx.fillStyle='#666';
-    ctx.fillText('arquivo original será enviado',size/2,size/2+18);
-    return;
-  }
-
-  const reader=new FileReader();
-  reader.onload=ev=>{
+// Comprimir imagem estática via canvas (crop já aplicado antes)
+function comprimirBlob(blob){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(blob);
     const img=new Image();
+    img.onerror=()=>rej(new Error('Imagem inválida.'));
     img.onload=()=>{
-      _cropImg=img;
-      const vp=$('crop-viewport');
-      const size=vp.offsetWidth||300;
-      _cropCanvasSize=size;
-      _cropScale=Math.max(size/img.width, size/img.height);
-      _cropMinScale=_cropScale*0.4;
-      _cropMaxScale=_cropScale*6;
-      _cropOffX=(size-img.width*_cropScale)/2;
-      _cropOffY=(size-img.height*_cropScale)/2;
-      _drawCrop(); _updateZoomThumb();
+      URL.revokeObjectURL(url);
+      const canvas=document.createElement('canvas');
+      canvas.width=128;canvas.height=128;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,128,128);
+      canvas.toBlob(b=>{
+        if(!b) return rej(new Error('Falha ao comprimir.'));
+        res(b);
+      },'image/jpeg',0.72);
     };
-    img.src=ev.target.result;
-  };
-  reader.readAsDataURL(file);
+    img.src=url;
+  });
 }
 
-function _drawCrop(){
-  const canvas=$('crop-canvas');
-  if(!canvas||!_cropImg) return;
-  const size=_cropCanvasSize;
-  canvas.width=size; canvas.height=size;
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,size,size);
-  ctx.drawImage(_cropImg,_cropOffX,_cropOffY,_cropImg.width*_cropScale,_cropImg.height*_cropScale);
+// Estado do crop
+let _cropFile=null, _cropX=0, _cropY=0, _cropZoom=1, _cropDragging=false, _cropLastTouch=null;
+let _cropDragStart={x:0,y:0,imgX:0,imgY:0};
+let _cropAnimated=false; // true = gif/webp animado, skip canvas
+
+function _cropClamp(){
+  const vw=240,vh=240;
+  const img=document.getElementById('crop-img-preview');
+  if(!img.naturalWidth) return;
+  const W=img.naturalWidth*_cropZoom, H=img.naturalHeight*_cropZoom;
+  _cropX=Math.min(0,Math.max(vw-W,_cropX));
+  _cropY=Math.min(0,Math.max(vh-H,_cropY));
+}
+function _cropApply(){
+  const img=document.getElementById('crop-img-preview');
+  img.style.transform=`translate(${_cropX}px,${_cropY}px) scale(${_cropZoom})`;
+  img.style.transformOrigin='0 0';
 }
 
-function _updateZoomThumb(){
-  const thumb=$('crop-zoom-thumb');
-  if(!thumb) return;
-  const pct=(_cropScale-_cropMinScale)/(_cropMaxScale-_cropMinScale)*100;
-  thumb.style.width=Math.max(5,Math.min(100,pct))+'%';
+function _cropFitInitial(){
+  const img=document.getElementById('crop-img-preview');
+  if(!img.naturalWidth) return;
+  const vw=240;
+  const scale=vw/Math.min(img.naturalWidth,img.naturalHeight);
+  _cropZoom=scale;
+  document.getElementById('crop-zoom').min=scale;
+  document.getElementById('crop-zoom').value=scale;
+  _cropX=(vw-img.naturalWidth*_cropZoom)/2;
+  _cropY=(vw-img.naturalHeight*_cropZoom)/2;
+  _cropClamp(); _cropApply();
 }
 
-function cropZoom(delta){
-  if(_cropIsAnimated) return;
-  _cropScale=Math.max(_cropMinScale,Math.min(_cropMaxScale,_cropScale*(1+delta)));
-  _drawCrop(); _updateZoomThumb();
+function abrirCropModal(file, animated){
+  _cropFile=file; _cropAnimated=animated;
+  const url=URL.createObjectURL(file);
+  const img=document.getElementById('crop-img-preview');
+  img.onload=()=>{ _cropFitInitial(); };
+  img.src=url;
+  document.getElementById('avatar-crop-modal').classList.add('open');
 }
 
-function cropZoomTrack(e){
-  if(_cropIsAnimated) return;
-  const track=$('crop-zoom-track');
-  if(!track) return;
-  const rect=track.getBoundingClientRect();
-  const pct=(e.clientX-rect.left)/rect.width;
-  _cropScale=_cropMinScale+(_cropMaxScale-_cropMinScale)*Math.max(0,Math.min(1,pct));
-  _drawCrop(); _updateZoomThumb();
-}
-
-function fecharCropModal(){
-  const overlay=$('avatar-crop-overlay');
-  if(overlay) overlay.style.display='none';
-  _cropFile=null; _cropCallback=null; _cropImg=null; _cropIsAnimated=false;
+function cancelarCrop(){
+  document.getElementById('avatar-crop-modal').classList.remove('open');
+  _cropFile=null;
+  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
 }
 
 async function confirmarCrop(){
-  if(!_cropCallback) return;
-  const cb=_cropCallback, file=_cropFile, animated=_cropIsAnimated;
-  fecharCropModal();
-  if(animated){ cb(file, file.type); return; }
-  // Exporta canvas recortado como JPEG 128×128
-  const out=document.createElement('canvas');
-  out.width=128; out.height=128;
-  const ctx=out.getContext('2d');
-  ctx.drawImage($('crop-canvas'),0,0,_cropCanvasSize,_cropCanvasSize,0,0,128,128);
-  out.toBlob(blob=>{ if(blob) cb(blob,'image/jpeg'); },'image/jpeg',0.72);
-}
+  if(!_cropFile) return;
+  const modal=document.getElementById('avatar-crop-modal');
+  modal.classList.remove('open');
 
-// Drag events
-function _cropMouseDown(e){ if(_cropIsAnimated) return; _cropDragging=true; _cropLastX=e.clientX; _cropLastY=e.clientY; }
-function _cropMouseMove(e){
-  if(!_cropDragging||_cropIsAnimated) return;
-  _cropOffX+=e.clientX-_cropLastX; _cropOffY+=e.clientY-_cropLastY;
-  _cropLastX=e.clientX; _cropLastY=e.clientY; _drawCrop();
-}
-function _cropMouseUp(){ _cropDragging=false; }
-
-function _cropTouchStart(e){
-  if(_cropIsAnimated) return;
-  if(e.touches.length===2){
-    _pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-  } else {
-    _cropDragging=true; _cropLastX=e.touches[0].clientX; _cropLastY=e.touches[0].clientY;
-  }
-}
-function _cropTouchMove(e){
-  if(_cropIsAnimated) return;
-  e.preventDefault();
-  if(e.touches.length===2&&_pinchDist!==null){
-    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    _cropScale=Math.max(_cropMinScale,Math.min(_cropMaxScale,_cropScale*(d/_pinchDist)));
-    _pinchDist=d; _drawCrop(); _updateZoomThumb();
-  } else if(_cropDragging&&e.touches.length===1){
-    _cropOffX+=e.touches[0].clientX-_cropLastX; _cropOffY+=e.touches[0].clientY-_cropLastY;
-    _cropLastX=e.touches[0].clientX; _cropLastY=e.touches[0].clientY; _drawCrop();
-  }
-}
-function _cropTouchEnd(){ _cropDragging=false; _pinchDist=null; }
-function _cropWheel(e){ if(_cropIsAnimated) return; e.preventDefault(); cropZoom(e.deltaY<0?0.12:-0.12); }
-
-// Upload real do blob/arquivo
-async function _fazerUploadBlob(fileOrBlob, contentType){
   const statusEl=$('avatar-status');
   statusEl.textContent='Enviando…';
+
   try{
-    const uid=ME.uid, ts=Date.now();
-    const ext=contentType==='image/gif'?'gif':contentType==='image/webp'?'webp':'jpg';
+    let blob;
+    const uid=ME.uid;
+    let ext='jpg', contentType='image/jpeg';
+
+    if(_cropAnimated){
+      // GIF ou WebP animado — sobe o arquivo original sem canvas
+      blob=_cropFile;
+      ext=_cropFile.name.split('.').pop().toLowerCase()||'gif';
+      contentType=_cropFile.type||'image/gif';
+    } else {
+      // Estático — renderiza o crop via canvas
+      const imgEl=document.getElementById('crop-img-preview');
+      const canvas=document.createElement('canvas');
+      const vw=240;
+      canvas.width=128;canvas.height=128;
+      const ctx=canvas.getContext('2d');
+      const scale=128/vw;
+      ctx.drawImage(imgEl,
+        -_cropX*scale,-_cropY*scale,
+        imgEl.naturalWidth*_cropZoom*scale,
+        imgEl.naturalHeight*_cropZoom*scale
+      );
+      blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('Falha canvas')),'image/jpeg',0.72));
+    }
+
+    const ts=Date.now();
     const path=`avatares/${uid}/${ts}.${ext}`;
     const storageRef=storage.ref(path);
     const url=await Promise.race([
       (async()=>{
-        const snap=await storageRef.put(fileOrBlob,{contentType});
+        const snap=await storageRef.put(blob,{contentType});
         return await snap.ref.getDownloadURL();
       })(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido. Verifique sua conexão.')),20000))
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido.')),20000))
     ]);
+
     await upd(`users/${uid}`,{avatarUrl:url});
     ME_PROFILE.avatarUrl=url;
     $('setup-avatar').src=url;
@@ -1955,12 +2011,12 @@ async function _fazerUploadBlob(fileOrBlob, contentType){
     setTimeout(()=>clearErr('st-nome'),2500);
     if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
   }catch(e){
-    console.error('uploadAvatar erro:',e);
-    const msg=e.code==='storage/unauthorized'?'Sem permissão. Configure as regras do Firebase Storage.'
-      :e.code==='storage/canceled'?'Upload cancelado.'
-      :e.message||'Erro no upload.';
-    statusEl.textContent=''; setErr('st-nome',msg);
+    const msg=e.code==='storage/unauthorized'?'Sem permissão.':e.message||'Erro no upload.';
+    statusEl.textContent='';
+    setErr('st-nome',msg);
   }
+  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
+  _cropFile=null;
 }
 
 async function uploadAvatar(input){
@@ -1968,14 +2024,85 @@ async function uploadAvatar(input){
   input.value='';
   if(!file) return;
   if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
-  const isGif=file.type==='image/gif';
-  const isWebP=file.type==='image/webp';
-  const animated=isGif||(isWebP&&await isAnimatedWebP(file));
+  const ext=file.name.split('.').pop().toLowerCase();
+  const animated=ext==='gif'||(ext==='webp'&&await isAnimatedWebP(file));
   if(animated&&file.size>2*1024*1024) return setErr('st-nome','GIF/WebP animado: máx 2MB.');
-  abrirCropModal(file,async(fileOrBlob,ct)=>{
-    await _fazerUploadBlob(fileOrBlob, ct||'image/jpeg');
-  }, animated);
+  abrirCropModal(file, animated);
 }
+
+// ── Eventos do crop modal ──
+(function(){
+  function setupCrop(){
+    const vp=document.getElementById('crop-viewport');
+    const zoom=document.getElementById('crop-zoom');
+    if(!vp||!zoom) return;
+
+    zoom.addEventListener('input',()=>{
+      const prev=_cropZoom;
+      _cropZoom=parseFloat(zoom.value);
+      // mantém centro ao zoom
+      _cropX=_cropX-(_cropZoom-prev)*120;
+      _cropY=_cropY-(_cropZoom-prev)*120;
+      _cropClamp(); _cropApply();
+    });
+
+    // Mouse
+    vp.addEventListener('mousedown',e=>{
+      _cropDragging=true;
+      _cropDragStart={x:e.clientX,y:e.clientY,imgX:_cropX,imgY:_cropY};
+    });
+    window.addEventListener('mousemove',e=>{
+      if(!_cropDragging) return;
+      _cropX=_cropDragStart.imgX+(e.clientX-_cropDragStart.x);
+      _cropY=_cropDragStart.imgY+(e.clientY-_cropDragStart.y);
+      _cropClamp(); _cropApply();
+    });
+    window.addEventListener('mouseup',()=>{ _cropDragging=false; });
+    vp.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const delta=e.deltaY>0?-0.1:0.1;
+      const minZ=parseFloat(zoom.min)||1;
+      _cropZoom=Math.max(minZ,Math.min(4,_cropZoom+delta));
+      zoom.value=_cropZoom;
+      _cropClamp(); _cropApply();
+    },{passive:false});
+
+    // Touch
+    vp.addEventListener('touchstart',e=>{
+      if(e.touches.length===1){
+        _cropDragging=true;
+        _cropDragStart={x:e.touches[0].clientX,y:e.touches[0].clientY,imgX:_cropX,imgY:_cropY};
+        _cropLastTouch=null;
+      } else if(e.touches.length===2){
+        _cropDragging=false;
+        _cropLastTouch=Math.hypot(
+          e.touches[0].clientX-e.touches[1].clientX,
+          e.touches[0].clientY-e.touches[1].clientY
+        );
+      }
+    },{passive:true});
+    vp.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      if(e.touches.length===1&&_cropDragging){
+        _cropX=_cropDragStart.imgX+(e.touches[0].clientX-_cropDragStart.x);
+        _cropY=_cropDragStart.imgY+(e.touches[0].clientY-_cropDragStart.y);
+        _cropClamp(); _cropApply();
+      } else if(e.touches.length===2&&_cropLastTouch!=null){
+        const dist=Math.hypot(
+          e.touches[0].clientX-e.touches[1].clientX,
+          e.touches[0].clientY-e.touches[1].clientY
+        );
+        const minZ=parseFloat(zoom.min)||1;
+        _cropZoom=Math.max(minZ,Math.min(4,_cropZoom*(dist/_cropLastTouch)));
+        zoom.value=_cropZoom;
+        _cropLastTouch=dist;
+        _cropClamp(); _cropApply();
+      }
+    },{passive:false});
+    vp.addEventListener('touchend',()=>{ _cropDragging=false; _cropLastTouch=null; });
+  }
+  window.addEventListener('load',setupCrop);
+})();
 
 // ══════════════════════════════════════════════════════
 //  ENTRAR / CRIAR SALA
@@ -2052,10 +2179,8 @@ async function entrarSala(nome, cod){
 
 async function _gravarJogador(cod, uid, nome){
   devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
-  const [placarExistente, badgeExibido] = await Promise.all([
-    get(`users/${uid}/placarTotal`).then(v=>v||0),
-    get(`users/${uid}/badgeExibido`).then(v=>v||''),
-  ]);
+  const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
+  const badgeExibido=(await get(`users/${uid}/badgeExibido`))||'';
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
     avatarUrl: ME_PROFILE?.avatarUrl||ME.photoURL||'',
@@ -2194,25 +2319,71 @@ function onInfoChanged(info){
         if(!eu||eu.espectador) return;
         const contagem={};
         Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-        // Usa roles do snapshot como fallback (roles/ pode já ter sido deletado)
-        const rolesParaCalc = Object.keys(_roles).length ? _roles
-          : Object.fromEntries(Object.entries(fonteJogadores).map(([k,v])=>[k,v.role||'normal']));
-        const {impostorPegou,poltergeistVenceu,cenarioImpostor,cenarioJogadores}=
-          calcularResultado(ativos,contagem,info.impostorId,_votos,rolesParaCalc,info.poltergeistId||'');
+        const rolesEfetivos=Object.keys(_roles).length?_roles:Object.fromEntries(
+          Object.entries(_snapshot).map(([k,v])=>[k,v.role||'normal'])
+        );
+        const resultado=calcularResultado(ativos,contagem,info.impostorId,_votos,rolesEfetivos,info.poltergeistId||'');
+        const {cenarioImpostor,cenarioJogadores,impostorPegou,poltergeistVenceu}=resultado;
         const isImp=ME.uid===info.impostorId;
+        const isPolt=rolesEfetivos[idKey(ME.uid)]==='poltergeist';
         const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
+
+        // ── Atualizar placarTotal
         if(pts!==0){
           const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
           await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
         }
-        // Atualiza stats e badges
-        const meuPapel = rolesParaCalc[idKey(ME.uid)] || eu.role || 'normal';
-        await atualizarStatsEBadges({
-          eu, isImp, meuPapel, impostorPegou, poltergeistVenceu,
-          contagem, ativos, votos:_votos,
-          impostorId:info.impostorId, poltergeistId:info.poltergeistId||'',
-        });
-      }catch(e){ console.warn('Erro ao atualizar placarTotal/stats:',e); }
+
+        // ── Carregar stats e badges atuais
+        const [statsAtual, badgesAtual]= await Promise.all([
+          get(`users/${ME.uid}/stats`).then(s=>s||{}),
+          get(`users/${ME.uid}/badges`).then(b=>b||{})
+        ]);
+
+        const meuVotoObj=_votos[idKey(ME.uid)];
+        const votouEm=meuVotoObj?.votadoId||null;
+        const acertou=votouEm===info.impostorId;
+        const votou=!!votouEm;
+
+        // ── Calcular novos stats
+        const newStats={};
+        newStats.partidas=(statsAtual.partidas||0)+1;
+        if(isImp){
+          newStats.partidasImpostor=(statsAtual.partidasImpostor||0)+1;
+          if(!impostorPegou){
+            newStats.escapadasImpostor=(statsAtual.escapadasImpostor||0)+1;
+            newStats.sequenciaEscapadas=(statsAtual.sequenciaEscapadas||0)+1;
+          } else {
+            newStats.sequenciaEscapadas=0;
+          }
+        }
+        if(!isImp && !isPolt && votou){
+          if(acertou){
+            newStats.acertosTotal=(statsAtual.acertosTotal||0)+1;
+            newStats.sequenciaAcertos=(statsAtual.sequenciaAcertos||0)+1;
+            newStats.errosSequencia=0;
+          } else {
+            newStats.errosSequencia=(statsAtual.errosSequencia||0)+1;
+            newStats.sequenciaAcertos=0;
+          }
+        }
+        if(!votou) newStats.abstencoes=(statsAtual.abstencoes||0)+1;
+        if(isPolt && poltergeistVenceu){
+          newStats.vitoriasPoltergeist=(statsAtual.vitoriasPoltergeist||0)+1;
+          newStats.sequenciaVitoriasPoltergeist=(statsAtual.sequenciaVitoriasPoltergeist||0)+1;
+          newStats.sequenciaPerdasPoltergeist=0;
+        } else if(isPolt && !poltergeistVenceu){
+          newStats.sequenciaPerdasPoltergeist=(statsAtual.sequenciaPerdasPoltergeist||0)+1;
+          newStats.sequenciaVitoriasPoltergeist=0;
+        }
+        if(votouEm===ME.uid) newStats.votoEmSiMesmo=(statsAtual.votoEmSiMesmo||0)+1;
+
+        await upd(`users/${ME.uid}/stats`, newStats);
+
+        // ── Avaliar badges (passa stats ANTES do update para cálculo de sequências)
+        await avaliarBadges(eu, resultado, _votos, rolesEfetivos, ativos, statsAtual, badgesAtual);
+
+      }catch(e){ console.warn('Erro ao atualizar stats/placar:',e); }
     })();
   }
 
@@ -2313,6 +2484,8 @@ function renderLobby(){
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
+    // Badge emoji exibido
+    const badgeEmoji=j.badgeExibido?`<span class="chip-badge-emoji" onclick="abrirStatsModal('${j.id}',event)">${j.badgeExibido}</span>`:'';
     if(_info.host===ME.uid&&j.id!==ME.uid){
       badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}','${(j.nome||'').replace(/'/g,"\\'")}')" title="Passar host para ${nome}">👑</button>`;
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
@@ -2326,7 +2499,7 @@ function renderLobby(){
         <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}${offlineLabel}</div>
         <div class="chip-rank">${rankBoxHTML(pts)}</div>
       </div>
-      <div class="badges-right">${badgesInner}</div>`;
+      <div class="badges-right">${badgeEmoji}${badgesInner}</div>`;
     applyChipStyle(chip, pts, j.id===ME.uid);
     container.appendChild(chip);
   });
@@ -3186,353 +3359,6 @@ function calcularResultado(ativos, contagem, impostorId, votos, roles={}, polter
 }
 
 // ══════════════════════════════════════════════════════
-//  STATS & BADGES — cada cliente grava apenas seu próprio users/$uid
-// ══════════════════════════════════════════════════════
-async function atualizarStatsEBadges({eu, isImp, meuPapel, impostorPegou, poltergeistVenceu,
-    contagem, ativos, votos, impostorId, poltergeistId}){
-  const uid=ME.uid, myKey=idKey(uid);
-  const [statsAtual, badgesAtual] = await Promise.all([
-    get(`users/${uid}/stats`),
-    get(`users/${uid}/badges`),
-  ]);
-  const s = {...STATS_DEFAULT, ...(statsAtual||{})};
-  const b = {...(badgesAtual||{})};
-
-  const meuVotoObj = votos[myKey];
-  const voteiNoImpostor = meuVotoObj?.votadoId === impostorId;
-  const abstive = !meuVotoObj;
-  const voteiEmMim = meuVotoObj?.votadoId === uid;
-  const totalVotantes = Object.keys(votos).length;
-  const impostorVotos = contagem[impostorId]||0;
-  const naoImpostores = ativos.filter(j=>j.id!==impostorId);
-  const qtdAtivos = naoImpostores.length;
-  const qtdAcertaram = naoImpostores.filter(j=>votos[idKey(j.id)]?.votadoId===impostorId).length;
-  const meusVotos = contagem[uid]||0;
-  const maxVotos = Math.max(...ativos.map(j=>contagem[j.id]||0),0);
-  const soiMaisVotado = meusVotos>0 && meusVotos===maxVotos;
-
-  // ── Atualiza contadores ──
-  s.partidas = (s.partidas||0)+1;
-
-  if(isImp){
-    s.partidasImpostor=(s.partidasImpostor||0)+1;
-    if(!impostorPegou){
-      s.escapadasImpostor=(s.escapadasImpostor||0)+1;
-      s.sequenciaEscapadas=(s.sequenciaEscapadas||0)+1;
-    } else {
-      s.sequenciaEscapadas=0;
-    }
-  } else {
-    if(!abstive){
-      if(voteiNoImpostor){
-        s.acertosTotal=(s.acertosTotal||0)+1;
-        s.sequenciaAcertos=(s.sequenciaAcertos||0)+1;
-        s.errosSequencia=0;
-      } else {
-        s.errosSequencia=(s.errosSequencia||0)+1;
-        s.sequenciaAcertos=0;
-      }
-      if(voteiEmMim) s.votoEmSiMesmo=(s.votoEmSiMesmo||0)+1;
-    } else {
-      s.abstencoes=(s.abstencoes||0)+1;
-      if(impostorPegou) s.abstencaoAcerto=(s.abstencaoAcerto||0)+1;
-    }
-    if(meuPapel==='poltergeist'){
-      if(poltergeistVenceu){
-        s.vitoriasPoltergeist=(s.vitoriasPoltergeist||0)+1;
-        s.sequenciaVitoriasPoltergeist=(s.sequenciaVitoriasPoltergeist||0)+1;
-        s.sequenciaPerdasPoltergeist=0;
-      } else {
-        s.sequenciaPerdasPoltergeist=(s.sequenciaPerdasPoltergeist||0)+1;
-        s.sequenciaVitoriasPoltergeist=0;
-      }
-    }
-    if(meuPapel==='lunatico' && soiMaisVotado)
-      s.vezesMaisVotadoLunatico=(s.vezesMaisVotadoLunatico||0)+1;
-    if(soiMaisVotado && uid!==impostorId && meuPapel!=='poltergeist')
-      s.vezesBodeExpiatório=(s.vezesBodeExpiatório||0)+1;
-  }
-
-  // ── Avalia badges ──
-  const {ganhou, perdeu} = avaliarBadges(s, b, {
-    isImp, impostorPegou, poltergeistVenceu, meuPapel,
-    voteiNoImpostor, abstive, voteiEmMim, soiMaisVotado,
-    totalVotantes, impostorVotos, qtdAtivos, qtdAcertaram,
-    impostorId, poltergeistId, uid, contagem,
-  });
-
-  ganhou.forEach(id=>{b[id]=true;});
-  perdeu.forEach(id=>{b[id]=false;});
-
-  // Gravação atômica
-  await db.ref().update({
-    [`users/${uid}/stats`]: s,
-    [`users/${uid}/badges`]: b,
-  });
-
-  // Atualiza UI de setup se visível
-  if(document.querySelector('.screen.active')?.id==='s-setup') renderStatsSetup();
-}
-
-function avaliarBadges(s, b, ctx){
-  const ganhou=[], perdeu=[];
-  const tem=id=>!!b[id];
-  const {isImp, impostorPegou, poltergeistVenceu, meuPapel,
-    voteiNoImpostor, abstive, voteiEmMim, soiMaisVotado,
-    totalVotantes, impostorVotos, qtdAtivos, qtdAcertaram,
-    impostorId, poltergeistId, uid, contagem}=ctx;
-
-  // 🎲 Estreante
-  if(!tem('estreante') && s.partidas>=1) ganhou.push('estreante');
-
-  // 🕵️ Novato Suspeito
-  if(!tem('novato_suspeito') && isImp && s.partidasImpostor>=1) ganhou.push('novato_suspeito');
-
-  // 👻 Fantasma: escapar com 0 votos | perde: pego por unanimidade
-  if(isImp){
-    if(!impostorPegou && (contagem[impostorId]||0)===0) ganhou.push('fantasma');
-    if(impostorPegou && impostorVotos===totalVotantes && totalVotantes>0 && tem('fantasma')) perdeu.push('fantasma');
-  }
-
-  // ⛓️ Escapista: 3× seguidas | perde: ser pego
-  if(isImp){
-    if(!impostorPegou && s.sequenciaEscapadas>=3) ganhou.push('escapista');
-    if(impostorPegou && tem('escapista')) perdeu.push('escapista');
-  }
-
-  // 💀 Intocável: 5× seguidas | perde: ser pego
-  if(isImp){
-    if(!impostorPegou && s.sequenciaEscapadas>=5) ganhou.push('intocavel');
-    if(impostorPegou && tem('intocavel')) perdeu.push('intocavel');
-  }
-
-  // 🎪 Ilusionista: escapar com unanimidade em outro | perde: pego por unanimidade
-  if(isImp){
-    const outroUnane = Object.entries(contagem)
-      .some(([k,v])=>k!==impostorId&&v===totalVotantes&&totalVotantes>0);
-    if(!impostorPegou && !poltergeistVenceu && outroUnane) ganhou.push('ilusionista');
-    if(impostorPegou && impostorVotos===totalVotantes && totalVotantes>0 && tem('ilusionista')) perdeu.push('ilusionista');
-  }
-
-  // 🎯 Olho de Águia: 5× seguidas | perde: errar 3×
-  if(!isImp && !abstive){
-    if(voteiNoImpostor && s.sequenciaAcertos>=5) ganhou.push('olho_de_aguia');
-    if(!voteiNoImpostor && s.errosSequencia>=3 && tem('olho_de_aguia')) perdeu.push('olho_de_aguia');
-  }
-
-  // 🐺 Farejador: unanimidade ao acertar | perde: errar 3×
-  if(!isImp){
-    const unanAcerto = !abstive && voteiNoImpostor && impostorPegou
-      && qtdAcertaram===qtdAtivos && qtdAtivos>0;
-    if(unanAcerto) ganhou.push('farejador');
-    if(!abstive && !voteiNoImpostor && s.errosSequencia>=3 && tem('farejador')) perdeu.push('farejador');
-  }
-
-  // 🤫 Abstenção Lucrativa: não votar + impostor pego | perde: único a votar certo
-  if(!isImp){
-    if(abstive && impostorPegou) ganhou.push('abstencao_lucrativa');
-    const unicoAcerto = !abstive && voteiNoImpostor && qtdAcertaram===1 && impostorPegou;
-    if(unicoAcerto && tem('abstencao_lucrativa')) perdeu.push('abstencao_lucrativa');
-  }
-
-  // 🩸 Caçador Veterano: 20× total | perde: errar 3×
-  if(!isImp){
-    if(s.acertosTotal>=20) ganhou.push('cacador_veterano');
-    if(!abstive && !voteiNoImpostor && s.errosSequencia>=3 && tem('cacador_veterano')) perdeu.push('cacador_veterano');
-  }
-
-  // 🎃 Assombração: ganhar como Poltergeist 1ª vez
-  if(meuPapel==='poltergeist' && poltergeistVenceu && !tem('assombracao')) ganhou.push('assombracao');
-
-  // 👾 Mestre do Caos: 5× seguidas como Poltergeist | perde: perder 3×
-  if(meuPapel==='poltergeist'){
-    if(poltergeistVenceu && s.sequenciaVitoriasPoltergeist>=5) ganhou.push('mestre_do_caos');
-    if(!poltergeistVenceu && s.sequenciaPerdasPoltergeist>=3 && tem('mestre_do_caos')) perdeu.push('mestre_do_caos');
-  }
-
-  // 🌀 Confusão Mental: mais votado como Lunático
-  if(meuPapel==='lunatico' && soiMaisVotado && !tem('confusao_mental')) ganhou.push('confusao_mental');
-
-  // 🃏 Veterano: 50 partidas
-  if(!tem('veterano') && s.partidas>=50) ganhou.push('veterano');
-
-  // 💎 Lendário: 200 partidas
-  if(!tem('lendario') && s.partidas>=200) ganhou.push('lendario');
-
-  // 🎭 Bode Expiatório: mais votado sem ser impostor
-  if(!isImp && soiMaisVotado && uid!==impostorId && meuPapel!=='poltergeist' && !tem('bode_expiatorio'))
-    ganhou.push('bode_expiatorio');
-
-  // 🤡 Palhaço: votar em si mesmo
-  if(!isImp && voteiEmMim && !tem('palhaco')) ganhou.push('palhaco');
-
-  return {
-    ganhou:[...new Set(ganhou)].filter(id=>!b[id]),
-    perdeu:[...new Set(perdeu)].filter(id=>!!b[id]),
-  };
-}
-
-// ══════════════════════════════════════════════════════
-//  STATS MODAL
-// ══════════════════════════════════════════════════════
-function statModalRow(label, value){
-  return `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
-}
-
-async function abrirStatsModal(uid){
-  const overlay=$('stats-modal-overlay');
-  if(!overlay) return;
-  $('stats-modal-header').innerHTML='<div style="color:var(--sub);font-size:.9rem;letter-spacing:1px;padding:8px 0">Carregando…</div>';
-  $('stats-modal-stats').innerHTML='';
-  $('stats-modal-badges').innerHTML='';
-  overlay.style.display='flex';
-
-  try{
-    const [perfil, statsRaw, badgesRaw, badgeExibido] = await Promise.all([
-      get(`users/${uid}`),
-      get(`users/${uid}/stats`),
-      get(`users/${uid}/badges`),
-      get(`users/${uid}/badgeExibido`),
-    ]);
-    const s = {...STATS_DEFAULT, ...(statsRaw||{})};
-    const badges = badgesRaw||{};
-    const nome = perfil?.nome||'(sem nome)';
-    const avatar = perfil?.avatarUrl||'';
-    const pts = perfil?.placarTotal||0;
-    const rankStyle = getPrestigeStyle(pts);
-
-    $('stats-modal-header').innerHTML=`
-      <img class="stats-modal-avatar" src="${avatarImg(avatar)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="border-color:${rankStyle.color}">
-      <div>
-        <div class="stats-modal-name">${nome}</div>
-        <div class="stats-modal-rank" style="color:${rankStyle.color}">${rankStyle.title} · ${pts}pt</div>
-        ${uid===ME.uid?'<div style="font-size:.8rem;color:var(--sub);margin-top:2px">clique em um badge abaixo para exibi-lo no lobby</div>':''}
-      </div>`;
-
-    $('stats-modal-stats').innerHTML=`
-      <div class="stats-modal-section-title">📊 Estatísticas</div>
-      ${statModalRow('Partidas jogadas', s.partidas||0)}
-      ${statModalRow('Vezes como Impostor', s.partidasImpostor||0)}
-      ${statModalRow('Escapadas como Impostor', s.escapadasImpostor||0)}
-      ${statModalRow('Sequência de escapadas', s.sequenciaEscapadas||0)}
-      ${statModalRow('Acertos em votação', s.acertosTotal||0)}
-      ${statModalRow('Sequência de acertos', s.sequenciaAcertos||0)}
-      ${statModalRow('Vitórias Poltergeist', s.vitoriasPoltergeist||0)}
-      ${statModalRow('Abstenções', s.abstencoes||0)}`;
-
-    const conquistados = BADGES.filter(b=>badges[b.id]);
-    const naoConquistados = BADGES.filter(b=>!badges[b.id]);
-    const isMe = uid===ME.uid;
-
-    let html='<div class="stats-modal-section-title">🏅 Conquistas</div>';
-    if(conquistados.length){
-      html+='<div class="stats-modal-badges-grid">';
-      conquistados.forEach(bd=>{
-        const sel = badgeExibido===bd.id;
-        const click = isMe?`onclick="selecionarBadgeModal('${bd.id}',this)"`:'' ;
-        html+=`<div class="stats-modal-badge-item${sel?' selected':''}" ${click}
-          style="${isMe?'cursor:pointer;':''}" title="${bd.nome}">
-          ${bd.emoji}<div class="badge-tooltip">${bd.nome}</div></div>`;
-      });
-      html+='</div>';
-    } else {
-      html+='<div style="color:var(--sub);font-size:.9rem;padding:8px 0">Nenhuma conquista ainda — jogue mais partidas!</div>';
-    }
-    if(naoConquistados.length){
-      html+=`<div class="stats-modal-section-title" style="margin-top:10px;opacity:.5">🔒 A conquistar</div>`;
-      html+='<div class="stats-modal-badges-grid">';
-      naoConquistados.forEach(bd=>{
-        html+=`<div class="stats-modal-badge-item locked" title="${bd.nome}: ${bd.desc}">
-          ${bd.emoji}<div class="badge-tooltip">${bd.nome}<br><span style="color:var(--sub);font-size:.75rem">${bd.desc}</span></div></div>`;
-      });
-      html+='</div>';
-    }
-    $('stats-modal-badges').innerHTML=html;
-  }catch(e){
-    console.error('Erro ao carregar stats modal:',e);
-    $('stats-modal-header').innerHTML='<div style="color:var(--red)">Erro ao carregar dados.</div>';
-  }
-}
-
-async function selecionarBadgeModal(badgeId, el){
-  if(!ME?.uid) return;
-  try{
-    await upd(`users/${ME.uid}`, {badgeExibido: badgeId});
-    // Atualiza visual no modal
-    document.querySelectorAll('.stats-modal-badge-item').forEach(e=>e.classList.remove('selected'));
-    if(el) el.classList.add('selected');
-    // Propaga para a sala ativa
-    if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`, {badgeExibido: badgeId});
-    // Atualiza secção de stats no setup se visível
-    renderStatsSetup();
-  }catch(e){ console.error('Erro ao selecionar badge:',e); }
-}
-
-function fecharStatsModal(){
-  const overlay=$('stats-modal-overlay');
-  if(overlay) overlay.style.display='none';
-}
-
-// ══════════════════════════════════════════════════════
-//  STATS SECTION (s-setup)
-// ══════════════════════════════════════════════════════
-async function renderStatsSetup(){
-  const container=$('setup-stats-section');
-  if(!container||!ME?.uid) return;
-  try{
-    const [statsRaw, badgesRaw, badgeExibido] = await Promise.all([
-      get(`users/${ME.uid}/stats`),
-      get(`users/${ME.uid}/badges`),
-      get(`users/${ME.uid}/badgeExibido`),
-    ]);
-    const s = {...STATS_DEFAULT, ...(statsRaw||{})};
-    const badges = badgesRaw||{};
-    container.innerHTML=`
-      <div class="stats-section">
-        <button class="stats-toggle-btn" onclick="toggleStatsSection()">
-          <span>📊 Estatísticas &amp; Conquistas</span>
-          <span id="stats-toggle-arrow">▼</span>
-        </button>
-        <div class="stats-inner" id="stats-inner">
-          ${statModalRow('Partidas jogadas', s.partidas||0)}
-          ${statModalRow('Vezes Impostor', s.partidasImpostor||0)}
-          ${statModalRow('Escapadas como Impostor', s.escapadasImpostor||0)}
-          ${statModalRow('Acertos em votação', s.acertosTotal||0)}
-          ${statModalRow('Vitórias Poltergeist', s.vitoriasPoltergeist||0)}
-          <div style="padding:8px 14px 4px;font-family:'VT323',monospace;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--sub);border-bottom:1px solid rgba(255,255,255,.06)">Badge exibido no lobby</div>
-          <div class="badge-selector-grid" id="badge-selector-grid">
-            ${BADGES.map(bd=>{
-              const conquistado=!!badges[bd.id];
-              const selecionado=badgeExibido===bd.id;
-              return `<div class="badge-sel-item${selecionado?' selected':''}${!conquistado?' locked':''}"
-                ${conquistado?`onclick="selecionarBadge('${bd.id}')"`:''} title="${bd.nome}">
-                ${bd.emoji}<div class="badge-tooltip">${bd.nome}</div></div>`;
-            }).join('')}
-          </div>
-        </div>
-      </div>`;
-  }catch(e){ console.error('Erro ao renderizar stats setup:',e); }
-}
-
-function toggleStatsSection(){
-  const inner=$('stats-inner'), arrow=$('stats-toggle-arrow');
-  if(!inner) return;
-  const open=inner.classList.toggle('open');
-  if(arrow) arrow.textContent=open?'▲':'▼';
-}
-
-async function selecionarBadge(badgeId){
-  if(!ME?.uid) return;
-  try{
-    await upd(`users/${ME.uid}`, {badgeExibido: badgeId});
-    document.querySelectorAll('#badge-selector-grid .badge-sel-item').forEach(el=>el.classList.remove('selected'));
-    document.querySelector(`#badge-selector-grid .badge-sel-item[onclick*="${badgeId}"]`)?.classList.add('selected');
-    if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`, {badgeExibido: badgeId});
-  }catch(e){ console.error('Erro ao selecionar badge:',e); }
-}
-
-// ══════════════════════════════════════════════════════
 //  REVELAR IMPOSTOR
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
@@ -3620,6 +3446,135 @@ async function passarHost(playerId, playerNome){
   }catch(e){
     alert('Não foi possível passar o host: '+e.message);
   }
+}
+
+// ══════════════════════════════════════════════════════
+//  MODAL DE STATS
+// ══════════════════════════════════════════════════════
+function fecharStatsModal(e){
+  if(e&&e.target!==document.getElementById('stats-modal')) return;
+  document.getElementById('stats-modal').classList.remove('open');
+}
+
+async function abrirStatsModal(uid, e){
+  if(e) e.stopPropagation();
+  const modal=document.getElementById('stats-modal');
+  const body=document.getElementById('stats-modal-body');
+  modal.classList.add('open');
+  body.innerHTML='<div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>';
+
+  let jogData=_jogadores[idKey(uid)]||_snapshot[idKey(uid)]||{};
+  const [stats,badges,badgeExibidoRaw,profRaw]=await Promise.all([
+    get(`users/${uid}/stats`).then(s=>s||{}),
+    get(`users/${uid}/badges`).then(b=>b||{}),
+    get(`users/${uid}/badgeExibido`).then(b=>b||''),
+    get(`users/${uid}`).then(p=>p||{}),
+  ]);
+  let badgeExibido=badgeExibidoRaw;
+  const avatarUrl=jogData.avatarUrl||profRaw.avatarUrl||'';
+  const nome=jogData.nome||profRaw.nome||'';
+  const placarTotal=jogData.placarTotal||profRaw.placarTotal||0;
+
+  const rankStyle=getPrestigeStyle(placarTotal);
+  document.getElementById('stats-modal-avatar').src=avatarImg(avatarUrl);
+  document.getElementById('stats-modal-name').textContent=nome||'(sem nome)';
+  document.getElementById('stats-modal-rank').textContent=`${rankStyle.title} · ${placarTotal}pt`;
+
+  const partidas=stats.partidas||0;
+  const acertos=stats.acertosTotal||0;
+  const escapadas=stats.escapadasImpostor||0;
+  const vPolt=stats.vitoriasPoltergeist||0;
+  const impostorTotal=stats.partidasImpostor||0;
+  const taxaAcerto=partidas>0?Math.round(acertos/partidas*100):0;
+
+  const statsRows=[
+    {v:partidas,  l:'Partidas'},
+    {v:impostorTotal, l:'Vezes impostor'},
+    {v:escapadas, l:'Escapadas'},
+    {v:acertos,   l:'Votações certas'},
+    {v:taxaAcerto+'%',l:'Taxa de acerto'},
+    {v:vPolt,     l:'Vitórias Poltergeist'},
+  ];
+
+  const earnedBadges=BADGES.filter(b=>badges[b.id]);
+  const notEarned=BADGES.filter(b=>!badges[b.id]);
+  const isMe=uid===ME.uid;
+
+  body.innerHTML=`
+    <div>
+      <div class="stats-section-title">Estatísticas</div>
+      <div class="stats-grid">
+        ${statsRows.map(r=>`<div class="stats-cell"><div class="stats-cell-value">${r.v}</div><div class="stats-cell-label">${r.l}</div></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="stats-section-title">Badges conquistados (${earnedBadges.length}/${BADGES.length})</div>
+      <div class="badges-grid" id="stats-earned-badges">
+        ${earnedBadges.map(b=>`
+          <div class="badge-item earned${isMe?' selectable':''}${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
+            <div class="badge-item-emoji">${b.emoji}</div>
+            <div class="badge-item-name">${b.nome}</div>
+          </div>`).join('')||'<div style="color:var(--sub);font-size:.85rem">Nenhum badge ainda</div>'}
+      </div>
+    </div>
+    ${notEarned.length?`
+    <div>
+      <div class="stats-section-title">A conquistar</div>
+      <div class="badges-grid">
+        ${notEarned.map(b=>`
+          <div class="badge-item not-earned">
+            <div class="badge-item-emoji">${b.emoji}</div>
+            <div class="badge-item-name">${b.nome}</div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}`;
+
+  if(isMe){
+    document.getElementById('stats-earned-badges')?.querySelectorAll('.badge-item.selectable').forEach(el=>{
+      el.addEventListener('click',async()=>{
+        const emoji=el.dataset.emoji;
+        const newEmoji=badgeExibido===emoji?'':emoji;
+        badgeExibido=newEmoji;
+        await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
+        if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
+        document.querySelectorAll('#stats-earned-badges .badge-item').forEach(e2=>{
+          e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!=='');
+        });
+        renderBadgeSetup(badges,newEmoji);
+      });
+    });
+  }
+}
+
+async function renderBadgeSetup(badgesParam, badgeExibidoParam){
+  const section=$('setup-badge-section');
+  const grid=$('setup-badge-grid');
+  if(!section||!grid) return;
+  let badges=badgesParam, badgeExibido=badgeExibidoParam;
+  if(!badges){
+    [badges, badgeExibido]=await Promise.all([
+      get(`users/${ME.uid}/badges`).then(b=>b||{}),
+      get(`users/${ME.uid}/badgeExibido`).then(b=>b||''),
+    ]);
+  }
+  const earned=BADGES.filter(b=>badges[b.id]);
+  if(!earned.length){ section.style.display='none'; return; }
+  section.style.display='';
+  grid.innerHTML=earned.map(b=>`
+    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}" title="${b.nome}: ${b.desc}">
+      <div class="badge-item-emoji">${b.emoji}</div>
+      <div class="badge-item-name">${b.nome}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.badge-item').forEach(el=>{
+    el.addEventListener('click',async()=>{
+      const emoji=el.dataset.emoji;
+      const newEmoji=badgeExibido===emoji?'':emoji;
+      badgeExibido=newEmoji;
+      await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
+      if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
+      grid.querySelectorAll('.badge-item').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
+    });
+  });
 }
 
 async function sairDaSala(){
