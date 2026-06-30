@@ -563,156 +563,10 @@ input::placeholder{color:var(--muted);}
 .q-timer.urgente{color:#FF4757;animation:timerPulse .5s infinite;}
 @keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-/* ── Avatar Crop Modal ── */
-#avatar-crop-modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.92);
-  z-index:1200;display:none;align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;padding:16px;
-}
-#avatar-crop-modal.open{display:flex;}
-.crop-viewport{
-  position:relative;width:240px;height:240px;
-  overflow:hidden;background:#111;
-  border:2px solid var(--accent);
-  cursor:grab;touch-action:none;
-  flex-shrink:0;
-}
-.crop-viewport:active{cursor:grabbing;}
-#crop-img-preview{
-  position:absolute;
-  image-rendering:pixelated;
-  pointer-events:none;
-  user-select:none;
-  transform-origin:0 0;
-}
-.crop-controls{
-  display:flex;flex-direction:column;gap:8px;width:240px;
-}
-.crop-zoom-row{
-  display:flex;align-items:center;gap:8px;
-}
-.crop-zoom-row label{font-size:.85rem;color:var(--sub);letter-spacing:1px;flex-shrink:0;}
-.crop-zoom-row input[type=range]{
-  flex:1;accent-color:var(--accent);
-}
-.crop-btn-row{display:flex;gap:8px;}
-.crop-btn-row .btn{flex:1;padding:10px;}
-#crop-hint{font-size:.75rem;color:var(--sub);text-align:center;letter-spacing:1px;}
-
-/* ── Badge emoji no chip ── */
-.chip-badge-emoji{
-  font-size:1.1rem;cursor:pointer;position:relative;z-index:1;
-  padding:2px 4px;border-radius:2px;transition:background .15s;
-  line-height:1;
-}
-.chip-badge-emoji:hover{background:rgba(255,255,255,.12);}
-
-/* ── Modal de Stats ── */
-#stats-modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:1100;display:none;align-items:flex-end;justify-content:center;
-  padding:0 0 env(safe-area-inset-bottom,0);
-}
-#stats-modal.open{display:flex;}
-.stats-box{
-  background:var(--card);
-  border:2px solid rgba(255,255,255,.18);
-  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
-  width:100%;max-width:460px;
-  max-height:82vh;
-  display:flex;flex-direction:column;
-  overflow:hidden;
-}
-.stats-header{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 16px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  flex-shrink:0;
-}
-.stats-header img{width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;}
-.stats-header-info{flex:1;min-width:0;}
-.stats-header-name{font-family:'VT323',monospace;font-size:1.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stats-header-rank{font-size:.85rem;color:var(--sub);}
-.stats-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px 8px;flex-shrink:0;}
-.stats-close:hover{color:var(--text);}
-.stats-body{overflow-y:auto;flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:16px;}
-.stats-section-title{
-  font-family:'VT323',monospace;font-size:.95rem;letter-spacing:2px;
-  text-transform:uppercase;color:var(--sub);margin-bottom:8px;
-}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.stats-cell{
-  background:var(--surface);padding:10px 12px;
-  border:2px solid rgba(255,255,255,.07);
-  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
-  display:flex;flex-direction:column;gap:2px;
-}
-.stats-cell-value{font-family:'VT323',monospace;font-size:1.5rem;color:var(--accent);}
-.stats-cell-label{font-size:.72rem;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
-.badges-grid{display:flex;flex-wrap:wrap;gap:8px;}
-.badge-item{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  width:58px;cursor:pointer;
-}
-.badge-item-emoji{
-  font-size:1.6rem;padding:8px;
-  border:2px solid rgba(255,255,255,.1);
-  background:var(--surface);
-  transition:border-color .15s,background .15s;
-  line-height:1;
-}
-.badge-item.earned .badge-item-emoji{border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.07);}
-.badge-item.not-earned .badge-item-emoji{filter:grayscale(1);opacity:.35;}
-.badge-item-name{font-size:.65rem;color:var(--sub);text-align:center;letter-spacing:.5px;line-height:1.2;}
-.badge-item.selectable .badge-item-emoji:hover{border-color:var(--accent);background:rgba(232,255,71,.15);}
-.badge-item.selected .badge-item-emoji{border-color:var(--accent);background:rgba(232,255,71,.2);box-shadow:0 0 0 2px rgba(232,255,71,.3);}
-
-/* ── Seção de badge no setup ── */
-.setup-badge-section{
-  background:var(--card);
-  border:2px solid rgba(255,255,255,.18);
-  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
-  padding:12px;
-}
 </style>
 </head>
 <body>
 <div id="loader">carregando…</div>
-<!-- ══ AVATAR CROP MODAL ══ -->
-<div id="avatar-crop-modal">
-  <div id="crop-hint">arraste para mover · scroll/pinça para zoom</div>
-  <div class="crop-viewport" id="crop-viewport">
-    <img id="crop-img-preview" src="" alt="">
-  </div>
-  <div class="crop-controls">
-    <div class="crop-zoom-row">
-      <label>ZOOM</label>
-      <input type="range" id="crop-zoom" min="1" max="4" step="0.05" value="1">
-    </div>
-    <div class="crop-btn-row">
-      <button class="btn btn-secondary" onclick="cancelarCrop()">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarCrop()">Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ STATS MODAL ══ -->
-<div id="stats-modal" onclick="fecharStatsModal(event)">
-  <div class="stats-box" onclick="event.stopPropagation()">
-    <div class="stats-header">
-      <img id="stats-modal-avatar" src="" alt="" style="width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;border:2px solid var(--muted)">
-      <div class="stats-header-info">
-        <div class="stats-header-name" id="stats-modal-name">—</div>
-        <div class="stats-header-rank" id="stats-modal-rank">—</div>
-      </div>
-      <button class="stats-close" onclick="fecharStatsModal()">✕</button>
-    </div>
-    <div class="stats-body" id="stats-modal-body">
-      <div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>
-    </div>
-  </div>
-</div>
-
 <div id="config-overlay" class="config-overlay" style="display:none" onclick="fecharConfig(event)">
   <div class="config-box" onclick="event.stopPropagation()">
     <div class="config-title">⚙ Configurações da sala</div>
@@ -835,11 +689,6 @@ input::placeholder{color:var(--muted);}
     </div>
     <!-- Rank card -->
     <div id="setup-rank-card"></div>
-    <!-- Badge exibido -->
-    <div class="setup-badge-section" id="setup-badge-section" style="display:none">
-      <div class="stats-section-title" style="margin-bottom:10px">Badge exibido no chip</div>
-      <div class="badges-grid" id="setup-badge-grid"></div>
-    </div>
     <!-- Sala -->
     <div class="card" style="padding:12px">
       <div class="card-label" style="margin-bottom:6px">Sala</div>
@@ -1332,154 +1181,8 @@ const PTS = {
 };
 
 // ══════════════════════════════════════════════════════
-//  BADGES — definição e lógica
+//  RANKS — 5 níveis com imagens pixel art
 // ══════════════════════════════════════════════════════
-const BADGES = [
-  {id:'estreante',       emoji:'🎲', nome:'Estreante',          desc:'Jogue sua 1ª partida'},
-  {id:'novato_suspeito', emoji:'🕵️', nome:'Novato Suspeito',    desc:'Seja o impostor pela 1ª vez'},
-  {id:'assombracao',     emoji:'🎃', nome:'Assombração',        desc:'Ganhe como Poltergeist 1ª vez'},
-  {id:'confusao_mental', emoji:'🌀', nome:'Confusão Mental',    desc:'Seja o mais votado como Lunático'},
-  {id:'bode_expiatorio', emoji:'🎭', nome:'Bode Expiatório',    desc:'Seja o mais votado não sendo impostor'},
-  {id:'palhaco',         emoji:'🤡', nome:'Palhaço',            desc:'Vote em si mesmo'},
-  {id:'veterano',        emoji:'🃏', nome:'Veterano',           desc:'50 partidas jogadas'},
-  {id:'lendario',        emoji:'💎', nome:'Lendário',           desc:'200 partidas jogadas'},
-  {id:'fantasma',        emoji:'👻', nome:'Fantasma',           desc:'Escape com 0 votos como impostor'},
-  {id:'escapista',       emoji:'⛓️‍💥', nome:'Escapista',          desc:'Escape 3x seguidas como impostor'},
-  {id:'ilusionista',     emoji:'🎪', nome:'Ilusionista',        desc:'Escape com voto unânime em outra pessoa'},
-  {id:'intocavel',       emoji:'💀', nome:'Intocável',          desc:'Escape 5x seguidas como impostor'},
-  {id:'olho_de_aguia',   emoji:'🎯', nome:'Olho de Águia',      desc:'Acerte o impostor 5x seguidas'},
-  {id:'farejador',       emoji:'🐺', nome:'Farejador',          desc:'Todos votaram no impostor e você também'},
-  {id:'abstencao_lucrativa',emoji:'🤫',nome:'Abstenção Lucrativa',desc:'Não vote e o impostor seja pego'},
-  {id:'cacador_veterano',emoji:'🩸', nome:'Caçador Veterano',   desc:'Acerte o impostor 20x no total'},
-  {id:'mestre_do_caos',  emoji:'👾', nome:'Mestre do Caos',     desc:'Ganhe 5x seguidas como Poltergeist'},
-];
-
-// Retorna a definição do badge por id
-function getBadge(id){ return BADGES.find(b=>b.id===id)||null; }
-
-// Avalia quais badges ganhar/perder após uma rodada revelada
-// eu: objeto do jogador atual, resultado: {cenarioImpostor, cenarioPoltergeist, cenarioJogadores, impostorPegou, poltergeistVenceu}
-// votos: _votos, roles: roles efetivos, ativosIds: array de ids ativos
-// stats: objeto atual de stats (antes de atualizar)
-// ativosAtual: objeto { id: badge } dos badges ativos
-async function avaliarBadges(eu, resultado, votos, roles, ativos, statsAntes, badgesAtivos){
-  const uid=eu.id;
-  const isImp=uid===_info.impostorId;
-  const isPolt=roles[idKey(uid)]==='poltergeist';
-  const isLun=roles[idKey(uid)]==='lunatico';
-  const meuVotoObj=votos[idKey(uid)];
-  const votouEm=meuVotoObj?.votadoId||null;
-  const impostorId=_info.impostorId;
-  const {impostorPegou,poltergeistVenceu}=resultado;
-
-  const contagem={};
-  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-
-  const maxVotos=Math.max(0,...Object.values(contagem));
-  const maisVotados=Object.keys(contagem).filter(id=>contagem[id]===maxVotos);
-
-  const ganhou=[];
-  const perdeu=[];
-
-  function marcar(id, ativo){
-    if(ativo){ if(!badgesAtivos[id]) ganhou.push(id); }
-    else      { if(badgesAtivos[id]) perdeu.push(id); }
-  }
-
-  // ── Permanentes (só ganham, nunca perdem)
-  if(statsAntes.partidas===0) ganhou.push('estreante'); // 1ª partida (stats ainda não incrementada)
-  if(isImp && statsAntes.partidasImpostor===0 && !badgesAtivos['novato_suspeito']) ganhou.push('novato_suspeito');
-  if(isPolt && poltergeistVenceu && !badgesAtivos['assombracao']) ganhou.push('assombracao');
-  if(isLun && maisVotados.includes(uid) && !badgesAtivos['confusao_mental']) ganhou.push('confusao_mental');
-  if(!isImp && maisVotados.includes(uid) && maxVotos>0 && !badgesAtivos['bode_expiatorio']) ganhou.push('bode_expiatorio');
-  if(votouEm===uid && !badgesAtivos['palhaco']) ganhou.push('palhaco');
-  if(statsAntes.partidas+1>=50  && !badgesAtivos['veterano'])  ganhou.push('veterano');
-  if(statsAntes.partidas+1>=200 && !badgesAtivos['lendario'])  ganhou.push('lendario');
-
-  // ── Fantasma (perde se pego com unanimidade)
-  if(isImp){
-    const qtdVotosNele=contagem[uid]||0;
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if(!impostorPegou && qtdVotosNele===0) marcar('fantasma',true);
-    else if(impostorPegou && qtdVotosNele===qtdAtivos) marcar('fantasma',false);
-  }
-
-  // ── Escapista / Intocável (sequência de escapadas)
-  if(isImp){
-    const seq=(statsAntes.sequenciaEscapadas||0)+(impostorPegou?0:1);
-    if(!impostorPegou){
-      if(seq>=3) marcar('escapista',true);
-      if(seq>=5) marcar('intocavel',true);
-    } else {
-      marcar('escapista',false);
-      marcar('intocavel',false);
-    }
-  }
-
-  // ── Ilusionista (escapou com voto unânime em outra pessoa)
-  if(isImp && !impostorPegou){
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if(qtdAtivos>0 && maisVotados.length===1 && maisVotados[0]!==uid && contagem[maisVotados[0]]===qtdAtivos){
-      marcar('ilusionista',true);
-    }
-  } else if(isImp && impostorPegou){
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if((contagem[uid]||0)===qtdAtivos) marcar('ilusionista',false);
-  }
-
-  // ── Olho de Águia (acertos seguidos votando no impostor)
-  if(!isImp && !isPolt){
-    const acertou=votouEm===impostorId;
-    const seq=(statsAntes.sequenciaAcertos||0)+(acertou?1:0);
-    const erros=(statsAntes.errosSequencia||0)+(acertou?0:1);
-    if(acertou && seq>=5) marcar('olho_de_aguia',true);
-    if(!acertou && erros>=3) marcar('olho_de_aguia',false);
-  }
-
-  // ── Farejador (unanimidade no impostor)
-  if(!isImp && !isPolt && votouEm===impostorId){
-    const qtdAtivos=ativos.filter(j=>j.id!==impostorId&&!j.espectador).length;
-    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
-    if(qtdAcertaram===qtdAtivos) marcar('farejador',true);
-  } else if(!isImp && votouEm!==impostorId){
-    const erros=(statsAntes.errosSequencia||0)+1;
-    if(erros>=3) marcar('farejador',false);
-  }
-
-  // ── Abstenção Lucrativa
-  if(!isImp && !votouEm && impostorPegou){
-    marcar('abstencao_lucrativa',true);
-  } else if(!isImp && votouEm===impostorId){
-    // único a acertar = perde o badge
-    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
-    if(qtdAcertaram===1) marcar('abstencao_lucrativa',false);
-  }
-
-  // ── Caçador Veterano (20 acertos totais)
-  if(!isImp && votouEm===impostorId){
-    if((statsAntes.acertosTotal||0)+1>=20) marcar('cacador_veterano',true);
-    const erros=statsAntes.errosSequencia||0;
-    if(erros>=3) marcar('cacador_veterano',false);
-  } else if(!isImp && votouEm && votouEm!==impostorId){
-    if((statsAntes.errosSequencia||0)+1>=3) marcar('cacador_veterano',false);
-  }
-
-  // ── Mestre do Caos (poltergeist 5x seguidas)
-  if(isPolt){
-    const seq=(statsAntes.sequenciaVitoriasPoltergeist||0)+(poltergeistVenceu?1:0);
-    const perda=(statsAntes.sequenciaPerdasPoltergeist||0)+(poltergeistVenceu?0:1);
-    if(poltergeistVenceu && seq>=5) marcar('mestre_do_caos',true);
-    if(!poltergeistVenceu && perda>=3) marcar('mestre_do_caos',false);
-  }
-
-  // Monta update Firebase
-  const updates={};
-  ganhou.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=true; });
-  perdeu.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=false; });
-  if(Object.keys(updates).length) await db.ref().update(updates);
-
-  return {ganhou, perdeu};
-}
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
   {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
@@ -1863,8 +1566,6 @@ function mostrarSetup(){
   showScreen('s-setup');
   // Listener em tempo real do próprio placarTotal
   if(ME?.uid) iniciarListenerMeuPlacar();
-  // Badge setup section
-  if(ME?.uid) renderBadgeSetup(null, null);
 }
 
 async function salvarNome(){
@@ -1880,229 +1581,85 @@ async function salvarNome(){
 }
 
 // ──── AVATAR UPLOAD ────
-// Detecção de WebP animado
-async function isAnimatedWebP(file){
-  const buf=await file.slice(0,100).arrayBuffer();
-  const bytes=new Uint8Array(buf);
-  for(let i=0;i<bytes.length-4;i++){
-    if(bytes[i]===0x41&&bytes[i+1]===0x4E&&bytes[i+2]===0x49&&bytes[i+3]===0x4D) return true;
-  }
-  return false;
-}
-
-// Comprimir imagem estática via canvas (crop já aplicado antes)
-function comprimirBlob(blob){
+// Converte o arquivo para blob JPEG 128x128 via canvas
+function comprimirImagem(file){
   return new Promise((res,rej)=>{
-    const url=URL.createObjectURL(blob);
-    const img=new Image();
-    img.onerror=()=>rej(new Error('Imagem inválida.'));
-    img.onload=()=>{
-      URL.revokeObjectURL(url);
-      const canvas=document.createElement('canvas');
-      canvas.width=128;canvas.height=128;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,128,128);
-      canvas.toBlob(b=>{
-        if(!b) return rej(new Error('Falha ao comprimir.'));
-        res(b);
-      },'image/jpeg',0.72);
+    const reader=new FileReader();
+    reader.onerror=()=>rej(new Error('Falha ao ler o arquivo.'));
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error('Imagem inválida ou corrompida.'));
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const sz=128;
+        canvas.width=sz; canvas.height=sz;
+        const ctx=canvas.getContext('2d');
+        const s=Math.min(img.width,img.height);
+        const sx=(img.width-s)/2, sy=(img.height-s)/2;
+        ctx.drawImage(img,sx,sy,s,s,0,0,sz,sz);
+        canvas.toBlob(blob=>{
+          if(!blob) return rej(new Error('Falha ao comprimir imagem.'));
+          res(blob);
+        },'image/jpeg',0.72);
+      };
+      img.src=ev.target.result;
     };
-    img.src=url;
+    reader.readAsDataURL(file);
   });
 }
 
-// Estado do crop
-let _cropFile=null, _cropX=0, _cropY=0, _cropZoom=1, _cropDragging=false, _cropLastTouch=null;
-let _cropDragStart={x:0,y:0,imgX:0,imgY:0};
-let _cropAnimated=false; // true = gif/webp animado, skip canvas
-
-function _cropClamp(){
-  const vw=240,vh=240;
-  const img=document.getElementById('crop-img-preview');
-  if(!img.naturalWidth) return;
-  const W=img.naturalWidth*_cropZoom, H=img.naturalHeight*_cropZoom;
-  _cropX=Math.min(0,Math.max(vw-W,_cropX));
-  _cropY=Math.min(0,Math.max(vh-H,_cropY));
-}
-function _cropApply(){
-  const img=document.getElementById('crop-img-preview');
-  img.style.transform=`translate(${_cropX}px,${_cropY}px) scale(${_cropZoom})`;
-  img.style.transformOrigin='0 0';
-}
-
-function _cropFitInitial(){
-  const img=document.getElementById('crop-img-preview');
-  if(!img.naturalWidth) return;
-  const vw=240;
-  const scale=vw/Math.min(img.naturalWidth,img.naturalHeight);
-  _cropZoom=scale;
-  document.getElementById('crop-zoom').min=scale;
-  document.getElementById('crop-zoom').value=scale;
-  _cropX=(vw-img.naturalWidth*_cropZoom)/2;
-  _cropY=(vw-img.naturalHeight*_cropZoom)/2;
-  _cropClamp(); _cropApply();
-}
-
-function abrirCropModal(file, animated){
-  _cropFile=file; _cropAnimated=animated;
-  const url=URL.createObjectURL(file);
-  const img=document.getElementById('crop-img-preview');
-  img.onload=()=>{ _cropFitInitial(); };
-  img.src=url;
-  document.getElementById('avatar-crop-modal').classList.add('open');
-}
-
-function cancelarCrop(){
-  document.getElementById('avatar-crop-modal').classList.remove('open');
-  _cropFile=null;
-  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
-}
-
-async function confirmarCrop(){
-  if(!_cropFile) return;
-  const modal=document.getElementById('avatar-crop-modal');
-  modal.classList.remove('open');
+async function uploadAvatar(input){
+  const file=input.files[0];
+  input.value=''; // reseta input imediatamente para permitir nova seleção
+  if(!file) return;
+  if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
 
   const statusEl=$('avatar-status');
-  statusEl.textContent='Enviando…';
+  statusEl.textContent='Comprimindo…';
 
   try{
-    let blob;
+    // 1. Comprimir antes de qualquer chamada de rede
+    const blob=await comprimirImagem(file);
+
+    statusEl.textContent='Enviando…';
     const uid=ME.uid;
-    let ext='jpg', contentType='image/jpeg';
-
-    if(_cropAnimated){
-      // GIF ou WebP animado — sobe o arquivo original sem canvas
-      blob=_cropFile;
-      ext=_cropFile.name.split('.').pop().toLowerCase()||'gif';
-      contentType=_cropFile.type||'image/gif';
-    } else {
-      // Estático — renderiza o crop via canvas
-      const imgEl=document.getElementById('crop-img-preview');
-      const canvas=document.createElement('canvas');
-      const vw=240;
-      canvas.width=128;canvas.height=128;
-      const ctx=canvas.getContext('2d');
-      const scale=128/vw;
-      ctx.drawImage(imgEl,
-        -_cropX*scale,-_cropY*scale,
-        imgEl.naturalWidth*_cropZoom*scale,
-        imgEl.naturalHeight*_cropZoom*scale
-      );
-      blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('Falha canvas')),'image/jpeg',0.72));
-    }
-
     const ts=Date.now();
-    const path=`avatares/${uid}/${ts}.${ext}`;
+    const path=`avatares/${uid}/${ts}.jpg`;
     const storageRef=storage.ref(path);
+
+    // 2. Upload com timeout de 20s
     const url=await Promise.race([
       (async()=>{
-        const snap=await storageRef.put(blob,{contentType});
+        const snap=await storageRef.put(blob,{contentType:'image/jpeg'});
         return await snap.ref.getDownloadURL();
       })(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido.')),20000))
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido. Verifique sua conexão.')),20000))
     ]);
 
+    // 3. Atualiza perfil
     await upd(`users/${uid}`,{avatarUrl:url});
     ME_PROFILE.avatarUrl=url;
     $('setup-avatar').src=url;
     statusEl.textContent='';
     setOk('st-nome','Avatar atualizado!');
     setTimeout(()=>clearErr('st-nome'),2500);
-    if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
+
+    // 4. Atualiza avatar na sala ativa se existir
+    if(SALA){
+      await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
+    }
   }catch(e){
-    const msg=e.code==='storage/unauthorized'?'Sem permissão.':e.message||'Erro no upload.';
+    console.error('uploadAvatar erro:',e);
+    // Traduz erros comuns do Firebase Storage
+    const msg=e.code==='storage/unauthorized'
+      ? 'Sem permissão. Configure as regras do Firebase Storage.'
+      : e.code==='storage/canceled'
+      ? 'Upload cancelado.'
+      : e.message||'Erro no upload.';
     statusEl.textContent='';
-    setErr('st-nome',msg);
+    setErr('st-nome', msg);
   }
-  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
-  _cropFile=null;
 }
-
-async function uploadAvatar(input){
-  const file=input.files[0];
-  input.value='';
-  if(!file) return;
-  if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
-  const ext=file.name.split('.').pop().toLowerCase();
-  const animated=ext==='gif'||(ext==='webp'&&await isAnimatedWebP(file));
-  if(animated&&file.size>2*1024*1024) return setErr('st-nome','GIF/WebP animado: máx 2MB.');
-  abrirCropModal(file, animated);
-}
-
-// ── Eventos do crop modal ──
-(function(){
-  function setupCrop(){
-    const vp=document.getElementById('crop-viewport');
-    const zoom=document.getElementById('crop-zoom');
-    if(!vp||!zoom) return;
-
-    zoom.addEventListener('input',()=>{
-      const prev=_cropZoom;
-      _cropZoom=parseFloat(zoom.value);
-      // mantém centro ao zoom
-      _cropX=_cropX-(_cropZoom-prev)*120;
-      _cropY=_cropY-(_cropZoom-prev)*120;
-      _cropClamp(); _cropApply();
-    });
-
-    // Mouse
-    vp.addEventListener('mousedown',e=>{
-      _cropDragging=true;
-      _cropDragStart={x:e.clientX,y:e.clientY,imgX:_cropX,imgY:_cropY};
-    });
-    window.addEventListener('mousemove',e=>{
-      if(!_cropDragging) return;
-      _cropX=_cropDragStart.imgX+(e.clientX-_cropDragStart.x);
-      _cropY=_cropDragStart.imgY+(e.clientY-_cropDragStart.y);
-      _cropClamp(); _cropApply();
-    });
-    window.addEventListener('mouseup',()=>{ _cropDragging=false; });
-    vp.addEventListener('wheel',e=>{
-      e.preventDefault();
-      const delta=e.deltaY>0?-0.1:0.1;
-      const minZ=parseFloat(zoom.min)||1;
-      _cropZoom=Math.max(minZ,Math.min(4,_cropZoom+delta));
-      zoom.value=_cropZoom;
-      _cropClamp(); _cropApply();
-    },{passive:false});
-
-    // Touch
-    vp.addEventListener('touchstart',e=>{
-      if(e.touches.length===1){
-        _cropDragging=true;
-        _cropDragStart={x:e.touches[0].clientX,y:e.touches[0].clientY,imgX:_cropX,imgY:_cropY};
-        _cropLastTouch=null;
-      } else if(e.touches.length===2){
-        _cropDragging=false;
-        _cropLastTouch=Math.hypot(
-          e.touches[0].clientX-e.touches[1].clientX,
-          e.touches[0].clientY-e.touches[1].clientY
-        );
-      }
-    },{passive:true});
-    vp.addEventListener('touchmove',e=>{
-      e.preventDefault();
-      if(e.touches.length===1&&_cropDragging){
-        _cropX=_cropDragStart.imgX+(e.touches[0].clientX-_cropDragStart.x);
-        _cropY=_cropDragStart.imgY+(e.touches[0].clientY-_cropDragStart.y);
-        _cropClamp(); _cropApply();
-      } else if(e.touches.length===2&&_cropLastTouch!=null){
-        const dist=Math.hypot(
-          e.touches[0].clientX-e.touches[1].clientX,
-          e.touches[0].clientY-e.touches[1].clientY
-        );
-        const minZ=parseFloat(zoom.min)||1;
-        _cropZoom=Math.max(minZ,Math.min(4,_cropZoom*(dist/_cropLastTouch)));
-        zoom.value=_cropZoom;
-        _cropLastTouch=dist;
-        _cropClamp(); _cropApply();
-      }
-    },{passive:false});
-    vp.addEventListener('touchend',()=>{ _cropDragging=false; _cropLastTouch=null; });
-  }
-  window.addEventListener('load',setupCrop);
-})();
 
 // ══════════════════════════════════════════════════════
 //  ENTRAR / CRIAR SALA
@@ -2180,14 +1737,12 @@ async function entrarSala(nome, cod){
 async function _gravarJogador(cod, uid, nome){
   devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
   const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
-  const badgeExibido=(await get(`users/${uid}/badgeExibido`))||'';
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
     avatarUrl: ME_PROFILE?.avatarUrl||ME.photoURL||'',
     ts:Date.now(),
     placar:0,
     placarTotal:placarExistente,
-    badgeExibido,
     online:true
   });
 }
@@ -2319,71 +1874,14 @@ function onInfoChanged(info){
         if(!eu||eu.espectador) return;
         const contagem={};
         Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-        const rolesEfetivos=Object.keys(_roles).length?_roles:Object.fromEntries(
-          Object.entries(_snapshot).map(([k,v])=>[k,v.role||'normal'])
-        );
-        const resultado=calcularResultado(ativos,contagem,info.impostorId,_votos,rolesEfetivos,info.poltergeistId||'');
-        const {cenarioImpostor,cenarioJogadores,impostorPegou,poltergeistVenceu}=resultado;
+        const {cenarioImpostor,cenarioJogadores}=calcularResultado(ativos,contagem,info.impostorId,_votos,_roles,info.poltergeistId||'');
         const isImp=ME.uid===info.impostorId;
-        const isPolt=rolesEfetivos[idKey(ME.uid)]==='poltergeist';
         const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
-
-        // ── Atualizar placarTotal
         if(pts!==0){
           const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
           await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
         }
-
-        // ── Carregar stats e badges atuais
-        const [statsAtual, badgesAtual]= await Promise.all([
-          get(`users/${ME.uid}/stats`).then(s=>s||{}),
-          get(`users/${ME.uid}/badges`).then(b=>b||{})
-        ]);
-
-        const meuVotoObj=_votos[idKey(ME.uid)];
-        const votouEm=meuVotoObj?.votadoId||null;
-        const acertou=votouEm===info.impostorId;
-        const votou=!!votouEm;
-
-        // ── Calcular novos stats
-        const newStats={};
-        newStats.partidas=(statsAtual.partidas||0)+1;
-        if(isImp){
-          newStats.partidasImpostor=(statsAtual.partidasImpostor||0)+1;
-          if(!impostorPegou){
-            newStats.escapadasImpostor=(statsAtual.escapadasImpostor||0)+1;
-            newStats.sequenciaEscapadas=(statsAtual.sequenciaEscapadas||0)+1;
-          } else {
-            newStats.sequenciaEscapadas=0;
-          }
-        }
-        if(!isImp && !isPolt && votou){
-          if(acertou){
-            newStats.acertosTotal=(statsAtual.acertosTotal||0)+1;
-            newStats.sequenciaAcertos=(statsAtual.sequenciaAcertos||0)+1;
-            newStats.errosSequencia=0;
-          } else {
-            newStats.errosSequencia=(statsAtual.errosSequencia||0)+1;
-            newStats.sequenciaAcertos=0;
-          }
-        }
-        if(!votou) newStats.abstencoes=(statsAtual.abstencoes||0)+1;
-        if(isPolt && poltergeistVenceu){
-          newStats.vitoriasPoltergeist=(statsAtual.vitoriasPoltergeist||0)+1;
-          newStats.sequenciaVitoriasPoltergeist=(statsAtual.sequenciaVitoriasPoltergeist||0)+1;
-          newStats.sequenciaPerdasPoltergeist=0;
-        } else if(isPolt && !poltergeistVenceu){
-          newStats.sequenciaPerdasPoltergeist=(statsAtual.sequenciaPerdasPoltergeist||0)+1;
-          newStats.sequenciaVitoriasPoltergeist=0;
-        }
-        if(votouEm===ME.uid) newStats.votoEmSiMesmo=(statsAtual.votoEmSiMesmo||0)+1;
-
-        await upd(`users/${ME.uid}/stats`, newStats);
-
-        // ── Avaliar badges (passa stats ANTES do update para cálculo de sequências)
-        await avaliarBadges(eu, resultado, _votos, rolesEfetivos, ativos, statsAtual, badgesAtual);
-
-      }catch(e){ console.warn('Erro ao atualizar stats/placar:',e); }
+      }catch(e){ console.warn('Erro ao atualizar placarTotal:',e); }
     })();
   }
 
@@ -2484,8 +1982,6 @@ function renderLobby(){
     const avStyle=avatarTierStyle(pts);
     let badgesInner='';
     if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
-    // Badge emoji exibido
-    const badgeEmoji=j.badgeExibido?`<span class="chip-badge-emoji" onclick="abrirStatsModal('${j.id}',event)">${j.badgeExibido}</span>`:'';
     if(_info.host===ME.uid&&j.id!==ME.uid){
       badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}','${(j.nome||'').replace(/'/g,"\\'")}')" title="Passar host para ${nome}">👑</button>`;
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
@@ -2499,7 +1995,7 @@ function renderLobby(){
         <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}${offlineLabel}</div>
         <div class="chip-rank">${rankBoxHTML(pts)}</div>
       </div>
-      <div class="badges-right">${badgeEmoji}${badgesInner}</div>`;
+      <div class="badges-right">${badgesInner}</div>`;
     applyChipStyle(chip, pts, j.id===ME.uid);
     container.appendChild(chip);
   });
@@ -3446,135 +2942,6 @@ async function passarHost(playerId, playerNome){
   }catch(e){
     alert('Não foi possível passar o host: '+e.message);
   }
-}
-
-// ══════════════════════════════════════════════════════
-//  MODAL DE STATS
-// ══════════════════════════════════════════════════════
-function fecharStatsModal(e){
-  if(e&&e.target!==document.getElementById('stats-modal')) return;
-  document.getElementById('stats-modal').classList.remove('open');
-}
-
-async function abrirStatsModal(uid, e){
-  if(e) e.stopPropagation();
-  const modal=document.getElementById('stats-modal');
-  const body=document.getElementById('stats-modal-body');
-  modal.classList.add('open');
-  body.innerHTML='<div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>';
-
-  let jogData=_jogadores[idKey(uid)]||_snapshot[idKey(uid)]||{};
-  const [stats,badges,badgeExibidoRaw,profRaw]=await Promise.all([
-    get(`users/${uid}/stats`).then(s=>s||{}),
-    get(`users/${uid}/badges`).then(b=>b||{}),
-    get(`users/${uid}/badgeExibido`).then(b=>b||''),
-    get(`users/${uid}`).then(p=>p||{}),
-  ]);
-  let badgeExibido=badgeExibidoRaw;
-  const avatarUrl=jogData.avatarUrl||profRaw.avatarUrl||'';
-  const nome=jogData.nome||profRaw.nome||'';
-  const placarTotal=jogData.placarTotal||profRaw.placarTotal||0;
-
-  const rankStyle=getPrestigeStyle(placarTotal);
-  document.getElementById('stats-modal-avatar').src=avatarImg(avatarUrl);
-  document.getElementById('stats-modal-name').textContent=nome||'(sem nome)';
-  document.getElementById('stats-modal-rank').textContent=`${rankStyle.title} · ${placarTotal}pt`;
-
-  const partidas=stats.partidas||0;
-  const acertos=stats.acertosTotal||0;
-  const escapadas=stats.escapadasImpostor||0;
-  const vPolt=stats.vitoriasPoltergeist||0;
-  const impostorTotal=stats.partidasImpostor||0;
-  const taxaAcerto=partidas>0?Math.round(acertos/partidas*100):0;
-
-  const statsRows=[
-    {v:partidas,  l:'Partidas'},
-    {v:impostorTotal, l:'Vezes impostor'},
-    {v:escapadas, l:'Escapadas'},
-    {v:acertos,   l:'Votações certas'},
-    {v:taxaAcerto+'%',l:'Taxa de acerto'},
-    {v:vPolt,     l:'Vitórias Poltergeist'},
-  ];
-
-  const earnedBadges=BADGES.filter(b=>badges[b.id]);
-  const notEarned=BADGES.filter(b=>!badges[b.id]);
-  const isMe=uid===ME.uid;
-
-  body.innerHTML=`
-    <div>
-      <div class="stats-section-title">Estatísticas</div>
-      <div class="stats-grid">
-        ${statsRows.map(r=>`<div class="stats-cell"><div class="stats-cell-value">${r.v}</div><div class="stats-cell-label">${r.l}</div></div>`).join('')}
-      </div>
-    </div>
-    <div>
-      <div class="stats-section-title">Badges conquistados (${earnedBadges.length}/${BADGES.length})</div>
-      <div class="badges-grid" id="stats-earned-badges">
-        ${earnedBadges.map(b=>`
-          <div class="badge-item earned${isMe?' selectable':''}${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
-            <div class="badge-item-emoji">${b.emoji}</div>
-            <div class="badge-item-name">${b.nome}</div>
-          </div>`).join('')||'<div style="color:var(--sub);font-size:.85rem">Nenhum badge ainda</div>'}
-      </div>
-    </div>
-    ${notEarned.length?`
-    <div>
-      <div class="stats-section-title">A conquistar</div>
-      <div class="badges-grid">
-        ${notEarned.map(b=>`
-          <div class="badge-item not-earned">
-            <div class="badge-item-emoji">${b.emoji}</div>
-            <div class="badge-item-name">${b.nome}</div>
-          </div>`).join('')}
-      </div>
-    </div>`:''}`;
-
-  if(isMe){
-    document.getElementById('stats-earned-badges')?.querySelectorAll('.badge-item.selectable').forEach(el=>{
-      el.addEventListener('click',async()=>{
-        const emoji=el.dataset.emoji;
-        const newEmoji=badgeExibido===emoji?'':emoji;
-        badgeExibido=newEmoji;
-        await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
-        if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
-        document.querySelectorAll('#stats-earned-badges .badge-item').forEach(e2=>{
-          e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!=='');
-        });
-        renderBadgeSetup(badges,newEmoji);
-      });
-    });
-  }
-}
-
-async function renderBadgeSetup(badgesParam, badgeExibidoParam){
-  const section=$('setup-badge-section');
-  const grid=$('setup-badge-grid');
-  if(!section||!grid) return;
-  let badges=badgesParam, badgeExibido=badgeExibidoParam;
-  if(!badges){
-    [badges, badgeExibido]=await Promise.all([
-      get(`users/${ME.uid}/badges`).then(b=>b||{}),
-      get(`users/${ME.uid}/badgeExibido`).then(b=>b||''),
-    ]);
-  }
-  const earned=BADGES.filter(b=>badges[b.id]);
-  if(!earned.length){ section.style.display='none'; return; }
-  section.style.display='';
-  grid.innerHTML=earned.map(b=>`
-    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}" title="${b.nome}: ${b.desc}">
-      <div class="badge-item-emoji">${b.emoji}</div>
-      <div class="badge-item-name">${b.nome}</div>
-    </div>`).join('');
-  grid.querySelectorAll('.badge-item').forEach(el=>{
-    el.addEventListener('click',async()=>{
-      const emoji=el.dataset.emoji;
-      const newEmoji=badgeExibido===emoji?'':emoji;
-      badgeExibido=newEmoji;
-      await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
-      if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
-      grid.querySelectorAll('.badge-item').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
-    });
-  });
 }
 
 async function sairDaSala(){
