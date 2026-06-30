@@ -3074,26 +3074,22 @@ async function sortearAssignments(){
     snapshot[key]={...j, role:roles[key]};
   });
 
-  await del(`salas/${SALA}/votos`);
-  await set(`salas/${SALA}/assignments`, assignments);
-  await set(`salas/${SALA}/snapshot`, snapshot);
-  await set(`salas/${SALA}/roles`, roles);
-
   const timerMinutos=Number(_config.timerMinutos)||0;
-  if(timerMinutos>0){
-    // fimTs gravado como ServerValue.TIMESTAMP + duração — elimina dependência do relógio local do host
-    await db.ref(`salas/${SALA}/timer`).set({
-      ativo: true,
-      fimTs: firebase.database.ServerValue.TIMESTAMP,
-      duracaoMs: timerMinutos * 60000
-    });
-    // Após gravar, lemos o fimTs real do servidor e corrigimos
-    const snap = await db.ref(`salas/${SALA}/timer/fimTs`).get();
-    const tsReal = snap.val();
-    await db.ref(`salas/${SALA}/timer/fimTs`).set(tsReal + timerMinutos * 60000);
-  } else {
-    await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
-  }
+  const timerData = timerMinutos>0
+    ? { ativo:true, fimTs: serverNow() + timerMinutos*60000, duracaoMs: timerMinutos*60000 }
+    : { ativo:false, fimTs:0 };
+
+  // Todas as escritas independentes (não dependem uma da outra) em uma única
+  // chamada multi-path, em vez de 4-5 round-trips sequenciais ao Firebase.
+  // fimTs usa serverNow() (offset já sincronizado em background) em vez de
+  // gravar ServerValue.TIMESTAMP e ler de volta — elimina 2 round-trips extras.
+  await db.ref().update({
+    [`salas/${SALA}/votos`]: null,
+    [`salas/${SALA}/assignments`]: assignments,
+    [`salas/${SALA}/snapshot`]: snapshot,
+    [`salas/${SALA}/roles`]: roles,
+    [`salas/${SALA}/timer`]: timerData,
+  });
 
   _assignments=assignments;
   _snapshot=snapshot;
@@ -3431,11 +3427,27 @@ async function revelarImpostor(){
   const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioJogadores} =
     calcularResultado(ativos, contagem, _info.impostorId, _votos, _roles, _info.poltergeistId||'');
 
-  // Aplica pontos na sala (host tem permissão de escrever em salas/)
-  // O update do placar global de cada usuário em users/ é feito por cada cliente
-  // no próprio listener de fase, pois as regras do Firebase só permitem
-  // que o próprio usuário escreva em users/$uid.
-  const updates={};
+  // Placar, histórico, parada do timer e mudança de fase combinados numa única
+  // escrita multi-path, em vez de 4 round-trips sequenciais ao Firebase antes
+  // da tela do host mudar.
+  const rodadaKey=`r${_info.rodada||1}`;
+  const updates={
+    [`salas/${SALA}/historico/${rodadaKey}`]: {
+      rodada:_info.rodada||1,
+      categoria:_info.categoria,
+      palavra:_info.palavra,
+      impostorNome:_info.impostorNome,
+      impostorPegou,
+      cenarioImpostor: cenarioImpostor.num,
+      poltergeistVenceu: poltergeistVenceu || false,
+      poltergeistNome:   _info.poltergeistNome || '',
+      lunaticoNome:      _info.lunaticoNome    || '',
+      ts:Date.now()
+    },
+    [`salas/${SALA}/timer`]: {ativo:false, fimTs:0},
+    [`salas/${SALA}/info/fase`]: 'revealed',
+    [`salas/${SALA}/roles`]: null,
+  };
   for(const j of ativos){
     const isImp=j.id===_info.impostorId;
     const pts=isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]?.pts||0);
@@ -3444,27 +3456,7 @@ async function revelarImpostor(){
       updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
     }
   }
-  if(Object.keys(updates).length) await db.ref().update(updates);
-
-  // Historico
-  const rodadaKey=`r${_info.rodada||1}`;
-  await set(`salas/${SALA}/historico/${rodadaKey}`,{
-    rodada:_info.rodada||1,
-    categoria:_info.categoria,
-    palavra:_info.palavra,
-    impostorNome:_info.impostorNome,
-    impostorPegou,
-    cenarioImpostor: cenarioImpostor.num,
-    poltergeistVenceu: poltergeistVenceu || false,
-    poltergeistNome:   _info.poltergeistNome || '',
-    lunaticoNome:      _info.lunaticoNome    || '',
-    ts:Date.now()
-  });
-
-  // Para timer
-  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
-  await upd(`salas/${SALA}/info`,{fase:'revealed'});
-  await del(`salas/${SALA}/roles`);
+  await db.ref().update(updates);
 }
 
 // ══════════════════════════════════════════════════════
@@ -3472,7 +3464,7 @@ async function revelarImpostor(){
 // ══════════════════════════════════════════════════════
 async function novaRodada(){
   SFX.novaRodada();
-  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false; _roles={};
+  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; resultadoSomTocado=false; _roles={};
 
   // IMPORTANTE: muda a fase para 'lobby' ANTES de apagar votos/assignments/snapshot/roles.
   // Se a ordem fosse invertida (como antes), o del(votos) dispararia onVotosChanged()
