@@ -1,0 +1,3707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Monster Among</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000000;--surface:#16161F;--card:#1E1E2C;
+  --accent:#E8FF47;--red:#FF4757;--muted:#4A4A6A;
+  --text:#F0F0FF;--sub:#8888AA;--radius:0px;
+  --green:#4CAF50;--blue:#4FC3F7;--orange:#FF9800;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'VT323',monospace;
+  height:100%;display:flex;flex-direction:column;align-items:center;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;width:100%;max-width:460px;
+  height:100%;display:flex;flex-direction:column;overflow:hidden;padding:0 16px;padding-top:var(--header-h,60px);}
+.logo{font-family:'VT323',monospace;font-size:2.4rem;
+  letter-spacing:2px;text-align:center;padding:10px 0 2px;}
+.logo span{color:var(--accent);}
+.tagline{text-align:center;color:var(--sub);font-size:1rem;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:10px;}
+.screen{display:none;flex-direction:column;gap:0;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+/* Layout padrão das telas: área scrollável + footer fixo */
+.screen-scroll{
+  overflow-y:auto;
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:8px 0 12px;
+}
+/* Variante: o próprio scroll-container não rola — filho interno é quem rola */
+.screen-scroll.inner-scroll{
+  overflow-y:hidden;
+  padding-bottom:0;
+}
+.screen-footer{
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+  border-top:1px solid rgba(255,255,255,.06);
+  background:var(--bg);
+}
+.card{background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  padding:14px;}
+.card-label{font-size:1rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--sub);margin-bottom:8px;}
+input[type=text],input[type=email],input[type=password]{
+  width:100%;background:var(--surface);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.7);border-bottom-color:rgba(0,0,0,.7);
+  color:var(--text);font-family:'VT323',monospace;
+  font-size:1.2rem;padding:10px 14px;outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--accent);border-right-color:rgba(232,255,71,.4);border-bottom-color:rgba(232,255,71,.4);}
+input::placeholder{color:var(--muted);}
+.row{display:flex;gap:10px;}.row input{flex:1;}
+.btn{width:100%;padding:12px;border:none;
+  font-family:'VT323',monospace;font-size:1.3rem;
+  letter-spacing:2px;cursor:pointer;transition:transform .1s,box-shadow .1s,opacity .2s;
+  box-shadow:3px 3px 0 rgba(0,0,0,.8);}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.8);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-primary{background:var(--accent);color:#0D0D14;
+  border:2px solid rgba(255,255,255,.5);
+  border-right-color:rgba(0,0,0,.4);border-bottom-color:rgba(0,0,0,.4);}
+.btn-secondary{background:var(--surface);color:var(--text);
+  border:2px solid rgba(255,255,255,.2);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);}
+.btn-danger{background:var(--surface);color:var(--red);
+  border:2px solid var(--red);
+  border-right-color:rgba(255,71,87,.3);border-bottom-color:rgba(255,71,87,.3);}
+.btn-ghost{background:var(--surface);color:var(--sub);font-size:1.1rem;
+  border:2px solid rgba(255,255,255,.1);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);}
+.btn-google{background:#fff;color:#1a1a1a;display:flex;align-items:center;
+  justify-content:center;gap:10px;font-size:1.1rem;}
+.btn-google svg{flex-shrink:0;}
+.divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.7rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--muted);opacity:.3;}
+
+/* Auth tabs */
+.auth-tabs{display:flex;gap:4px;background:var(--surface);border:2px solid rgba(255,255,255,.08);padding:4px;margin-bottom:12px;}
+.auth-tab{flex:1;padding:8px;border:none;cursor:pointer;
+  font-family:'VT323',monospace;font-size:1.1rem;color:var(--sub);
+  background:transparent;transition:background .2s,color .2s;}
+.auth-tab.active{background:var(--card);color:var(--text);}
+
+/* Avatar */
+.avatar{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
+  border:2px solid var(--muted);flex-shrink:0;}
+.avatar-lg{width:72px;height:72px;object-fit:cover;image-rendering:pixelated;
+  border:3px solid var(--accent);display:block;margin:0 auto 12px;}
+.avatar-upload-wrap{position:relative;width:72px;margin:0 auto 8px;}
+.avatar-upload-wrap .avatar-lg{cursor:pointer;}
+.avatar-edit-btn{position:absolute;bottom:0;right:0;background:var(--accent);
+  color:#0D0D14;border:none;width:22px;height:22px;
+  font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#inp-avatar{display:none;}
+
+.sala-badge{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(232,255,71,.07);
+  border:2px solid rgba(232,255,71,.35);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  padding:10px 14px;margin-bottom:4px;}
+.sala-code{font-family:'VT323',monospace;font-size:2.2rem;
+  letter-spacing:6px;color:var(--accent);}
+.sala-copy{background:none;border:none;cursor:pointer;color:var(--sub);
+  font-size:1rem;font-family:'VT323',monospace;padding:4px 8px;
+  transition:color .2s;}
+.sala-copy:hover{color:var(--accent);}
+
+.player-list{display:flex;flex-direction:column;gap:7px;}
+.player-chip{display:flex;align-items:center;gap:10px;
+  padding:0 13px;font-size:.86rem;
+  animation:slideIn .22s ease;border:2px solid transparent;
+  transition:border-color .3s,box-shadow .3s;
+  aspect-ratio:130/35;
+  max-width:420px;width:100%;
+  position:relative;overflow:hidden;
+  background:var(--surface);}
+.player-chip.offline{opacity:.4;filter:grayscale(1);}
+.vote-row.offline{opacity:.4;filter:grayscale(1);}
+/* imagem é o background — cobre o chip inteiro, sem distorção, pixelado */
+.chip-bg{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+  pointer-events:none;z-index:0;}
+.player-chip img.avatar{flex-shrink:0;position:relative;z-index:1;}
+.chip-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;
+  min-width:0;position:relative;z-index:1;
+  padding:14% 0;/* proporcional à altura do chip */}
+.chip-name{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:flex;align-items:center;gap:5px;color:#fff!important;}
+.chip-rank{display:flex;align-items:center;gap:5px;color:#fff!important;font-size:.85rem;}
+.badges-right{position:relative;z-index:1;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+@keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
+.badge{display:inline-block;padding:2px 8px;font-size:.85rem;
+  letter-spacing:1px;text-transform:uppercase;}
+.badge-host{background:rgba(232,255,71,.14);color:var(--accent);}
+.badge-you{background:rgba(255,255,255,.07);color:var(--sub);}
+.badge-spec{background:rgba(79,195,247,.14);color:var(--blue);}
+.badges-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.kick-btn{background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:.75rem;padding:2px 5px;transition:color .2s;}
+.kick-btn:hover{color:var(--red);}
+.host-btn{background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:.9rem;padding:2px 5px;transition:color .2s;}
+.host-btn:hover{color:var(--accent);}
+.score-pill{background:rgba(232,255,71,.1);color:var(--accent);
+  padding:2px 8px;font-size:.9rem;border:1px solid rgba(232,255,71,.25);}
+
+
+
+/* Word screen */
+.word-box{
+  text-align:center;
+  padding:12px 16px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  cursor:pointer;
+  user-select:none;
+}
+.cat-pill{
+  display:inline-block;
+  background:rgba(232,255,71,.1);
+  color:var(--accent);
+  padding:2px 12px;
+  font-size:.85rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  border:1px solid rgba(232,255,71,.25);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+  flex-shrink:0;
+}
+.word-hidden, .word-revealed {
+  font-family:'VT323',monospace;
+  font-size:2.6rem;
+  letter-spacing:4px;
+  line-height:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+  transition:font-size .15s;
+  flex-shrink:0;
+}
+.word-hidden{color:var(--muted);}
+.word-revealed{color:var(--accent);animation:pop .3s cubic-bezier(.36,2,.6,1);}
+@keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
+.word-hint{
+  font-size:.82rem;
+  color:var(--sub);
+  letter-spacing:1px;
+  line-height:1.3;
+  flex-shrink:0;
+}
+.spec-banner{background:rgba(79,195,247,.08);
+  border:2px solid rgba(79,195,247,.25);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  padding:12px 16px;text-align:center;color:var(--blue);
+  font-size:1rem;line-height:1.6;}
+
+/* Vote */
+.vote-grid{display:flex;flex-direction:column;gap:8px;}
+/* Controle do offset vertical da imagem de rank no vote-row.
+   --vote-img-top: 0px = centralizado; negativo = sobe (corta topo); positivo = desce (corta fundo) */
+:root{ --vote-img-top: 0px; }
+.vote-row{
+  display:flex;align-items:center;gap:12px;background:var(--surface);
+  padding:0 16px;cursor:pointer;
+  border:2px solid rgba(255,255,255,.06);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  transition:border-color .15s,background .15s;
+  position:relative;overflow:hidden;
+  aspect-ratio:130/35;
+}
+.vote-row-rankbg{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:fill;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+  opacity:.6;
+}
+.vote-row>*:not(.vote-row-rankbg){position:relative;z-index:1;}
+.vote-row:hover:not(.already-voted){border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.04);}
+.vote-row.voted-by-me{border-color:var(--accent);background:rgba(232,255,71,.06);}
+.vote-row.already-voted{cursor:not-allowed;}
+.vote-row img.avatar{width:44px;height:44px;flex-shrink:0;}
+.vote-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);overflow:hidden;}
+.vote-bar{height:100%;background:var(--accent);transition:width .35s ease;}
+.vote-count{font-size:1rem;color:var(--sub);min-width:18px;text-align:right;}
+
+/* Result */
+.reveal-card{background:var(--card);border-radius:var(--radius);padding:12px;
+  display:flex;align-items:center;gap:13px;
+  border:1px solid rgba(255,255,255,.06);animation:slideIn .22s ease;}
+.reveal-card .av{width:40px;height:40px;border-radius:50%;overflow:hidden;
+  background:var(--surface);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;}
+.reveal-card .av img{width:100%;height:100%;object-fit:cover;}
+.reveal-card .info{flex:1;}
+.reveal-card .pname{font-size:1.1rem;}
+.reveal-card .pword{color:var(--sub);font-size:.95rem;margin-top:2px;}
+.reveal-card.imp{border-color:var(--red);background:rgba(255,71,87,.07);}
+.reveal-card.imp .pname{color:var(--red);}
+.imp-badge{background:var(--red);color:#fff;padding:2px 8px;
+  font-size:.85rem;letter-spacing:1px;text-transform:uppercase;}
+.pts-badge{padding:2px 8px;font-size:.9rem;border:1px solid rgba(255,255,255,.1);
+  letter-spacing:1px;position:relative;z-index:1;}
+.pts-pos{background:rgba(76,175,80,.2);color:var(--green);}
+.pts-neg{background:rgba(255,71,87,.2);color:var(--red);}
+.pts-zero{background:rgba(255,255,255,.06);color:var(--sub);}
+
+/* Result — novo layout */
+.res-impostor-card{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:transparent;border:2px solid var(--red);
+  padding:20px 16px;
+  animation:slideIn .25s ease;
+  position:relative;overflow:hidden;
+}
+/* Imagem de fundo bem visível — sem overlay escuro */
+.res-impostor-card .res-rank-bg,
+.res-player-tile .res-rank-bg{
+  position:absolute;left:0;top:0;height:100%;width:auto;
+  pointer-events:none;z-index:0;
+  image-rendering:pixelated;image-rendering:-moz-crisp-edges;
+  opacity:.85;
+}
+.res-impostor-avatar{width:72px;height:72px;object-fit:cover;image-rendering:pixelated;
+  border:3px solid var(--red);position:relative;z-index:1;}
+.res-impostor-name{font-family:'VT323',monospace;font-size:1.3rem;
+  color:var(--red);text-align:center;position:relative;z-index:1;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);}
+.res-players-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;
+}
+.res-player-tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:transparent;padding:12px 8px;
+  animation:slideIn .22s ease;
+  position:relative;overflow:hidden;
+  border:2px solid rgba(255,255,255,.08);
+}
+.res-player-tile img{width:48px;height:48px;object-fit:cover;image-rendering:pixelated;
+  position:relative;z-index:1;}
+.res-player-name{font-size:.9rem;color:#fff;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
+  position:relative;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.9);}
+.res-player-name.is-me{color:var(--accent);}
+
+/* History / Leaderboard */
+.hist-item{background:var(--surface);padding:10px 12px;border:2px solid rgba(255,255,255,.07);border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  font-size:1rem;border-left:3px solid var(--muted);}
+.hist-item.win{border-color:var(--green);}
+.hist-item.lose{border-color:var(--red);}
+.hist-rodada{font-size:.85rem;color:var(--sub);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;}
+.hist-palavra{font-family:'VT323',monospace;font-size:1.2rem;margin-bottom:2px;}
+.hist-detalhe{color:var(--sub);font-size:.95rem;}
+.placar-row{display:flex;align-items:center;gap:12px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);}
+.placar-row:last-child{border:none;}
+.placar-rank{font-family:'VT323',monospace;font-size:1.2rem;
+  color:var(--sub);min-width:24px;}
+.placar-rank.gold{color:#FFD700;}
+.placar-nome{flex:1;font-size:1rem;}
+.placar-pts{font-family:'VT323',monospace;font-size:1.1rem;color:var(--accent);}
+
+/* Profile */
+.profile-header{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+.profile-header img.avatar{width:44px;height:44px;}
+.profile-info{flex:1;}
+.profile-name{font-family:'VT323',monospace;font-size:1.2rem;}
+.profile-email{font-size:.95rem;color:var(--sub);}
+
+/* Misc */
+.status{text-align:center;font-size:1rem;color:var(--sub);padding:4px;min-height:20px;}
+.status.err{color:var(--red);}
+.status.ok{color:var(--green);}
+.words-info{font-size:.85rem;color:var(--sub);text-align:center;padding:3px 0;}
+.words-info.ok{color:var(--green);}
+.words-info.err{color:var(--red);}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--accent);margin-right:6px;animation:pulse 1.4s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;z-index:999;
+  font-family:'VT323',monospace;font-size:1.3rem;color:var(--sub);
+  letter-spacing:3px;text-transform:uppercase;transition:opacity .4s;}
+#loader.hide{opacity:0;pointer-events:none;}
+.tabs{display:flex;gap:4px;background:var(--surface);border:2px solid rgba(255,255,255,.07);padding:4px;}
+.tab{flex:1;padding:7px;border:none;cursor:pointer;
+  font-family:'VT323',monospace;font-size:1.1rem;color:var(--sub);
+  background:transparent;transition:background .2s,color .2s;}
+.tab.active{background:var(--card);color:var(--text);border-bottom:2px solid var(--accent);}
+.tab-content{display:none;flex-direction:column;gap:8px;}
+.tab-content.active{display:flex;}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);
+  display:inline-block;margin-right:6px;}
+.conn-dot.online{background:var(--green);}
+.link-btn{background:none;border:none;color:var(--sub);cursor:pointer;
+  font-family:'VT323',monospace;font-size:1rem;text-decoration:underline;
+  padding:0;}
+.link-btn:hover{color:var(--accent);}
+
+/* Botões host lado a lado */
+.btn-pair-row{display:flex;gap:8px;}
+.btn-pair-row .btn{flex:1;}
+
+/* ── Texto sempre branco dentro do chip, legível sobre a imagem ── */
+.player-chip .chip-name,
+.player-chip .chip-name span,
+.player-chip .chip-rank,
+.player-chip .chip-rank span,
+.player-chip .score-pill,
+.player-chip .badge{
+  color:#fff!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.7)!important;
+}
+.player-chip .score-pill{background:rgba(0,0,0,.45)!important;}
+.player-chip .badge{background:rgba(0,0,0,.45)!important;}
+.player-chip .kick-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
+.player-chip .kick-btn:hover{color:#FF4757!important;}
+.player-chip .host-btn{color:rgba(255,255,255,.5)!important;text-shadow:none!important;}
+.player-chip .host-btn:hover{color:#E8FF47!important;}
+
+/* ── Offline status ── */
+.player-chip.offline{opacity:.4;filter:grayscale(1);}
+.vote-row.offline{opacity:.4;filter:grayscale(1);}
+.offline-label{font-family:'VT323',monospace;font-size:.8rem;color:#FF9800;
+  letter-spacing:1px;display:inline-flex;align-items:center;gap:4px;margin-left:4px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.offline-spinner{display:inline-block;width:10px;height:10px;
+  border:2px solid rgba(255,152,0,.3);border-top-color:#FF9800;
+  border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+
+/* ── Garantia VT323 em pontuação ── */
+.placar-pts,.placar-rank,.score-pill,.pts-badge,.chip-rank span{
+  font-family:'VT323',monospace!important;}
+
+/* ── DEVLOG — oculto por switch ── */
+.devlog-hidden #devlog-panel{display:none!important;}
+#devlog-panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:rgba(0,0,0,.92);border-top:2px solid #E8FF47;
+  font-family:monospace;font-size:11px;
+  max-height:38vh;display:flex;flex-direction:column;
+}
+#devlog-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 8px;background:#111;border-bottom:1px solid #333;
+  cursor:pointer;user-select:none;flex-shrink:0;
+}
+#devlog-bar span{color:#E8FF47;letter-spacing:1px;font-size:11px;}
+#devlog-bar .devlog-btns{display:flex;gap:6px;}
+#devlog-bar button{background:#222;border:1px solid #444;color:#aaa;
+  font-size:10px;padding:2px 7px;cursor:pointer;font-family:monospace;}
+#devlog-bar button:hover{color:#E8FF47;border-color:#E8FF47;}
+#devlog-body{overflow-y:auto;flex:1;padding:4px 8px 6px;}
+#devlog-body.collapsed{display:none;}
+.dlog{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;gap:6px;align-items:flex-start;line-height:1.4;}
+.dlog-time{color:#555;flex-shrink:0;min-width:68px;}
+.dlog-uid{color:#4FC3F7;flex-shrink:0;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dlog-msg{color:#ddd;word-break:break-all;}
+.dlog.err .dlog-msg{color:#FF4757;}
+.dlog.warn .dlog-msg{color:#FF9800;}
+.dlog.ok .dlog-msg{color:#4CAF50;}
+.dlog.info .dlog-msg{color:#4FC3F7;}
+.dlog.auth .dlog-msg{color:#E8FF47;}
+
+
+/* Scrollbars invisíveis mas funcionais */
+.screen-scroll, .player-list, .vote-grid, #hist-list, #placar-list, .tab-content, #s-setup {
+  scrollbar-width:none;}
+.screen-scroll::-webkit-scrollbar,
+.player-list::-webkit-scrollbar, .vote-grid::-webkit-scrollbar,
+#hist-list::-webkit-scrollbar, #placar-list::-webkit-scrollbar,
+.tab-content::-webkit-scrollbar, #s-setup::-webkit-scrollbar {display:none;}
+
+/* Scrollbar sempre visível no container de votação */
+#q-votacao-card{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(232,255,71,.5) rgba(255,255,255,.05);
+}
+#q-votacao-card::-webkit-scrollbar{
+  width:5px;
+  background:rgba(255,255,255,.05);
+}
+#q-votacao-card::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.05);
+  border-radius:3px;
+}
+#q-votacao-card::-webkit-scrollbar-thumb{
+  background:rgba(232,255,71,.5);
+  border-radius:3px;
+  min-height:30px;
+}
+#q-votacao-card::-webkit-scrollbar-thumb:hover{
+  background:rgba(232,255,71,.75);
+}
+
+
+/* ── Menu de configurações da sala ── */
+.config-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.80);
+  z-index:995;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);
+}
+.config-box{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  width:100%;max-width:460px;
+  padding:20px 16px 24px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.config-title{
+  font-family:'VT323',monospace;font-size:1.3rem;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--sub);margin-bottom:2px;
+}
+.config-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;
+  background:var(--surface);
+  border:2px solid rgba(255,255,255,.08);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+}
+.config-row-info{display:flex;flex-direction:column;gap:2px;}
+.config-row-label{font-family:'VT323',monospace;font-size:1.1rem;color:var(--text);}
+.config-row-desc{font-size:.8rem;color:var(--sub);letter-spacing:.5px;}
+/* Toggle switch */
+.toggle-wrap{position:relative;flex-shrink:0;width:44px;height:24px;}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{
+  position:absolute;inset:0;
+  background:var(--muted);cursor:pointer;
+  transition:background .2s;
+  border:2px solid rgba(255,255,255,.1);
+}
+.toggle-slider::after{
+  content:'';position:absolute;
+  width:16px;height:16px;
+  left:2px;top:2px;
+  background:#fff;
+  transition:transform .2s;
+}
+.toggle-wrap input:checked + .toggle-slider{background:var(--accent);}
+.toggle-wrap input:checked + .toggle-slider::after{transform:translateX(20px);}
+/* Indicador de modos ativos no lobby (J) */
+.modos-ativos{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;
+}
+.modo-tag{
+  font-family:'VT323',monospace;font-size:.85rem;
+  padding:2px 8px;letter-spacing:1px;
+  border:1px solid;
+}
+.modo-tag-poltergeist{color:#FF9800;border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.08);}
+.modo-tag-lunatico{color:#CE93D8;border-color:rgba(206,147,216,.4);background:rgba(206,147,216,.08);}
+.modo-tag-timer{color:#4FC3F7;border-color:rgba(79,195,247,.4);background:rgba(79,195,247,.08);}
+
+/* ── Slider de quadradinhos do cronômetro ── */
+.timer-slider-row{display:flex;gap:4px;margin-top:8px;}
+.timer-sq{
+  flex:1;height:28px;background:var(--muted);
+  border:2px solid rgba(255,255,255,.1);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  cursor:pointer;transition:background .15s;
+}
+.timer-sq.on{background:var(--accent);border-color:rgba(255,255,255,.25);}
+.timer-sq:hover{filter:brightness(1.15);}
+.timer-label-row{display:flex;justify-content:space-between;align-items:baseline;}
+.timer-value{font-family:'VT323',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:1px;}
+
+/* ── Seleção de categorias ── */
+.cat-select-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px;}
+.cat-select-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;background:var(--surface);
+  border:2px solid rgba(255,255,255,.08);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  cursor:pointer;
+}
+.cat-select-row input{width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);}
+.cat-select-row span{font-family:'VT323',monospace;font-size:1rem;letter-spacing:1px;}
+.cat-select-actions{display:flex;gap:8px;}
+.cat-select-actions button{
+  flex:1;font-family:'VT323',monospace;font-size:.85rem;letter-spacing:1px;
+  padding:6px;background:var(--surface);color:var(--sub);
+  border:2px solid rgba(255,255,255,.08);cursor:pointer;
+}
+.cat-select-actions button:hover{color:var(--text);}
+
+/* ── Cronômetro na tela de perguntas ── */
+.q-timer{
+  font-family:'VT323',monospace;font-size:1.4rem;letter-spacing:2px;
+  text-align:center;color:var(--accent);margin-bottom:6px;
+  flex-shrink:0;
+}
+.q-timer.urgente{color:#FF4757;animation:timerPulse .5s infinite;}
+@keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── Avatar Crop Modal ── */
+#avatar-crop-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);
+  z-index:1200;display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;padding:16px;
+}
+#avatar-crop-modal.open{display:flex;}
+.crop-stage{
+  position:relative;
+  max-width:90vw;
+  max-height:55vh;
+  background:#111;
+  touch-action:none;
+  user-select:none;
+  flex-shrink:0;
+}
+#crop-img-base{
+  display:block;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  user-select:none;
+}
+.crop-box{
+  position:absolute;
+  border:2px solid var(--accent);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55);
+  cursor:move;
+  touch-action:none;
+}
+.crop-handle{
+  position:absolute;
+  width:18px;height:18px;
+  background:var(--accent);
+  border:2px solid #000;
+  border-radius:50%;
+  touch-action:none;
+}
+.crop-handle::after{
+  content:'';
+  position:absolute;
+  top:-12px;left:-12px;right:-12px;bottom:-12px;
+}
+.crop-handle.tl{top:-9px;left:-9px;cursor:nwse-resize;}
+.crop-handle.tr{top:-9px;right:-9px;cursor:nesw-resize;}
+.crop-handle.bl{bottom:-9px;left:-9px;cursor:nesw-resize;}
+.crop-handle.br{bottom:-9px;right:-9px;cursor:nwse-resize;}
+.crop-controls{
+  display:flex;flex-direction:column;gap:8px;width:240px;
+}
+.crop-btn-row{display:flex;gap:8px;}
+.crop-btn-row .btn{flex:1;padding:10px;}
+#crop-hint{font-size:.75rem;color:var(--sub);text-align:center;letter-spacing:1px;}
+
+/* ── Badge emoji no chip ── */
+.chip-badge-emoji{
+  font-size:1.1rem;cursor:pointer;position:relative;z-index:1;
+  padding:2px 4px;border-radius:2px;transition:background .15s;
+  line-height:1;
+}
+.chip-badge-emoji:hover{background:rgba(255,255,255,.12);}
+
+/* ── Modal de Stats ── */
+#stats-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:1100;display:none;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);
+}
+#stats-modal.open{display:flex;}
+.stats-box{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  width:100%;max-width:460px;
+  max-height:82vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.stats-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.stats-header img{width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;}
+.stats-header-info{flex:1;min-width:0;}
+.stats-header-name{font-family:'VT323',monospace;font-size:1.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stats-header-rank{font-size:.85rem;color:var(--sub);}
+.stats-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px 8px;flex-shrink:0;}
+.stats-close:hover{color:var(--text);}
+.stats-body{overflow-y:auto;flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:16px;}
+.stats-section-title{
+  font-family:'VT323',monospace;font-size:.95rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sub);margin-bottom:8px;
+}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stats-cell{
+  background:var(--surface);padding:10px 12px;
+  border:2px solid rgba(255,255,255,.07);
+  border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);
+  display:flex;flex-direction:column;gap:2px;
+}
+.stats-cell-value{font-family:'VT323',monospace;font-size:1.5rem;color:var(--accent);}
+.stats-cell-label{font-size:.72rem;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
+.badges-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.badge-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:58px;cursor:pointer;
+}
+.badge-item-emoji{
+  font-size:1.6rem;padding:8px;
+  border:2px solid rgba(255,255,255,.1);
+  background:var(--surface);
+  transition:border-color .15s,background .15s;
+  line-height:1;
+}
+.badge-item.earned .badge-item-emoji{border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.07);}
+.badge-item.not-earned .badge-item-emoji{filter:grayscale(1);opacity:.35;}
+.badge-item-name{font-size:.65rem;color:var(--sub);text-align:center;letter-spacing:.5px;line-height:1.2;}
+.badge-item.selectable .badge-item-emoji:hover{border-color:var(--accent);background:rgba(232,255,71,.15);}
+.badge-item.selected .badge-item-emoji{border-color:var(--accent);background:rgba(232,255,71,.2);box-shadow:0 0 0 2px rgba(232,255,71,.3);}
+
+/* ── Seção de badge no setup ── */
+.setup-badge-section{
+  background:var(--card);
+  border:2px solid rgba(255,255,255,.18);
+  border-right-color:rgba(0,0,0,.6);border-bottom-color:rgba(0,0,0,.6);
+  padding:12px;
+}
+</style>
+</head>
+<body>
+<div id="loader">carregando…</div>
+<!-- ══ AVATAR CROP MODAL ══ -->
+<div id="avatar-crop-modal">
+  <div id="crop-hint">arraste os cantos para redimensionar · arraste o centro para mover</div>
+  <div class="crop-stage" id="crop-stage">
+    <img id="crop-img-base" src="" alt="" draggable="false">
+    <div class="crop-box" id="crop-box">
+      <div class="crop-handle tl" data-handle="tl"></div>
+      <div class="crop-handle tr" data-handle="tr"></div>
+      <div class="crop-handle bl" data-handle="bl"></div>
+      <div class="crop-handle br" data-handle="br"></div>
+    </div>
+  </div>
+  <div class="crop-controls">
+    <div class="crop-btn-row">
+      <button class="btn btn-secondary" onclick="cancelarCrop()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarCrop()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATS MODAL ══ -->
+<div id="stats-modal" onclick="fecharStatsModal(event)">
+  <div class="stats-box" onclick="event.stopPropagation()">
+    <div class="stats-header">
+      <img id="stats-modal-avatar" src="" alt="" style="width:52px;height:52px;object-fit:cover;image-rendering:pixelated;flex-shrink:0;border:2px solid var(--muted)">
+      <div class="stats-header-info">
+        <div class="stats-header-name" id="stats-modal-name">—</div>
+        <div class="stats-header-rank" id="stats-modal-rank">—</div>
+      </div>
+      <button class="stats-close" onclick="fecharStatsModal()">✕</button>
+    </div>
+    <div class="stats-body" id="stats-modal-body">
+      <div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>
+    </div>
+  </div>
+</div>
+
+<div id="config-overlay" class="config-overlay" style="display:none" onclick="fecharConfig(event)">
+  <div class="config-box" onclick="event.stopPropagation()">
+    <div class="config-title">⚙ Configurações da sala</div>
+    <div class="config-row">
+      <div class="config-row-info">
+        <div class="config-row-label">👻 Poltergeist</div>
+        <div class="config-row-desc">Quer ser votado como impostor · 3º time</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="toggle-poltergeist" onchange="salvarConfig()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="config-row">
+      <div class="config-row-info">
+        <div class="config-row-label">🌀 Lunático</div>
+        <div class="config-row-desc">Recebe uma palavra diferente da categoria</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="toggle-lunatico" onchange="salvarConfig()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="config-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div class="timer-label-row">
+        <div class="config-row-info">
+          <div class="config-row-label">⏱️ Cronômetro</div>
+          <div class="config-row-desc">Revela o impostor automaticamente ao zerar</div>
+        </div>
+        <div class="timer-value" id="timer-value-label">Desativado</div>
+      </div>
+      <div class="timer-slider-row" id="timer-slider-row"></div>
+    </div>
+
+    <div class="config-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div class="config-row-info">
+        <div class="config-row-label">📂 Categorias</div>
+        <div class="config-row-desc">Selecione quais categorias podem ser sorteadas</div>
+      </div>
+      <div class="cat-select-actions">
+        <button type="button" onclick="selecionarTodasCategorias(true)">Marcar todas</button>
+        <button type="button" onclick="selecionarTodasCategorias(false)">Desmarcar todas</button>
+      </div>
+      <div class="cat-select-list" id="cat-select-list">
+        <div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">carregando categorias…</div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="fecharConfig()">Fechar</button>
+  </div>
+</div>
+
+<img src="header.png" alt="Impostor" id="site-header" style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;display:block;z-index:0;pointer-events:none;">
+<div class="wrap">
+  <!-- ══ AUTH ══ -->
+  <div id="s-auth" class="screen">
+    <div class="card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
+        <button class="auth-tab" onclick="switchAuthTab('cadastro')">Cadastrar</button>
+      </div>
+      <!-- Login -->
+      <div id="auth-login">
+        <button class="btn btn-google" onclick="loginGoogle()" style="margin-bottom:14px">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Entrar com Google
+        </button>
+        <div class="divider">ou</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <input id="li-email" type="email" placeholder="E-mail" autocomplete="email">
+          <input id="li-senha" type="password" placeholder="Senha" autocomplete="current-password">
+          <button class="btn btn-primary" onclick="loginEmail()">Entrar</button>
+          <div style="text-align:center">
+            <button class="link-btn" onclick="esqueciSenha()">Esqueci minha senha</button>
+          </div>
+        </div>
+      </div>
+      <!-- Cadastro -->
+      <div id="auth-cadastro" style="display:none">
+        <button class="btn btn-google" onclick="loginGoogle()" style="margin-bottom:14px">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Cadastrar com Google
+        </button>
+        <div class="divider">ou</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <input id="ca-nome" type="text" placeholder="Nome de exibição" maxlength="20" autocomplete="nickname">
+          <input id="ca-email" type="email" placeholder="E-mail" autocomplete="email">
+          <input id="ca-senha" type="password" placeholder="Senha (mín. 6 caracteres)" autocomplete="new-password">
+          <button class="btn btn-primary" onclick="cadastrar()">Criar conta</button>
+        </div>
+      </div>
+      <div class="status err" id="st-auth" style="margin-top:8px"></div>
+    </div>
+    <div class="words-info" id="words-status"></div>
+  </div>
+
+  <!-- ══ SETUP (nome + sala, após login) ══ -->
+  <div id="s-setup" class="screen" style="gap:8px;overflow-y:auto;">
+    <!-- Perfil + nome de exibição unificados -->
+    <div class="card" style="padding:12px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div class="avatar-upload-wrap" style="width:50px;margin:0;position:relative;flex-shrink:0">
+          <img id="setup-avatar" class="avatar" src="" alt="avatar" onclick="$('inp-avatar').click()" style="width:50px;height:50px;cursor:pointer;border-width:3px;">
+          <button class="avatar-edit-btn" onclick="$('inp-avatar').click()">✏️</button>
+        </div>
+        <div class="profile-info" style="flex:1;min-width:0">
+          <div class="profile-name" id="setup-nome-display">—</div>
+          <div class="profile-email" id="setup-email-display">—</div>
+          <div style="font-size:.8rem;color:var(--sub);margin-top:2px" id="avatar-status"></div>
+        </div>
+        <button class="link-btn" onclick="logout()" style="font-size:.85rem;flex-shrink:0">sair</button>
+      </div>
+      <input id="inp-avatar" type="file" accept="image/*" onchange="uploadAvatar(this)">
+      <div class="row">
+        <input id="inp-displayname" type="text" placeholder="Como te chamam?" maxlength="20" autocomplete="off">
+        <button class="btn btn-secondary" style="width:auto;padding:10px 14px;font-size:1rem" onclick="salvarNome()">Salvar</button>
+      </div>
+      <div class="status" id="st-nome" style="margin-top:2px;min-height:14px"></div>
+    </div>
+    <!-- Rank card -->
+    <div id="setup-rank-card"></div>
+    <!-- Badge exibido -->
+    <div class="setup-badge-section" id="setup-badge-section" style="display:none">
+      <div class="stats-section-title" style="margin-bottom:10px">Badge exibido no chip</div>
+      <div class="badges-grid" id="setup-badge-grid"></div>
+    </div>
+    <!-- Sala -->
+    <div class="card" style="padding:12px">
+      <div class="card-label" style="margin-bottom:6px">Sala</div>
+      <div style="color:var(--sub);font-size:.95rem;line-height:1.5;margin-bottom:10px">
+        Digite um <strong style="color:var(--text)">código existente</strong> ou deixe <strong style="color:var(--text)">vazio</strong> para criar.
+      </div>
+      <div class="row">
+        <input id="inp-codigo" type="text" placeholder="Código da sala (opcional)" maxlength="8" autocomplete="off" style="text-transform:uppercase">
+        <button class="btn btn-primary" style="width:auto;padding:10px 18px;" onclick="entrarOuCriar()">→</button>
+      </div>
+    </div>
+    <div class="status err" id="st-setup"></div>
+    <button class="btn btn-secondary" id="btn-rejoin" onclick="rejoinSala()" style="display:none">↩ VOLTAR PARA <span id="rejoin-code"></span></button>
+    <div class="words-info" id="words-status2"></div>
+  </div>
+
+  <!-- ══ LOBBY ══ -->
+  <div id="s-lobby" class="screen">
+    <div class="screen-scroll">
+      <!-- Lista de jogadores -->
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;">
+        <div class="card-label"><span class="dot"></span>Jogadores <span class="conn-dot online"></span></div>
+        <div class="player-list" id="lobby-players" style="padding-right:2px;"></div>
+      </div>
+      <!-- Código + botão compartilhar -->
+      <div class="sala-badge" style="margin:0;flex-direction:column;align-items:flex-start;gap:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span class="sala-code" id="lobby-code">—</span>
+          <button class="sala-copy" id="btn-copiar" onclick="compartilharCodigo()">📤 compartilhar</button>
+        </div>
+        <div id="lobby-modos-ativos" class="modos-ativos" style="display:none"></div>
+      </div>
+      <div class="status err" id="st-lobby" style="min-height:0;padding:0"></div>
+    </div>
+    <div class="screen-footer">
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-secondary" id="btn-config" onclick="abrirConfig()" style="display:none;padding:12px 14px;width:auto">⚙</button>
+        <button class="btn btn-primary" id="btn-sortear" onclick="sortear()" style="display:none">🎲 SORTEAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ QUESTIONING ══ -->
+  <div id="s-questioning" class="screen">
+    <!-- Votação: cresce e rola quando necessário -->
+    <div class="screen-scroll inner-scroll">
+      <div id="q-timer" class="q-timer" style="display:none"></div>
+      <div class="card" id="q-votacao-card" style="display:flex;flex-direction:column;padding:12px;flex:1;min-height:0;overflow-y:auto;">
+        <div class="card-label" style="flex-shrink:0;">🗳️ Votação</div>
+        <div class="vote-grid" id="q-vote-grid" style="padding-right:2px;"></div>
+        <div style="font-size:.95rem;color:var(--sub);margin-top:8px;text-align:center;flex-shrink:0;" id="q-vote-status"></div>
+      </div>
+    </div>
+    <!-- Word box + botões: sempre fixos no fundo -->
+    <div class="screen-footer">
+      <div class="card word-box" id="q-word-box" onclick="toggleWordQ()">
+        <div class="cat-pill" id="q-word-cat">—</div>
+        <div id="q-word-el" class="word-hidden">● ● ●</div>
+        <div id="q-word-sub" style="display:none;font-family:'VT323',monospace;font-size:1rem;letter-spacing:2px;margin-top:4px;text-transform:uppercase"></div>
+        <div class="word-hint" id="q-word-hint">toque aqui para revelar</div>
+      </div>
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-secondary" id="btn-cancelar-q" onclick="cancelarJogo()" style="display:none">✖ CANCELAR</button>
+      </div>
+      <div class="btn-pair-row">
+        <button class="btn btn-secondary" id="btn-reiniciar-q" onclick="reiniciarJogo()" style="display:none">🔁 REINICIAR</button>
+        <button class="btn btn-danger" id="btn-revelar-q" onclick="revelarImpostor()" style="display:none">🔍 REVELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTADO ══ -->
+  <div id="s-resultado" class="screen">
+    <div class="screen-scroll">
+      <div class="card" style="padding:12px;">
+        <div class="card-label" id="res-titulo">🔍 Resultado da rodada</div>
+        <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
+      </div>
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;">
+        <div class="tabs" style="margin-bottom:10px;">
+          <button class="tab active" onclick="switchTab('hist')">📜 Histórico</button>
+          <button class="tab" onclick="switchTab('placar')">🏆 Placar</button>
+        </div>
+        <div class="tab-content active" id="tab-hist" style="padding-right:2px;">
+          <div id="hist-list" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <div class="tab-content" id="tab-placar" style="padding-right:2px;">
+          <div id="placar-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <div class="btn-pair-row">
+        <button class="btn btn-ghost" onclick="sairDaSala()">Sair da sala</button>
+        <button class="btn btn-primary" id="btn-nova" onclick="novaRodada()" style="display:none">🔄 NOVA RODADA</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ══ DEVLOG PANEL ══ -->
+<div id="devlog-panel">
+  <div id="devlog-bar" onclick="devlogToggle()">
+    <span>🛠 DEVLOG <span id="devlog-count" style="color:#aaa">(0)</span></span>
+    <div class="devlog-btns" onclick="event.stopPropagation()">
+      <button onclick="devlogClear()">Limpar</button>
+      <button onclick="devlogCopy()">Copiar</button>
+      <button onclick="devlogToggle()">▲/▼</button>
+    </div>
+  </div>
+  <div id="devlog-body"></div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:"AIzaSyB7w-qxJqX_qT2JFirm5Njpub1xRsc12Dw",
+  authDomain:"impostor-d4711.firebaseapp.com",
+  databaseURL:"https://impostor-d4711-default-rtdb.firebaseio.com",
+  projectId:"impostor-d4711",
+  storageBucket:"impostor-d4711.firebasestorage.app",
+  messagingSenderId:"115130318648",
+  appId:"1:115130318648:web:2b8c808b250996e3268bcd"
+};
+firebase.initializeApp(firebaseConfig);
+const auth    = firebase.auth();
+const db      = firebase.database();
+const storage = firebase.storage();
+
+// ══════════════════════════════════════════════════════
+//  DEVLOG SWITCH — mude para true para ativar
+// ══════════════════════════════════════════════════════
+const DEVLOG_ENABLED = false;
+let _devlogCollapsed = false;
+let _devlogCount = 0;
+let _devlogRef = null; // referência no Firebase para log compartilhado
+const _DEVLOG_SESSION = Math.random().toString(36).slice(2,6).toUpperCase(); // ID desta sessão
+
+function _devlogUidLabel(){
+  if(typeof ME !== 'undefined' && ME?.uid) return ME.uid.slice(0,6);
+  return 'NOAUTH';
+}
+
+// Escreve no painel local E no Firebase (para ver de outro dispositivo)
+function devlog(msg, tipo='info'){
+  if(!DEVLOG_ENABLED) return; // switch desligado
+  const body = document.getElementById('devlog-body');
+  if(body){
+    const now = new Date();
+    const ts  = now.toTimeString().slice(0,8)+'.'+String(now.getMilliseconds()).padStart(3,'0');
+    const row = document.createElement('div');
+    row.className = 'dlog ' + tipo;
+    row.innerHTML = `<span class="dlog-time">${ts}</span><span class="dlog-uid">[${_DEVLOG_SESSION}/${_devlogUidLabel()}]</span><span class="dlog-msg">${msg}</span>`;
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+    _devlogCount++;
+    const cnt = document.getElementById('devlog-count');
+    if(cnt) cnt.textContent = `(${_devlogCount})`;
+  }
+  // Também no console
+  console[tipo==='err'?'error':tipo==='warn'?'warn':'log'](`[IMP-${_DEVLOG_SESSION}] ${msg}`);
+  // Grava no Firebase para ver de outro device (sem bloquear)
+  try{
+    if(typeof db !== 'undefined'){
+      const ref = db.ref('_devlog').push();
+      ref.set({
+        ts: Date.now(),
+        session: _DEVLOG_SESSION,
+        uid: _devlogUidLabel(),
+        msg, tipo
+      }).catch(()=>{});
+      // Limita a 200 entradas automaticamente
+      db.ref('_devlog').once('value', snap=>{
+        if(snap.numChildren && snap.numChildren() > 200){
+          const keys = Object.keys(snap.val()||{});
+          keys.slice(0, keys.length-200).forEach(k=> db.ref(`_devlog/${k}`).remove().catch(()=>{}));
+        }
+      }).catch(()=>{});
+    }
+  }catch(_){}
+}
+
+function devlogToggle(){
+  _devlogCollapsed = !_devlogCollapsed;
+  const body = document.getElementById('devlog-body');
+  if(body) body.classList.toggle('collapsed', _devlogCollapsed);
+}
+function devlogClear(){
+  const body = document.getElementById('devlog-body');
+  if(body){ body.innerHTML=''; _devlogCount=0; }
+  const cnt = document.getElementById('devlog-count');
+  if(cnt) cnt.textContent='(0)';
+}
+function devlogCopy(){
+  const body = document.getElementById('devlog-body');
+  if(!body) return;
+  const linhas = [...body.querySelectorAll('.dlog')].map(r=>r.textContent).join('\n');
+  navigator.clipboard.writeText(linhas).then(()=>devlog('Log copiado!','ok')).catch(()=>devlog('Falha ao copiar','err'));
+}
+
+// Inicia listener no Firebase para mostrar logs de OUTROS devices também
+function devlogStartRemoteListener(){
+  if(_devlogRef) return;
+  _devlogRef = db.ref('_devlog').orderByChild('ts').limitToLast(50);
+  _devlogRef.on('child_added', snap=>{
+    const d = snap.val();
+    if(!d || d.session === _DEVLOG_SESSION) return; // não duplica o próprio
+    const body = document.getElementById('devlog-body');
+    if(!body) return;
+    const ts = new Date(d.ts).toTimeString().slice(0,8);
+    const row = document.createElement('div');
+    row.className = 'dlog ' + (d.tipo||'info');
+    row.style.opacity = '0.7'; // diferencia logs remotos
+    row.innerHTML = `<span class="dlog-time">${ts}📡</span><span class="dlog-uid">[${d.session||'?'}/${d.uid||'?'}]</span><span class="dlog-msg">${d.msg}</span>`;
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+    _devlogCount++;
+    const cnt = document.getElementById('devlog-count');
+    if(cnt) cnt.textContent = `(${_devlogCount})`;
+  });
+}
+
+// Intercepta visibilitychange para logar quando app vai para background/foreground
+document.addEventListener('visibilitychange', ()=>{
+  devlog(`visibilitychange → ${document.visibilityState} | ME=${typeof ME!=='undefined'&&ME?ME.uid?.slice(0,6):'null'} | SALA=${typeof SALA!=='undefined'?SALA:'?'}`, document.visibilityState==='hidden'?'warn':'ok');
+});
+window.addEventListener('focus', ()=> devlog('window focus', 'ok'));
+window.addEventListener('blur',  ()=> devlog('window blur',  'warn'));
+window.addEventListener('online',  ()=> devlog('REDE: online',  'ok'));
+window.addEventListener('offline', ()=> devlog('REDE: offline', 'err'));
+
+const AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2316161F'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%234A4A6A'%3E👤%3C/text%3E%3C/svg%3E";
+
+// ══════════════════════════════════════════════════════
+//  SERVER TIME — sincronizado via Firebase .info/serverTimeOffset
+// ══════════════════════════════════════════════════════
+let _serverOffset = 0;
+(function(){
+  const ref = firebase.database().ref('.info/serverTimeOffset');
+  ref.on('value', snap => { _serverOffset = snap.val() || 0; });
+})();
+function serverNow(){ return Date.now() + _serverOffset; }
+
+// ══════════════════════════════════════════════════════
+//  VIBRAÇÃO
+//  Chrome bloqueia navigator.vibrate sem gesto recente do usuário.
+//  Fallback: beep curtíssimo via AudioContext (desbloqueado no 1º toque).
+// ══════════════════════════════════════════════════════
+let _audioUnlocked = false;
+function _unlockAudio(){
+  if(_audioUnlocked) return;
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1,1,22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.connect(ctx.destination); src.start(0);
+    ctx.resume().then(()=>{ _audioUnlocked=true; });
+  }catch(_){}
+}
+document.addEventListener('touchstart', _unlockAudio, {once:true, passive:true});
+document.addEventListener('click',      _unlockAudio, {once:true, passive:true});
+
+function _hapticBeep(ms){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.frequency.value = 20;
+    g.gain.setValueAtTime(0.001, ctx.currentTime);
+    osc.start(); osc.stop(ctx.currentTime + ms/1000);
+  }catch(_){}
+}
+
+function vibrar(padrao){
+  try{
+    const ret = navigator.vibrate ? navigator.vibrate(padrao) : false;
+    if(!ret){
+      const total = Array.isArray(padrao)
+        ? padrao.reduce((a,b)=>a+b,0)
+        : (Number(padrao)||100);
+      _hapticBeep(Math.min(total, 400));
+    }
+    devlog('vibrar | ret='+ret+' | padrao='+JSON.stringify(padrao),'info');
+  }catch(e){ devlog('vibrar err: '+e,'err'); }
+}
+const VIBRA={
+  voto:        [0,150],
+  timerTick:   [0,120],
+  timerFim:    [0,200,100,200,100,400],
+  revelar:     [0,300,120,300,120,500],
+};
+
+// ══════════════════════════════════════════════════════
+//  WEB AUDIO SYNTH
+// ══════════════════════════════════════════════════════
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.18, delay=0){
+  try{
+    const ctx=getAudio();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type=type; osc.frequency.setValueAtTime(freq, ctx.currentTime+delay);
+    gain.gain.setValueAtTime(0, ctx.currentTime+delay);
+    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime+delay+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+delay+duration);
+    osc.start(ctx.currentTime+delay);
+    osc.stop(ctx.currentTime+delay+duration+0.05);
+  }catch(e){}
+}
+
+function playNoise(duration, vol=0.12, delay=0){
+  try{
+    const ctx=getAudio();
+    const buf=ctx.createBuffer(1,ctx.sampleRate*duration,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=ctx.createBufferSource();
+    const filter=ctx.createBiquadFilter();
+    const gain=ctx.createGain();
+    src.buffer=buf;
+    filter.type='bandpass'; filter.frequency.value=400;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(vol, ctx.currentTime+delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+delay+duration);
+    src.start(ctx.currentTime+delay);
+  }catch(e){}
+}
+
+const SFX = {
+  // Jogador entra — acorde ascendente dó-mi-sol
+  join(){ playTone(261,'sine',.12); playTone(329,'sine',.12,0.14,0.08); playTone(392,'sine',.18,0.12,0.16); },
+
+  // Sortear — drum roll + fanfara (tocado via Firebase para todos)
+  sortear(){
+    for(let i=0;i<8;i++) playNoise(0.04,0.08+i*0.01,i*0.055);
+    playTone(523,'sawtooth',.15,0.16,0.48);
+    playTone(659,'sawtooth',.15,0.14,0.60);
+    playTone(784,'sawtooth',.25,0.18,0.72);
+  },
+
+  // Ver palavra — whoosh + tom
+  palavra(){ playNoise(0.18,0.15); playTone(220,'sine',.35,0.12,0.1); },
+
+  // Clique de voto — ploc percussivo
+  voto(){ playTone(800,'square',.04,0.1); playTone(500,'square',.06,0.08,0.04); },
+
+  // Timer tick com pitch progressivo de 15→0s, sobe 3 semitons (880→1046 Hz)
+  // semitom = 2^(1/12); 3 semitons = 2^(3/12) ≈ 1.189
+  tick(restante){
+    const BASE=880, TOPO=880*Math.pow(2,3/12); // ~1046 Hz
+    const t=Math.max(0,Math.min(1,(15-restante)/15));
+    const freq=BASE+(TOPO-BASE)*t;
+    playTone(freq,'sine',.05,0.06);
+  },
+
+  // Revelar impostor — acorde dramático descendente
+  revelar(){
+    playTone(523,'sawtooth',.12,0.2);
+    playTone(415,'sawtooth',.12,0.18,0.14);
+    playTone(330,'sawtooth',.25,0.22,0.28);
+    playNoise(0.08,0.1,0.28);
+  },
+
+  // Vitória — fanfara ascendente
+  vitoria(){
+    [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.2,0.2,i*0.12));
+    playTone(1047,'sine',.4,0.18,0.5);
+  },
+
+  // Derrota — tom descendente triste
+  derrota(){
+    [440,415,392,330].forEach((f,i)=>playTone(f,'triangle',.22,0.15,i*0.14));
+  },
+
+  // Nova rodada — acorde ascendente limpo
+  novaRodada(){ playTone(392,'sine',.15,0.15); playTone(523,'sine',.15,0.13,0.12); playTone(659,'sine',.2,0.15,0.24); },
+
+  // Sair da sala — swoosh descendente
+  sair(){ playTone(600,'sine',.08,0.14); playTone(400,'sine',.12,0.12,0.08); playTone(250,'sine',.18,0.1,0.18); },
+};
+
+// ══════════════════════════════════════════════════════
+//  PALAVRAS FALLBACK
+// ══════════════════════════════════════════════════════
+const PALAVRAS_FALLBACK = {
+  "Comidas":["Lasanha","Coxinha","Pizza","Feijoada","Hambúrguer","Brigadeiro","Estrogonofe","Pastel","Sushi","Macarronada","Panqueca","Risoto","Pão de queijo","Churrasco","Pudim","Tapioca","Farofa","Batata frita"],
+  "Animais":["Cachorro","Gato","Elefante","Leão","Tigre","Girafa","Urso","Panda","Golfinho","Águia","Cavalo","Lobo","Raposa","Canguru","Pinguim","Macaco","Jacaré","Tubarão"],
+  "Filmes":["Matrix","Titanic","Inception","Interestelar","Gladiator","Avatar","Shrek","Coringa","Whiplash","Amélie","Parasita","Ratatouille","Seven","Up","Coco","Memento"],
+  "Séries":["Breaking Bad","Succession","Chernobyl","Sherlock","Dark","Fleabag","Fargo","Lost","Dexter","Severance","Hannibal","Friends","Mad Men","Narcos","Sopranos"],
+  "Profissões":["Médico","Engenheiro","Professor","Advogado","Arquiteto","Psicólogo","Jornalista","Dentista","Programador","Enfermeiro","Veterinário","Designer","Biólogo","Bombeiro"],
+  "Países":["Brasil","Argentina","Canadá","Japão","Itália","França","Alemanha","Portugal","Austrália","México","Espanha","Egito","Índia","China","Grécia","Irlanda"],
+  "Instrumentos":["Violão","Piano","Bateria","Violino","Flauta","Saxofone","Trompete","Baixo","Violoncelo","Teclado","Ukulele","Sanfona","Harpa","Pandeiro","Gaita"]
+};
+const SHEETS_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vS-iZqk5Q9ZAA_syRdr-dXve0iX4i_mCzhLTpRJneq7Qm5kuxO-eSKYfaYhTwJ-f5gIAWxUHd5LAyCZ/pub?output=csv';
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let ME = null;         // firebase.User
+let ME_PROFILE = null; // { nome, avatarUrl, placarTotal }
+let SALA = '';
+let meuVoto = null;
+let myWord  = '';
+let palavrasCache = null;
+let listeners = {};
+let connectedListener = null; // listener de presença — gerenciado separadamente
+
+// ── cached state
+let _info      = null;
+let _jogadores = {};
+let _votos     = {};
+let _assignments = null;
+let _snapshot  = {};   // snapshot dos jogadores no início da rodada
+let _historico = {};
+let resultadoSomTocado = false; // evita som duplicado na tela de resultado
+let _config    = { poltergeistAtivo: false, lunaticoAtivo: false, timerMinutos: 0, categorias: [] };
+let _timer     = { ativo:false, fimTs:0 };  // estado local do cronômetro (espelha salas/$SALA/timer)
+let _timerInterval = null;
+let _timerRevelarDisparado = false; // evita o host disparar revelarImpostor() mais de uma vez
+let _ultimoTickVibrado = null;      // evita vibrar repetidamente no mesmo segundo
+let _roles     = {};   // idKey(uid) → 'normal' | 'impostor' | 'poltergeist' | 'lunatico'
+
+// ══════════════════════════════════════════════════════
+//  PONTUAÇÃO — edite aqui para ajustar os valores
+// ══════════════════════════════════════════════════════
+const PTS = {
+  // ── JOGADORES NORMAIS — impostor pego ──────────────────
+  acertou_unanimidade:             2,   // votou no impostor + todos acertaram
+  acertou_maioria:                 3,   // votou no impostor + maioria acertou
+  acertou_minoria:                 4,   // votou no impostor + poucos acertaram
+  errou_impegou:                  -1,   // votou em outro, mas impostor foi pego
+  absteve_impegou:                 2,   // não votou, impostor foi pego
+
+  // ── JOGADORES NORMAIS — impostor escapou ───────────────
+  acertou_escapou:                 0,   // votou no impostor, mas ele escapou
+  errou_escapou:                  -2,   // votou em outro e impostor escapou
+  absteve_escapou:                -3,   // não votou e impostor escapou
+
+  // ── IMPOSTOR — pego ────────────────────────────────────
+  imp_pego_unanimidade:           -3,   // pego por unanimidade
+  imp_pego_maioria:               -2,   // pego por maioria
+  imp_pego_minoria:               -1,   // pego por minoria
+
+  // ── IMPOSTOR — escapou ─────────────────────────────────
+  imp_escapou_zerovoto:            6,   // ninguém votou nele
+  imp_escapou_minoria:             4,   // minoria votou nele mas escapou
+  imp_escapou_empate:              2,   // empate nos votos, escapou
+
+  // ── IMPOSTOR — poltergeist venceu no lugar dele ────────
+  imp_poltergeist_venceu:          0,   // poltergeist foi eliminado no lugar dele
+
+  // ── POLTERGEIST — venceu (foi o mais votado) ───────────
+  poltergeist_venceu:              5,   // objetivo cumprido
+
+  // ── POLTERGEIST — não venceu ───────────────────────────
+  poltergeist_perdeu_impegou:      0,   // impostor foi pego, poltergeist sobreviveu
+  poltergeist_perdeu_escapou:      0,   // impostor escapou, poltergeist sobreviveu
+
+  // ── JOGADORES — votaram no poltergeist ─────────────────
+  votou_no_poltergeist_venceu:    -2,   // poltergeist venceu e você contribuiu
+  votou_no_poltergeist_perdeu:    -1,   // votou no poltergeist mas ele não venceu
+
+  // ── LUNÁTICO — impostor pego ───────────────────────────
+  lunatico_acertou_unanimidade:    2,
+  lunatico_acertou_maioria:        3,
+  lunatico_acertou_minoria:        4,
+  lunatico_errou_impegou:         -1,
+  lunatico_absteve_impegou:        2,
+
+  // ── LUNÁTICO — impostor escapou ────────────────────────
+  lunatico_acertou_escapou:        0,
+  lunatico_errou_escapou:         -2,
+  lunatico_absteve_escapou:       -3,
+};
+
+// ══════════════════════════════════════════════════════
+//  BADGES — definição e lógica
+// ══════════════════════════════════════════════════════
+const BADGES = [
+  {id:'estreante',       emoji:'🎲', nome:'Estreante',          desc:'Jogue sua 1ª partida'},
+  {id:'novato_suspeito', emoji:'🕵️', nome:'Novato Suspeito',    desc:'Seja o impostor pela 1ª vez'},
+  {id:'assombracao',     emoji:'🎃', nome:'Assombração',        desc:'Ganhe como Poltergeist 1ª vez'},
+  {id:'confusao_mental', emoji:'🌀', nome:'Confusão Mental',    desc:'Seja o mais votado como Lunático'},
+  {id:'bode_expiatorio', emoji:'🎭', nome:'Bode Expiatório',    desc:'Seja o mais votado não sendo impostor'},
+  {id:'palhaco',         emoji:'🤡', nome:'Palhaço',            desc:'Vote em si mesmo'},
+  {id:'veterano',        emoji:'🃏', nome:'Veterano',           desc:'50 partidas jogadas'},
+  {id:'lendario',        emoji:'💎', nome:'Lendário',           desc:'200 partidas jogadas'},
+  {id:'fantasma',        emoji:'👻', nome:'Fantasma',           desc:'Escape com 0 votos como impostor'},
+  {id:'escapista',       emoji:'⛓️‍💥', nome:'Escapista',          desc:'Escape 3x seguidas como impostor'},
+  {id:'ilusionista',     emoji:'🎪', nome:'Ilusionista',        desc:'Escape com voto unânime em outra pessoa'},
+  {id:'intocavel',       emoji:'💀', nome:'Intocável',          desc:'Escape 5x seguidas como impostor'},
+  {id:'olho_de_aguia',   emoji:'🎯', nome:'Olho de Águia',      desc:'Acerte o impostor 5x seguidas'},
+  {id:'farejador',       emoji:'🐺', nome:'Farejador',          desc:'Todos votaram no impostor e você também'},
+  {id:'abstencao_lucrativa',emoji:'🤫',nome:'Abstenção Lucrativa',desc:'Não vote e o impostor seja pego'},
+  {id:'cacador_veterano',emoji:'🩸', nome:'Caçador Veterano',   desc:'Acerte o impostor 20x no total'},
+  {id:'mestre_do_caos',  emoji:'👾', nome:'Mestre do Caos',     desc:'Ganhe 5x seguidas como Poltergeist'},
+];
+
+// Retorna a definição do badge por id
+function getBadge(id){ return BADGES.find(b=>b.id===id)||null; }
+
+// Avalia quais badges ganhar/perder após uma rodada revelada
+// eu: objeto do jogador atual, resultado: {cenarioImpostor, cenarioPoltergeist, cenarioJogadores, impostorPegou, poltergeistVenceu}
+// votos: _votos, roles: roles efetivos, ativosIds: array de ids ativos
+// stats: objeto atual de stats (antes de atualizar)
+// ativosAtual: objeto { id: badge } dos badges ativos
+async function avaliarBadges(eu, resultado, votos, roles, ativos, statsAntes, badgesAtivos){
+  const uid=eu.id;
+  const isImp=uid===_info.impostorId;
+  const isPolt=roles[idKey(uid)]==='poltergeist';
+  const isLun=roles[idKey(uid)]==='lunatico';
+  const meuVotoObj=votos[idKey(uid)];
+  const votouEm=meuVotoObj?.votadoId||null;
+  const impostorId=_info.impostorId;
+  const {impostorPegou,poltergeistVenceu}=resultado;
+
+  const contagem={};
+  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const maxVotos=Math.max(0,...Object.values(contagem));
+  const maisVotados=Object.keys(contagem).filter(id=>contagem[id]===maxVotos);
+
+  const ganhou=[];
+  const perdeu=[];
+
+  function marcar(id, ativo){
+    if(ativo){ if(!badgesAtivos[id]) ganhou.push(id); }
+    else      { if(badgesAtivos[id]) perdeu.push(id); }
+  }
+
+  // ── Permanentes (só ganham, nunca perdem)
+  if(statsAntes.partidas===0) ganhou.push('estreante'); // 1ª partida (stats ainda não incrementada)
+  if(isImp && statsAntes.partidasImpostor===0 && !badgesAtivos['novato_suspeito']) ganhou.push('novato_suspeito');
+  if(isPolt && poltergeistVenceu && !badgesAtivos['assombracao']) ganhou.push('assombracao');
+  if(isLun && maisVotados.includes(uid) && !badgesAtivos['confusao_mental']) ganhou.push('confusao_mental');
+  if(!isImp && maisVotados.includes(uid) && maxVotos>0 && !badgesAtivos['bode_expiatorio']) ganhou.push('bode_expiatorio');
+  if(votouEm===uid && !badgesAtivos['palhaco']) ganhou.push('palhaco');
+  if(statsAntes.partidas+1>=50  && !badgesAtivos['veterano'])  ganhou.push('veterano');
+  if(statsAntes.partidas+1>=200 && !badgesAtivos['lendario'])  ganhou.push('lendario');
+
+  // ── Fantasma (perde se pego com unanimidade)
+  if(isImp){
+    const qtdVotosNele=contagem[uid]||0;
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if(!impostorPegou && qtdVotosNele===0) marcar('fantasma',true);
+    else if(impostorPegou && qtdVotosNele===qtdAtivos) marcar('fantasma',false);
+  }
+
+  // ── Escapista / Intocável (sequência de escapadas)
+  if(isImp){
+    const seq=(statsAntes.sequenciaEscapadas||0)+(impostorPegou?0:1);
+    if(!impostorPegou){
+      if(seq>=3) marcar('escapista',true);
+      if(seq>=5) marcar('intocavel',true);
+    } else {
+      marcar('escapista',false);
+      marcar('intocavel',false);
+    }
+  }
+
+  // ── Ilusionista (escapou com voto unânime em outra pessoa)
+  if(isImp && !impostorPegou){
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if(qtdAtivos>0 && maisVotados.length===1 && maisVotados[0]!==uid && contagem[maisVotados[0]]===qtdAtivos){
+      marcar('ilusionista',true);
+    }
+  } else if(isImp && impostorPegou){
+    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
+    if((contagem[uid]||0)===qtdAtivos) marcar('ilusionista',false);
+  }
+
+  // ── Olho de Águia (acertos seguidos votando no impostor)
+  if(!isImp && !isPolt){
+    const acertou=votouEm===impostorId;
+    const seq=(statsAntes.sequenciaAcertos||0)+(acertou?1:0);
+    const erros=(statsAntes.errosSequencia||0)+(acertou?0:1);
+    if(acertou && seq>=5) marcar('olho_de_aguia',true);
+    if(!acertou && erros>=3) marcar('olho_de_aguia',false);
+  }
+
+  // ── Farejador (unanimidade no impostor)
+  if(!isImp && !isPolt && votouEm===impostorId){
+    const qtdAtivos=ativos.filter(j=>j.id!==impostorId&&!j.espectador).length;
+    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
+    if(qtdAcertaram===qtdAtivos) marcar('farejador',true);
+  } else if(!isImp && votouEm!==impostorId){
+    const erros=(statsAntes.errosSequencia||0)+1;
+    if(erros>=3) marcar('farejador',false);
+  }
+
+  // ── Abstenção Lucrativa
+  if(!isImp && !votouEm && impostorPegou){
+    marcar('abstencao_lucrativa',true);
+  } else if(!isImp && votouEm===impostorId){
+    // único a acertar = perde o badge
+    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
+    if(qtdAcertaram===1) marcar('abstencao_lucrativa',false);
+  }
+
+  // ── Caçador Veterano (20 acertos totais)
+  if(!isImp && votouEm===impostorId){
+    if((statsAntes.acertosTotal||0)+1>=20) marcar('cacador_veterano',true);
+    const erros=statsAntes.errosSequencia||0;
+    if(erros>=3) marcar('cacador_veterano',false);
+  } else if(!isImp && votouEm && votouEm!==impostorId){
+    if((statsAntes.errosSequencia||0)+1>=3) marcar('cacador_veterano',false);
+  }
+
+  // ── Mestre do Caos (poltergeist 5x seguidas)
+  if(isPolt){
+    const seq=(statsAntes.sequenciaVitoriasPoltergeist||0)+(poltergeistVenceu?1:0);
+    const perda=(statsAntes.sequenciaPerdasPoltergeist||0)+(poltergeistVenceu?0:1);
+    if(poltergeistVenceu && seq>=5) marcar('mestre_do_caos',true);
+    if(!poltergeistVenceu && perda>=3) marcar('mestre_do_caos',false);
+  }
+
+  // Monta update Firebase
+  const updates={};
+  ganhou.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=true; });
+  perdeu.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=false; });
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  return {ganhou, perdeu};
+}
+// Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
+const PRESTIGE_TIERS = [
+  {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
+  {min:30,  max:79,  tier:2, title:'Lobisomem',  img:'lobisomem.png',  color:'#0072ff'},
+  {min:80,  max:159, tier:3, title:'Vampiro',    img:'vampiro.png',    color:'#ff0000'},
+  {min:160, max:299, tier:4, title:'Metamorfo',  img:'metamorfo.png',  color:'#7b00ff'},
+  {min:300, max:Infinity, tier:5, title:'Alien', img:'alien.png',      color:'#06ff00'},
+];
+
+function getPrestige(pts){
+  const p=Math.max(0,pts||0);
+  return PRESTIGE_TIERS.find(t=>p>=t.min&&p<=t.max)||PRESTIGE_TIERS[0];
+}
+
+function getPrestigeStyle(pts){
+  const p=Math.max(0,pts||0);
+  const t=getPrestige(p);
+  const nextTier=PRESTIGE_TIERS[t.tier]||null;
+  const ptsParaProx=nextTier?nextTier.min-p:0;
+  const tierRange=nextTier?(nextTier.min-t.min):1;
+  const progressPct=nextTier?Math.min(100,Math.round((p-t.min)/tierRange*100)):100;
+  return {tier:t.tier, title:t.title, color:t.color, img:t.img,
+    pts:p, ptsParaProx, progressPct, isMax:t.tier===5};
+}
+
+
+// Nome sempre branco — legibilidade sobre pixel art
+function nomeHTML(nome, pts){
+  return `<span style="color:#fff;font-weight:500">${nome}</span>`;
+}
+
+// Rank title — branco dentro do chip (CSS cuida), colorido fora
+function rankBoxHTML(pts){
+  const s=getPrestigeStyle(pts||0);
+  return `<span style="font-size:.9rem;color:${s.color};letter-spacing:.5px;text-transform:uppercase">${s.title} · ${s.pts}pt</span>`;
+}
+
+// Borda do avatar com cor do rank
+function avatarTierStyle(pts){
+  const s=getPrestigeStyle(pts||0);
+  return `border-color:${s.color}!important;box-shadow:0 0 0 2px ${s.color}44!important;`;
+}
+
+// Aplica imagem pixel art cobrindo o chip inteiro + borda colorida do rank
+function applyChipStyle(el, pts, isMe){
+  const s=getPrestigeStyle(pts||0);
+  const c=s.color;
+  el.style.borderColor=c;
+  el.style.boxShadow=`0 0 8px ${c}66`;
+
+  // Usa <img> como background real — cobre tudo (object-fit:fill mantém pixel art sem distorção)
+  let bg=el.querySelector('.chip-bg');
+  if(!bg){
+    bg=document.createElement('img');
+    bg.className='chip-bg';
+    bg.alt='';
+    el.insertBefore(bg, el.firstChild);
+  }
+  bg.src=s.img;
+
+  // z-index no conteúdo para ficar sobre a imagem
+  el.querySelectorAll('.chip-info,.avatar,.badges-right').forEach(n=>{
+    n.style.position='relative';
+    n.style.zIndex='1';
+  });
+}
+
+// Card de rank grande pro menu principal
+function rankCardHTML(pts){
+  const s=getPrestigeStyle(pts||0);
+  const c=s.color;
+  const nextTitle=s.isMax?'Rank máximo!':PRESTIGE_TIERS[s.tier]?.title||'';
+  const nextLabel=s.isMax?'Rank máximo atingido!':`${s.ptsParaProx}pt para ${nextTitle}`;
+  return `
+  <div style="position:relative;overflow:hidden;background:var(--card);
+    padding:16px 20px;border:2px solid ${c};box-shadow:3px 3px 0 rgba(0,0,0,.8);">
+    <img src="${s.img}" alt="" style="position:absolute;top:0;right:0;height:100%;width:auto;
+      pointer-events:none;z-index:0;
+      image-rendering:pixelated;image-rendering:-moz-crisp-edges;">
+    <div style="position:relative;z-index:1">
+      <div style="font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:6px">Seu rank</div>
+      <div style="font-family:'VT323',monospace;font-size:1.8rem;color:${c}">${s.title}</div>
+      <div style="font-size:.72rem;color:#fff;margin-top:2px;margin-bottom:14px">${pts||0} pontos totais</div>
+      <div style="height:5px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px">
+        <div style="height:100%;width:${s.progressPct}%;background:${c};transition:width .5s ease;"></div>
+      </div>
+      <div style="font-size:.65rem;color:#fff">${nextLabel}</div>
+    </div>
+  </div>`;
+}
+
+
+const $ = id => document.getElementById(id);
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function setErr(id,msg){const e=$(id);if(e){e.textContent=msg;e.className='status err';}}
+function clearErr(id){const e=$(id);if(e){e.textContent='';e.className='status';}}
+function setOk(id,msg){const e=$(id);if(e){e.textContent=msg;e.className='status ok';}}
+
+function idKey(id){ return (id||'').replace(/-/g,'_'); }
+function keyToId(k){ return k.replace(/_/g,'-'); }
+
+function gerarCodigo(){ return Math.random().toString(36).substring(2,6).toUpperCase(); }
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='hist'?0:1)));
+  document.querySelectorAll('.tab-content').forEach((t,i)=>t.classList.toggle('active',i===(tab==='hist'?0:1)));
+}
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
+  $('auth-login').style.display   = tab==='login'   ? '' : 'none';
+  $('auth-cadastro').style.display = tab==='cadastro'? '' : 'none';
+  clearErr('st-auth');
+}
+
+function avatarImg(url){ return url||AVATAR_PLACEHOLDER; }
+
+// ══════════════════════════════════════════════════════
+//  FIREBASE HELPERS
+// ══════════════════════════════════════════════════════
+const get  = path => db.ref(path).get().then(s=>s.val());
+const set  = (path,val) => db.ref(path).set(val);
+const upd  = (path,val) => db.ref(path).update(val);
+const del  = path => db.ref(path).remove();
+
+function listen(key, path, cb){
+  if(listeners[key]) listeners[key].off('value');
+  listeners[key] = db.ref(path);
+  listeners[key].on('value', snap=>cb(snap.val()));
+}
+function stopListeners(){
+  Object.values(listeners).forEach(r=>r.off());
+  listeners={};
+  Object.values(_userListeners).forEach(r=>r.off());
+  _userListeners={};
+  if(connectedListener){ db.ref('.info/connected').off('value', connectedListener); connectedListener=null; }
+  if(_timerInterval){ clearInterval(_timerInterval); _timerInterval=null; }
+  _timer={ ativo:false, fimTs:0 }; _timerRevelarDisparado=false; _ultimoTickVibrado=null;
+  _qtdVotosAnterior=0;
+  _votosCarregadoUmaVez=false;
+}
+
+// ══════════════════════════════════════════════════════
+//  PALAVRAS
+// ══════════════════════════════════════════════════════
+function parseCSV(text){
+  const linhas=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(linhas.length<2) throw new Error('CSV vazio');
+  function parseLinha(linha){
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<linha.length;i++){
+      const c=linha[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    cols.push(cur.trim());return cols;
+  }
+  const cats=parseLinha(linhas[0]);
+  const res={};
+  cats.forEach(c=>{if(c)res[c]=[];});
+  for(let r=1;r<linhas.length;r++){
+    const cols=parseLinha(linhas[r]);
+    cols.forEach((p,i)=>{if(cats[i]&&p)res[cats[i]].push(p);});
+  }
+  Object.keys(res).forEach(k=>{if(!res[k].length)delete res[k];});
+  if(!Object.keys(res).length) throw new Error('Sem categorias');
+  return res;
+}
+
+async function carregarPalavras(){
+  if(palavrasCache) return palavrasCache;
+  const wsEl=$('words-status2')||$('words-status');
+  try{
+    const res=await fetch(SHEETS_CSV+'&dummy='+Date.now());
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    palavrasCache=parseCSV(await res.text());
+    const total=Object.values(palavrasCache).reduce((s,a)=>s+a.length,0);
+    if(wsEl){wsEl.className='words-info ok';wsEl.textContent=`✓ ${Object.keys(palavrasCache).length} cat · ${total} palavras`;}
+  }catch(e){
+    if(wsEl){wsEl.className='words-info err';wsEl.textContent='⚠ Usando banco local';}
+    palavrasCache=PALAVRAS_FALLBACK;
+  }
+  return palavrasCache;
+}
+
+// ══════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════
+// Debounce para ignorar null temporário ao voltar do background
+let _authNullTimer = null;
+
+auth.onAuthStateChanged(async user=>{
+  devlog(`onAuthStateChanged → ${user ? 'USER:'+user.uid.slice(0,6) : 'NULL'} | hadME=${!!ME}`, user?'auth':'warn');
+  if(_authNullTimer){ clearTimeout(_authNullTimer); _authNullTimer=null; devlog('authNullTimer cancelado','info'); }
+
+  if(user){
+    try{
+      ME=user;
+      devlog(`user ok: ${user.email} | displayName="${user.displayName}"`, 'auth');
+      if(!ME_PROFILE || ME_PROFILE._uid !== user.uid){
+        devlog('carregando perfil do Firebase…','info');
+        ME_PROFILE = await carregarPerfil(user.uid);
+        ME_PROFILE._uid = user.uid;
+        devlog(`perfil carregado: nome="${ME_PROFILE.nome}" placarTotal=${ME_PROFILE.placarTotal}`, ME_PROFILE.nome?'ok':'err');
+      } else {
+        devlog('perfil já em cache, pulando reload','info');
+      }
+      devlogStartRemoteListener();
+      mostrarSetup();
+    }catch(e){
+      devlog(`ERRO ao carregar perfil: ${e.message}`, 'err');
+      if(!ME_PROFILE){
+        const nomeFallback = user.displayName || user.email?.split('@')[0] || 'Jogador';
+        devlog(`usando fallback nome="${nomeFallback}"`, 'warn');
+        ME_PROFILE = {
+          nome: nomeFallback,
+          avatarUrl: user.photoURL || '',
+          placarTotal: 0
+        };
+      }
+      mostrarSetup();
+    }finally{
+      $('loader').classList.add('hide');
+    }
+  } else {
+    devlog(`auth NULL — aguardando 2s antes de deslogar | SALA=${SALA}`, 'warn');
+    _authNullTimer = setTimeout(()=>{
+      _authNullTimer = null;
+      devlog('auth NULL confirmado após 2s — limpando estado e indo para login', 'err');
+      ME=null; ME_PROFILE=null;
+      $('loader').classList.add('hide');
+      showScreen('s-auth');
+    }, 2000);
+    if(!ME) $('loader').classList.add('hide');
+  }
+});
+
+async function carregarPerfil(uid){
+  let prof = null;
+  for(let i=0; i<3; i++){
+    devlog(`carregarPerfil tentativa ${i+1}/3 uid=${uid.slice(0,6)}`, 'info');
+    try{ prof = await get(`users/${uid}`); } catch(e){ devlog(`tentativa ${i+1} erro: ${e.message}`, 'err'); }
+    if(prof){ devlog(`perfil encontrado na tentativa ${i+1}: nome="${prof.nome}"`, 'ok'); break; }
+    if(i<2) await new Promise(r=>setTimeout(r, 800));
+  }
+
+  const nomeFirebase = ME.displayName || ME.email?.split('@')[0] || '';
+  devlog(`nomeFirebase="${nomeFirebase}" | prof=${prof?JSON.stringify({nome:prof.nome,placarTotal:prof.placarTotal}):'null'}`, 'info');
+
+  if(!prof){
+    if(!nomeFirebase){ devlog('sem nome e sem perfil — throw Sem conexão', 'err'); throw new Error('Sem conexão para carregar perfil'); }
+    devlog(`criando perfil novo nome="${nomeFirebase}"`, 'warn');
+    prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
+    await set(`users/${uid}`, prof);
+  } else if(!prof.nome && nomeFirebase){
+    devlog(`perfil com nome vazio — reparando para "${nomeFirebase}"`, 'warn');
+    prof.nome = nomeFirebase;
+    await upd(`users/${uid}`, { nome: nomeFirebase });
+  } else if(!prof.nome && !nomeFirebase){
+    devlog('perfil com nome vazio E sem nomeFirebase — nome ficará vazio!', 'err');
+  }
+  return prof;
+}
+
+async function loginEmail(){
+  const email=$('li-email').value.trim();
+  const senha=$('li-senha').value;
+  if(!email||!senha) return setErr('st-auth','Preencha e-mail e senha.');
+  clearErr('st-auth');
+  try{
+    await auth.signInWithEmailAndPassword(email,senha);
+  }catch(e){
+    setErr('st-auth', traduzirErroAuth(e.code));
+  }
+}
+
+async function cadastrar(){
+  const nome=$('ca-nome').value.trim();
+  const email=$('ca-email').value.trim();
+  const senha=$('ca-senha').value;
+  if(!nome) return setErr('st-auth','Digite um nome.');
+  if(!email) return setErr('st-auth','Digite um e-mail.');
+  if(senha.length<6) return setErr('st-auth','Senha deve ter mínimo 6 caracteres.');
+  clearErr('st-auth');
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,senha);
+    await cred.user.updateProfile({displayName:nome});
+    await set(`users/${cred.user.uid}`,{
+      nome, avatarUrl:'', placarTotal:0, criadoEm:Date.now()
+    });
+  }catch(e){
+    setErr('st-auth', traduzirErroAuth(e.code));
+  }
+}
+
+async function loginGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  try{
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    setErr('st-auth', traduzirErroAuth(e.code));
+  }
+}
+
+async function esqueciSenha(){
+  const email=$('li-email').value.trim();
+  if(!email) return setErr('st-auth','Digite seu e-mail acima primeiro.');
+  try{
+    await auth.sendPasswordResetEmail(email);
+    setOk('st-auth','E-mail de recuperação enviado!');
+  }catch(e){
+    setErr('st-auth', traduzirErroAuth(e.code));
+  }
+}
+
+async function logout(){
+  stopListeners();
+  SALA='';
+  localStorage.removeItem('_imp_sala');
+  await auth.signOut();
+}
+
+function traduzirErroAuth(code){
+  const map={
+    'auth/user-not-found':'Usuário não encontrado.',
+    'auth/wrong-password':'Senha incorreta.',
+    'auth/invalid-email':'E-mail inválido.',
+    'auth/email-already-in-use':'Este e-mail já está em uso.',
+    'auth/weak-password':'Senha muito fraca.',
+    'auth/popup-closed-by-user':'Login cancelado.',
+    'auth/invalid-credential':'E-mail ou senha incorretos.',
+    'auth/too-many-requests':'Muitas tentativas. Tente novamente mais tarde.',
+  };
+  return map[code]||'Erro: '+code;
+}
+
+// ══════════════════════════════════════════════════════
+//  SETUP (após login)
+// ══════════════════════════════════════════════════════
+function mostrarSetup(){
+  const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || '';
+  devlog(`mostrarSetup: nome="${nome}" ME_PROFILE.nome="${ME_PROFILE?.nome}" ME.displayName="${ME.displayName}"`, nome?'ok':'err');
+  const avatar = ME_PROFILE?.avatarUrl || ME.photoURL || '';
+  const pts = ME_PROFILE?.placarTotal || 0;
+  $('setup-nome-display').textContent = nome || '(sem nome)';
+  $('setup-email-display').textContent = ME.email||'';
+  $('inp-displayname').value = nome;
+  // Se nome vazio, avisa e foca o campo
+  if(!nome){
+    setErr('st-nome','Seu nome foi perdido. Digite e salve novamente.');
+    setTimeout(()=>{ try{ $('inp-displayname').focus(); }catch(_){} }, 300);
+  }
+  $('setup-email-display').textContent = ME.email||'';
+  $('inp-displayname').value = nome;
+  // Avatar com borda de tier
+  const av=$('setup-avatar');
+  av.src = avatarImg(avatar);
+  av.style.cssText += ';'+avatarTierStyle(pts);
+  // Rank card grande
+  const rankCard=$('setup-rank-card');
+  if(rankCard) rankCard.innerHTML = rankCardHTML(pts);
+  // Botão de rejoin se havia sala ativa
+  const ultimaSala = localStorage.getItem('_imp_sala');
+  const btnRejoin = $('btn-rejoin');
+  if(ultimaSala && btnRejoin){
+    $('rejoin-code').textContent = ultimaSala;
+    btnRejoin.style.display = '';
+  } else if(btnRejoin){
+    btnRejoin.style.display = 'none';
+  }
+  // preenche código se vier na URL
+  const params=new URLSearchParams(location.search);
+  const salaParam=params.get('sala');
+  if(salaParam) $('inp-codigo').value=salaParam.toUpperCase();
+  showScreen('s-setup');
+  // Listener em tempo real do próprio placarTotal
+  if(ME?.uid) iniciarListenerMeuPlacar();
+  // Badge setup section
+  if(ME?.uid) renderBadgeSetup(null, null);
+}
+
+async function salvarNome(){
+  const nome=$('inp-displayname').value.trim();
+  if(!nome) return setErr('st-nome','Digite um nome.');
+  try{
+    await upd(`users/${ME.uid}`,{nome});
+    ME_PROFILE.nome=nome;
+    $('setup-nome-display').textContent=nome;
+    setOk('st-nome','Salvo!');
+    setTimeout(()=>clearErr('st-nome'),2000);
+  }catch(e){ setErr('st-nome','Erro ao salvar.'); }
+}
+
+// ──── AVATAR UPLOAD ────
+// Detecção de WebP animado
+async function isAnimatedWebP(file){
+  const buf=await file.slice(0,100).arrayBuffer();
+  const bytes=new Uint8Array(buf);
+  for(let i=0;i<bytes.length-4;i++){
+    if(bytes[i]===0x41&&bytes[i+1]===0x4E&&bytes[i+2]===0x49&&bytes[i+3]===0x4D) return true;
+  }
+  return false;
+}
+
+// Comprimir imagem estática via canvas (crop já aplicado antes)
+function comprimirBlob(blob){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onerror=()=>rej(new Error('Imagem inválida.'));
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const canvas=document.createElement('canvas');
+      canvas.width=128;canvas.height=128;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,128,128);
+      canvas.toBlob(b=>{
+        if(!b) return rej(new Error('Falha ao comprimir.'));
+        res(b);
+      },'image/jpeg',0.72);
+    };
+    img.src=url;
+  });
+}
+
+// Estado do crop (seleção livre com handles)
+let _cropFile=null, _cropAnimated=false;
+let _cropImgNatural={w:0,h:0};   // dimensões reais da imagem
+let _cropStageSize={w:0,h:0};    // tamanho do stage renderizado em tela
+let _cropBox={x:0,y:0,w:0,h:0};  // retângulo de seleção em px de TELA (relativos ao stage)
+const CROP_MIN_SIZE=40;          // tamanho mínimo em px de tela
+
+let _cropDragMode=null; // null | 'move' | 'tl' | 'tr' | 'bl' | 'br'
+let _cropDragStart={x:0,y:0,box:null};
+
+function _cropRenderBox(){
+  const box=document.getElementById('crop-box');
+  box.style.left=_cropBox.x+'px';
+  box.style.top=_cropBox.y+'px';
+  box.style.width=_cropBox.w+'px';
+  box.style.height=_cropBox.h+'px';
+}
+
+function abrirCropModal(file, animated){
+  _cropFile=file; _cropAnimated=animated;
+  const url=URL.createObjectURL(file);
+  const img=document.getElementById('crop-img-base');
+  img.onload=()=>{
+    _cropImgNatural={w:img.naturalWidth,h:img.naturalHeight};
+
+    const maxW=Math.min(window.innerWidth*0.9,400);
+    const maxH=window.innerHeight*0.55;
+    let w=_cropImgNatural.w, h=_cropImgNatural.h;
+    const ratio=Math.min(maxW/w,maxH/h,1)||1;
+    w=w*ratio; h=h*ratio;
+    // garante que caiba mesmo se a imagem for menor que o limite (escala pra cima até o limite)
+    if(w<maxW*0.5 && h<maxH*0.5){
+      const upRatio=Math.min(maxW/w,maxH/h);
+      w*=upRatio; h*=upRatio;
+    }
+    _cropStageSize={w,h};
+
+    const stage=document.getElementById('crop-stage');
+    stage.style.width=w+'px';
+    stage.style.height=h+'px';
+    img.style.width=w+'px';
+    img.style.height=h+'px';
+
+    const side=Math.min(_cropStageSize.w,_cropStageSize.h)*0.7;
+    _cropBox={
+      x:(_cropStageSize.w-side)/2,
+      y:(_cropStageSize.h-side)/2,
+      w:side,h:side
+    };
+    _cropRenderBox();
+  };
+  img.src=url;
+  document.getElementById('avatar-crop-modal').classList.add('open');
+}
+
+function cancelarCrop(){
+  document.getElementById('avatar-crop-modal').classList.remove('open');
+  _cropFile=null;
+  URL.revokeObjectURL(document.getElementById('crop-img-base').src);
+}
+
+async function confirmarCrop(){
+  if(!_cropFile) return;
+  const modal=document.getElementById('avatar-crop-modal');
+  modal.classList.remove('open');
+
+  const statusEl=$('avatar-status');
+  statusEl.textContent='Enviando…';
+
+  try{
+    let blob;
+    const uid=ME.uid;
+    let ext='jpg', contentType='image/jpeg';
+
+    if(_cropAnimated){
+      // GIF ou WebP animado — sobe o arquivo original sem canvas
+      blob=_cropFile;
+      ext=_cropFile.name.split('.').pop().toLowerCase()||'gif';
+      contentType=_cropFile.type||'image/gif';
+    } else {
+      // Estático — captura a seleção livre e estica pro quadrado 128x128
+      const imgEl=document.getElementById('crop-img-base');
+      const scaleX=_cropImgNatural.w/_cropStageSize.w;
+      const scaleY=_cropImgNatural.h/_cropStageSize.h;
+
+      const sx=_cropBox.x*scaleX;
+      const sy=_cropBox.y*scaleY;
+      const sw=_cropBox.w*scaleX;
+      const sh=_cropBox.h*scaleY;
+
+      const canvas=document.createElement('canvas');
+      canvas.width=128;canvas.height=128;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(imgEl,sx,sy,sw,sh,0,0,128,128);
+      blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('Falha canvas')),'image/jpeg',0.72));
+    }
+
+    const ts=Date.now();
+    const path=`avatares/${uid}/${ts}.${ext}`;
+    const storageRef=storage.ref(path);
+    const url=await Promise.race([
+      (async()=>{
+        const snap=await storageRef.put(blob,{contentType});
+        return await snap.ref.getDownloadURL();
+      })(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo limite excedido.')),20000))
+    ]);
+
+    await upd(`users/${uid}`,{avatarUrl:url});
+    ME_PROFILE.avatarUrl=url;
+    $('setup-avatar').src=url;
+    statusEl.textContent='';
+    setOk('st-nome','Avatar atualizado!');
+    setTimeout(()=>clearErr('st-nome'),2500);
+    if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(uid)}`,{avatarUrl:url});
+  }catch(e){
+    const msg=e.code==='storage/unauthorized'?'Sem permissão.':e.message||'Erro no upload.';
+    statusEl.textContent='';
+    setErr('st-nome',msg);
+  }
+  URL.revokeObjectURL(document.getElementById('crop-img-base').src);
+  _cropFile=null;
+}
+
+async function uploadAvatar(input){
+  const file=input.files[0];
+  input.value='';
+  if(!file) return;
+  if(file.size>5*1024*1024) return setErr('st-nome','Imagem muito grande (máx 5MB).');
+  const ext=file.name.split('.').pop().toLowerCase();
+  const animated=ext==='gif'||(ext==='webp'&&await isAnimatedWebP(file));
+  if(animated&&file.size>2*1024*1024) return setErr('st-nome','GIF/WebP animado: máx 2MB.');
+  abrirCropModal(file, animated);
+}
+
+// ── Eventos do crop modal (seleção livre com handles) ──
+(function(){
+  function _cropPointFromEvent(e){
+    const stage=document.getElementById('crop-stage');
+    const rect=stage.getBoundingClientRect();
+    const pt=e.touches&&e.touches.length?e.touches[0]:e;
+    return {x:pt.clientX-rect.left,y:pt.clientY-rect.top};
+  }
+
+  function _cropOnDown(mode){
+    return function(e){
+      e.preventDefault();
+      _cropDragMode=mode;
+      const p=_cropPointFromEvent(e);
+      _cropDragStart={x:p.x,y:p.y,box:{..._cropBox}};
+    };
+  }
+
+  function _cropOnMove(e){
+    if(!_cropDragMode) return;
+    e.preventDefault();
+    const p=_cropPointFromEvent(e);
+    const dx=p.x-_cropDragStart.x;
+    const dy=p.y-_cropDragStart.y;
+    const start=_cropDragStart.box;
+    const stageW=_cropStageSize.w, stageH=_cropStageSize.h;
+
+    if(_cropDragMode==='move'){
+      let x=start.x+dx, y=start.y+dy;
+      x=Math.max(0,Math.min(stageW-start.w,x));
+      y=Math.max(0,Math.min(stageH-start.h,y));
+      _cropBox.x=x; _cropBox.y=y;
+    } else if(_cropDragMode==='br'){
+      let w=start.w+dx, h=start.h+dy;
+      w=Math.max(CROP_MIN_SIZE,Math.min(w,stageW-start.x));
+      h=Math.max(CROP_MIN_SIZE,Math.min(h,stageH-start.y));
+      _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='bl'){
+      let x=start.x+dx;
+      let w=start.w-dx;
+      let h=start.h+dy;
+      x=Math.max(0,Math.min(x,start.x+start.w-CROP_MIN_SIZE));
+      w=start.x+start.w-x;
+      h=Math.max(CROP_MIN_SIZE,Math.min(h,stageH-start.y));
+      _cropBox.x=x; _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='tr'){
+      let y=start.y+dy;
+      let w=start.w+dx;
+      let h=start.h-dy;
+      y=Math.max(0,Math.min(y,start.y+start.h-CROP_MIN_SIZE));
+      h=start.y+start.h-y;
+      w=Math.max(CROP_MIN_SIZE,Math.min(w,stageW-start.x));
+      _cropBox.y=y; _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='tl'){
+      let x=start.x+dx;
+      let y=start.y+dy;
+      x=Math.max(0,Math.min(x,start.x+start.w-CROP_MIN_SIZE));
+      y=Math.max(0,Math.min(y,start.y+start.h-CROP_MIN_SIZE));
+      const w=start.x+start.w-x;
+      const h=start.y+start.h-y;
+      _cropBox.x=x; _cropBox.y=y; _cropBox.w=w; _cropBox.h=h;
+    }
+    _cropRenderBox();
+  }
+
+  function _cropOnUp(){
+    _cropDragMode=null;
+  }
+
+  function setupCrop(){
+    const box=document.getElementById('crop-box');
+    if(!box) return;
+
+    box.addEventListener('mousedown',e=>{
+      if(e.target.classList.contains('crop-handle')) return;
+      _cropOnDown('move')(e);
+    });
+    box.addEventListener('touchstart',e=>{
+      if(e.target.classList.contains('crop-handle')) return;
+      _cropOnDown('move')(e);
+    },{passive:false});
+
+    box.querySelectorAll('.crop-handle').forEach(h=>{
+      const mode=h.dataset.handle;
+      h.addEventListener('mousedown',_cropOnDown(mode));
+      h.addEventListener('touchstart',_cropOnDown(mode),{passive:false});
+    });
+
+    window.addEventListener('mousemove',_cropOnMove);
+    window.addEventListener('touchmove',_cropOnMove,{passive:false});
+    window.addEventListener('mouseup',_cropOnUp);
+    window.addEventListener('touchend',_cropOnUp);
+  }
+  window.addEventListener('load',setupCrop);
+})();
+
+// ══════════════════════════════════════════════════════
+//  ENTRAR / CRIAR SALA
+// ══════════════════════════════════════════════════════
+function _bindInputListeners(){
+  const bind=(id,ev,fn)=>{ const el=$(id); if(el) el.addEventListener(ev,fn); };
+  bind('inp-codigo','keydown',e=>{if(e.key==='Enter')entrarOuCriar();});
+  bind('inp-codigo','input',  e=>{e.target.value=e.target.value.toUpperCase();});
+  bind('li-email',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
+  bind('li-senha',  'keydown',e=>{if(e.key==='Enter')loginEmail();});
+  bind('ca-senha',  'keydown',e=>{if(e.key==='Enter')cadastrar();});
+}
+
+async function rejoinSala(){
+  const cod = localStorage.getItem('_imp_sala');
+  if(!cod) return;
+  clearErr('st-setup');
+  const nome = ME_PROFILE?.nome || ME.displayName || ME.email?.split('@')[0] || 'Jogador';
+  try{
+    const info = await get(`salas/${cod}/info`);
+    if(!info){ localStorage.removeItem('_imp_sala'); $('btn-rejoin').style.display='none'; throw new Error('Sala não existe mais.'); }
+    await entrarSala(nome, cod);
+  }catch(e){ setErr('st-setup', e.message); }
+}
+
+async function entrarOuCriar(){
+  const raw=$('inp-codigo').value.trim().toUpperCase();
+  clearErr('st-setup');
+  const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
+  devlog(`entrarOuCriar: codigo="${raw}" nome="${nome}"`, nome?'info':'err');
+  try{
+    if(!raw){
+      await criarSala(nome);
+    } else {
+      const existing=await get(`salas/${raw}/info`);
+      devlog(`sala ${raw} existe=${!!existing}`, 'info');
+      if(existing) await entrarSala(nome,raw);
+      else          await criarSala(nome, raw);
+    }
+  }catch(e){ devlog(`entrarOuCriar ERRO: ${e.message}`, 'err'); setErr('st-setup',e.message); }
+}
+
+async function criarSala(nome, codCustom){
+  let cod=codCustom||gerarCodigo();
+  if(!codCustom){
+    let snap=await get(`salas/${cod}/info`);
+    while(snap){cod=gerarCodigo();snap=await get(`salas/${cod}/info`);}
+  }
+  const uid=ME.uid;
+  await set(`salas/${cod}/info`,{
+    fase:'lobby', host:uid, hostNome:nome,
+    nomeSala:'Sala de '+nome, categoria:'', palavra:'',
+    impostorId:'', impostorNome:'',
+    votacaoAberta:false, criadoEm:Date.now(), rodada:0,
+    timerTs:0, timerAtivo:false
+  });
+  await set(`salas/${cod}/config`, { poltergeistAtivo: false, lunaticoAtivo: false });
+  await _gravarJogador(cod, uid, nome);
+  SALA=cod;
+  localStorage.setItem('_imp_sala', cod);
+  configurarPresenca();
+  iniciarListeners();
+}
+
+async function entrarSala(nome, cod){
+  const info=await get(`salas/${cod}/info`);
+  if(!info) throw new Error('Sala não encontrada.');
+  await _gravarJogador(cod, ME.uid, nome);
+  SALA=cod;
+  localStorage.setItem('_imp_sala', cod);
+  configurarPresenca();
+  iniciarListeners();
+}
+
+async function _gravarJogador(cod, uid, nome){
+  devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
+  const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
+  const badgeExibido=(await get(`users/${uid}/badgeExibido`))||'';
+  await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
+    id:uid, nome,
+    avatarUrl: ME_PROFILE?.avatarUrl||ME.photoURL||'',
+    ts:Date.now(),
+    placar:0,
+    placarTotal:placarExistente,
+    badgeExibido,
+    online:true
+  });
+}
+
+function configurarPresenca(){
+  if(!SALA) return;
+  const playerRef=db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`);
+  playerRef.onDisconnect().update({online:false});
+  if(connectedListener) db.ref('.info/connected').off('value', connectedListener);
+  connectedListener=snap=>{
+    if(snap.val()){
+      playerRef.onDisconnect().cancel();
+      playerRef.onDisconnect().update({online:false});
+      playerRef.update({online:true});
+    }
+  };
+  db.ref('.info/connected').on('value', connectedListener);
+}
+
+function compartilharCodigo(){
+  const url=location.href.split('?')[0]+'?sala='+SALA;
+  if(navigator.share){
+    navigator.share({title:'🕵️ Impostor',text:`Entre na sala ${SALA}`,url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      $('btn-copiar').textContent='copiado!';
+      setTimeout(()=>$('btn-copiar').textContent='📤 compartilhar',2000);
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  LISTENERS
+// ══════════════════════════════════════════════════════
+function iniciarListeners(){
+  listen('info',      `salas/${SALA}/info`,      onInfoChanged);
+  listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
+  listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
+  listen('config',    `salas/${SALA}/config`,    onConfigChanged);
+  listen('roles',     `salas/${SALA}/roles`,     onRolesChanged);
+  listen('timer',     `salas/${SALA}/timer`,     onTimerChanged);
+  iniciarListenerPlacarTotal();
+  showScreen('s-lobby');
+}
+
+function onConfigChanged(config){
+  _config = config || { poltergeistAtivo: false, lunaticoAtivo: false, timerMinutos: 0, categorias: [] };
+  if(_config.timerMinutos==null) _config.timerMinutos=0;
+  if(!Array.isArray(_config.categorias)) _config.categorias=[];
+  renderFase();
+}
+
+function onTimerChanged(timer){
+  _timer = timer || { ativo:false, fimTs:0 };
+  _timerRevelarDisparado=false;
+  iniciarLoopTimer();
+}
+
+function onRolesChanged(roles){
+  _roles = roles || {};
+}
+
+// ── Listener em tempo real do próprio placarTotal (atualiza setup screen)
+let _meuPlacarListener = null;
+function iniciarListenerMeuPlacar(){
+  if(_meuPlacarListener) _meuPlacarListener.off('value');
+  _meuPlacarListener = db.ref(`users/${ME.uid}/placarTotal`);
+  _meuPlacarListener.on('value', snap=>{
+    const val = snap.val()||0;
+    if(ME_PROFILE) ME_PROFILE.placarTotal = val;
+    // Sincroniza no _jogadores para o chip do lobby ficar correto
+    const key = idKey(ME.uid);
+    if(_jogadores[key] && _jogadores[key].placarTotal !== val){
+      _jogadores[key].placarTotal = val;
+      if(document.querySelector('.screen.active')?.id==='s-lobby') renderLobby();
+    }
+    // Atualiza rank card se setup estiver visível
+    const rankCard=$('setup-rank-card');
+    if(rankCard && document.querySelector('.screen.active')?.id==='s-setup'){
+      rankCard.innerHTML = rankCardHTML(val);
+      const av=$('setup-avatar');
+      if(av){ av.style.border='3px solid'; av.style.cssText += ';'+avatarTierStyle(val); }
+    }
+  });
+}
+
+
+let _userListeners = {};
+function iniciarListenerPlacarTotal(){
+  // limpa listeners anteriores
+  Object.values(_userListeners).forEach(r=>r.off('value'));
+  _userListeners={};
+}
+function sincronizarPlacarTotalJogador(uid){
+  const key=idKey(uid);
+  if(_userListeners[key]) return; // já tem listener
+  _userListeners[key]=db.ref(`users/${uid}/placarTotal`);
+  _userListeners[key].on('value', snap=>{
+    const val=snap.val()||0;
+    if(_jogadores[key]){
+      if(_jogadores[key].placarTotal!==val){
+        _jogadores[key].placarTotal=val;
+        renderFase();
+      }
+    }
+  });
+}
+
+function onInfoChanged(info){
+  if(!info){ devlog('onInfoChanged: sala removida — saindo', 'err'); sairDaSala(); return; }
+  const prev=_info;
+  _info=info;
+  const fase=info.fase;
+  devlog(`onInfoChanged: fase ${prev?.fase||'?'} → ${fase} | host=${info.host?.slice(0,6)}`, 'info');
+
+  if(fase==='revealed'){
+    listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
+  }
+
+  // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
+  // O host não tem permissão de escrever em users/$outroUid pelas regras do Firebase,
+  // então cada jogador grava apenas seu próprio nó.
+  if(prev?.fase!=='revealed' && fase==='revealed'){
+    (async()=>{
+      try{
+        const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+        const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+        const eu=ativos.find(j=>j.id===ME.uid);
+        if(!eu||eu.espectador) return;
+        const contagem={};
+        Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+        const rolesEfetivos=Object.keys(_roles).length?_roles:Object.fromEntries(
+          Object.entries(_snapshot).map(([k,v])=>[k,v.role||'normal'])
+        );
+        const resultado=calcularResultado(ativos,contagem,info.impostorId,_votos,rolesEfetivos,info.poltergeistId||'');
+        const {cenarioImpostor,cenarioJogadores,impostorPegou,poltergeistVenceu}=resultado;
+        const isImp=ME.uid===info.impostorId;
+        const isPolt=rolesEfetivos[idKey(ME.uid)]==='poltergeist';
+        const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
+
+        // ── Atualizar placarTotal
+        if(pts!==0){
+          const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
+          await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
+        }
+
+        // ── Carregar stats e badges atuais
+        const [statsAtual, badgesAtual]= await Promise.all([
+          get(`users/${ME.uid}/stats`).then(s=>s||{}),
+          get(`users/${ME.uid}/badges`).then(b=>b||{})
+        ]);
+
+        const meuVotoObj=_votos[idKey(ME.uid)];
+        const votouEm=meuVotoObj?.votadoId||null;
+        const acertou=votouEm===info.impostorId;
+        const votou=!!votouEm;
+
+        // ── Calcular novos stats
+        const newStats={};
+        newStats.partidas=(statsAtual.partidas||0)+1;
+        if(isImp){
+          newStats.partidasImpostor=(statsAtual.partidasImpostor||0)+1;
+          if(!impostorPegou){
+            newStats.escapadasImpostor=(statsAtual.escapadasImpostor||0)+1;
+            newStats.sequenciaEscapadas=(statsAtual.sequenciaEscapadas||0)+1;
+          } else {
+            newStats.sequenciaEscapadas=0;
+          }
+        }
+        if(!isImp && !isPolt && votou){
+          if(acertou){
+            newStats.acertosTotal=(statsAtual.acertosTotal||0)+1;
+            newStats.sequenciaAcertos=(statsAtual.sequenciaAcertos||0)+1;
+            newStats.errosSequencia=0;
+          } else {
+            newStats.errosSequencia=(statsAtual.errosSequencia||0)+1;
+            newStats.sequenciaAcertos=0;
+          }
+        }
+        if(!votou) newStats.abstencoes=(statsAtual.abstencoes||0)+1;
+        if(isPolt && poltergeistVenceu){
+          newStats.vitoriasPoltergeist=(statsAtual.vitoriasPoltergeist||0)+1;
+          newStats.sequenciaVitoriasPoltergeist=(statsAtual.sequenciaVitoriasPoltergeist||0)+1;
+          newStats.sequenciaPerdasPoltergeist=0;
+        } else if(isPolt && !poltergeistVenceu){
+          newStats.sequenciaPerdasPoltergeist=(statsAtual.sequenciaPerdasPoltergeist||0)+1;
+          newStats.sequenciaVitoriasPoltergeist=0;
+        }
+        if(votouEm===ME.uid) newStats.votoEmSiMesmo=(statsAtual.votoEmSiMesmo||0)+1;
+
+        await upd(`users/${ME.uid}/stats`, newStats);
+
+        // ── Avaliar badges (passa stats ANTES do update para cálculo de sequências)
+        await avaliarBadges(eu, resultado, _votos, rolesEfetivos, ativos, statsAtual, badgesAtual);
+
+      }catch(e){ console.warn('Erro ao atualizar stats/placar:',e); }
+    })();
+  }
+
+  // Detecta transições para tocar sons para todos
+  if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
+
+  // Reinício de rodada: fase continua 'questioning', mas a palavra mudou — recarrega assignments/snapshot pra todos
+  if(fase==='questioning' && prev?.fase==='questioning' && prev.palavra!==info.palavra){
+    Promise.all([
+      get(`salas/${SALA}/assignments`),
+      get(`salas/${SALA}/snapshot`)
+    ]).then(([a,s])=>{
+      _assignments=a||{};
+      _snapshot=s||{};
+      renderFase();
+    });
+    return;
+  }
+
+  if(fase==='revealed' && !_assignments){
+    Promise.all([
+      get(`salas/${SALA}/assignments`),
+      get(`salas/${SALA}/snapshot`)
+    ]).then(([a,s])=>{
+      _assignments=a||{};
+      _snapshot=s||{};
+      renderFase();
+    });
+    return;
+  }
+  if(fase==='lobby'){ _assignments=null; meuVoto=null; myWord=''; _snapshot={}; _qtdVotosAnterior=0; _votosCarregadoUmaVez=false; }
+  renderFase();
+}
+
+function onJogadoresChanged(jogadores){
+  const prev=Object.keys(_jogadores).length;
+  const normalized={};
+  Object.entries(jogadores||{}).forEach(([key,val])=>{
+    if(!val) return;
+    normalized[key]={...val, id:val.id||keyToId(key)};
+  });
+  _jogadores=normalized;
+  const cur=Object.keys(_jogadores).length;
+  devlog(`onJogadoresChanged: ${prev}→${cur} jogadores: ${Object.values(_jogadores).map(j=>`${j.nome||'?'}(${j.id?.slice(0,4)||'?'})`).join(', ')}`, 'info');
+  if(cur>prev) SFX.join();
+  // Inicia listener de placarTotal para cada jogador (sem duplicar)
+  Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
+  // Não re-renderiza a tela de resultado por mudanças em jogadores —
+  // evita que o reset de placar do novaRodada() corrompra visualmente os scores.
+  // renderResultado() já foi chamada por onInfoChanged ao entrar na fase 'revealed'.
+  if(_info?.fase !== 'revealed') renderFase();
+}
+
+let _qtdVotosAnterior = 0;
+let _votosCarregadoUmaVez = false;
+function onVotosChanged(votos){
+  const novosVotos=votos||{};
+  const qtdNova=Object.keys(novosVotos).length;
+  // só vibra em incrementos reais; ignora o primeiro snapshot (entrada/reentrada na sala)
+  if(_votosCarregadoUmaVez && _info?.fase==='questioning' && qtdNova>_qtdVotosAnterior) vibrar(VIBRA.voto);
+  _votosCarregadoUmaVez=true;
+  _qtdVotosAnterior=qtdNova;
+  _votos=novosVotos;
+  const meuReg=_votos[idKey(ME.uid)];
+  meuVoto=meuReg?meuReg.votadoId:null;
+  renderFase();
+}
+
+function onHistoricoChanged(hist){ _historico=hist||{}; renderHistorico(); }
+
+// ══════════════════════════════════════════════════════
+//  RENDER DISPATCH
+// ══════════════════════════════════════════════════════
+function renderFase(){
+  if(!_info) return;
+  const fase=_info.fase;
+  if(fase==='lobby')          renderLobby();
+  else if(fase==='questioning') renderQuestioning();
+  else if(fase==='revealed')    renderResultado();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER — LOBBY
+// ══════════════════════════════════════════════════════
+function renderLobby(){
+  if(document.querySelector('.screen.active')?.id!=='s-lobby') showScreen('s-lobby');
+  $('lobby-code').textContent=SALA;
+
+  const lista=Object.values(_jogadores).sort((a,b)=>a.ts-b.ts);
+
+  const container=$('lobby-players');
+  container.innerHTML='';
+  lista.forEach(j=>{
+    const nome=j.nome||'(sem nome)';
+    const chip=document.createElement('div');
+    chip.className='player-chip'+(j.online===false?' offline':'');
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    let badgesInner='';
+    if(j.id===ME.uid) badgesInner+='<span class="badge badge-you">Você</span>';
+    // Badge emoji exibido
+    const badgeEmoji=j.badgeExibido?`<span class="chip-badge-emoji" onclick="abrirStatsModal('${j.id}',event)">${j.badgeExibido}</span>`:'';
+    if(_info.host===ME.uid&&j.id!==ME.uid){
+      badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}','${(j.nome||'').replace(/'/g,"\\'")}')" title="Passar host para ${nome}">👑</button>`;
+      badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
+    }
+    const hostCrown=j.id===_info.host?' 👑':'';
+    const offlineLabel=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
+    chip.innerHTML=`
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
+      <div class="chip-info">
+        <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}${offlineLabel}</div>
+        <div class="chip-rank">${rankBoxHTML(pts)}</div>
+      </div>
+      <div class="badges-right">${badgeEmoji}${badgesInner}</div>`;
+    applyChipStyle(chip, pts, j.id===ME.uid);
+    container.appendChild(chip);
+  });
+
+  const isHost=_info.host===ME.uid;
+  const podeSort=isHost&&lista.length>=2;
+  $('btn-sortear').style.display=podeSort?'':'none';
+  $('btn-sortear').disabled=false;
+  const btnConfig=$('btn-config');
+  if(btnConfig) btnConfig.style.display=isHost?'':'none';
+
+  // J — indicador de modos ativos para todos
+  const modosEl=$('lobby-modos-ativos');
+  if(modosEl){
+    const tags=[];
+    if(_config.poltergeistAtivo) tags.push('<span class="modo-tag modo-tag-poltergeist">👻 POLTERGEIST</span>');
+    if(_config.lunaticoAtivo)    tags.push('<span class="modo-tag modo-tag-lunatico">🌀 LUNÁTICO</span>');
+    if(Number(_config.timerMinutos)>0) tags.push(`<span class="modo-tag modo-tag-timer">⏱️ ${_config.timerMinutos} MIN</span>`);
+    if(tags.length){
+      modosEl.innerHTML=tags.join('');
+      modosEl.style.display='flex';
+    } else {
+      modosEl.innerHTML='';
+      modosEl.style.display='none';
+    }
+  }
+
+  // C — desabilita toggles de modo quando jogadores insuficientes (greyed out retroativo)
+  const tPolt = $('toggle-poltergeist');
+  const tLun  = $('toggle-lunatico');
+  const rowPolt = tPolt?.closest('.config-row');
+  const rowLun  = tLun?.closest('.config-row');
+  const n = lista.length;
+  // desabilita ambos se < 4 jogadores; com 4+ ambos liberados e podem coexistir
+  const bloqueado = n<4;
+  if(rowPolt){ rowPolt.style.opacity = bloqueado?'.35':'1'; rowPolt.style.pointerEvents = bloqueado?'none':''; }
+  if(rowLun){ rowLun.style.opacity = bloqueado?'.35':'1'; rowLun.style.pointerEvents = bloqueado?'none':''; }
+  // se ficou bloqueado mas estava ativo, salva no Firebase
+  if(bloqueado && (_config.poltergeistAtivo || _config.lunaticoAtivo) && _info?.host===ME.uid){
+    _config.poltergeistAtivo=false; _config.lunaticoAtivo=false;
+    set(`salas/${SALA}/config`, _config);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  CRONÔMETRO — contagem regressiva sincronizada por timestamp absoluto
+// ══════════════════════════════════════════════════════
+function iniciarLoopTimer(){
+  if(_timerInterval){ clearInterval(_timerInterval); _timerInterval=null; }
+  if(!_timer || !_timer.ativo || !_timer.fimTs){
+    const el=$('q-timer');
+    if(el) el.style.display='none';
+    return;
+  }
+  tickTimer(); // primeira atualização imediata
+  _timerInterval=setInterval(tickTimer, 250);
+}
+
+function tickTimer(){
+  const el=$('q-timer');
+  if(!el) return;
+  if(!_timer || !_timer.ativo || !_timer.fimTs){
+    el.style.display='none';
+    clearInterval(_timerInterval); _timerInterval=null;
+    return;
+  }
+  const restanteMs=_timer.fimTs - serverNow();
+  const restanteSeg=Math.max(0, Math.ceil(restanteMs/1000));
+  const min=Math.floor(restanteSeg/60);
+  const seg=restanteSeg%60;
+  el.style.display='block';
+  el.textContent=`⏱️ ${min}:${String(seg).padStart(2,'0')}`;
+
+  const urgente=restanteSeg<=10 && restanteSeg>0;
+  el.classList.toggle('urgente', urgente);
+
+  // Vibra uma vez por segundo nos últimos 10s (em todos os dispositivos)
+  if(urgente && _ultimoTickVibrado!==restanteSeg){
+    _ultimoTickVibrado=restanteSeg;
+    vibrar(VIBRA.timerTick);
+  }
+
+  if(restanteSeg<=0){
+    clearInterval(_timerInterval); _timerInterval=null;
+    el.classList.remove('urgente');
+    el.textContent='⏱️ 0:00';
+    vibrar(VIBRA.timerFim);
+    // Só o host dispara a revelação automática, evitando corrida entre clientes
+    if(_info?.host===ME.uid && !_timerRevelarDisparado && _info?.fase==='questioning'){
+      _timerRevelarDisparado=true;
+      revelarImpostor();
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  QUESTIONING — sem fila de pares
+// ══════════════════════════════════════════════════════
+let qWordShown = false;
+
+async function renderQuestioning(){
+  const entrandoNaTela=document.querySelector('.screen.active')?.id!=='s-questioning';
+  if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
+  const novaPalavra=_assignments[idKey(ME.uid)]||'';
+  if(entrandoNaTela || novaPalavra!==myWord){
+    qWordShown=false;
+    myWord=novaPalavra;
+    $('q-word-cat').textContent=_info.categoria||'—';
+    const el=$('q-word-el');
+    el.className='word-hidden'; el.textContent='● ● ●';
+    $('q-word-hint').textContent='toque aqui para revelar';
+  }
+  if(entrandoNaTela){
+    showScreen('s-questioning');
+    iniciarLoopTimer();
+  }
+  const isHost=_info.host===ME.uid;
+  $('btn-revelar-q').style.display=isHost?'':'none';
+  $('btn-cancelar-q').style.display=isHost?'':'none';
+  $('btn-reiniciar-q').style.display=isHost?'':'none';
+
+  renderVoteGrid('q-vote-grid');
+  const qVoteStatus=$('q-vote-status');
+  if(qVoteStatus){
+    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+    qVoteStatus.textContent=`${Object.keys(_votos).length} de ${ativos.length} votos`;
+  }
+}
+
+function fitWordFont(el, text){
+  // Ajusta font-size para o texto caber no word-box (máx 2.4rem, mín 1.1rem)
+  const len = [...text].length; // conta caracteres unicode
+  const size = len <= 10 ? 2.4
+             : len <= 16 ? 2.0
+             : len <= 22 ? 1.6
+             : 1.2;
+  el.style.fontSize = size + 'rem';
+}
+
+function toggleWordQ(){
+  const el=$('q-word-el'), hint=$('q-word-hint');
+  const subEl=$('q-word-sub'); // label de papel abaixo da palavra
+
+  if(!qWordShown){
+    SFX.palavra();
+    const meuPapel = _roles[idKey(ME.uid)] || 'normal';
+    let texto, subTexto='', subCor='';
+
+    if(meuPapel==='impostor'){
+      texto    = '🕵️ IMPOSTOR';
+    } else if(meuPapel==='poltergeist'){
+      texto    = myWord;
+      subTexto = '👻 Poltergeist';
+      subCor   = '#FF9800';
+    } else {
+      // normal ou lunatico — lunático não sabe que é lunático
+      texto = myWord;
+    }
+
+    el.className='word-revealed';
+    el.textContent=texto;
+    fitWordFont(el, texto);
+
+    if(subEl){
+      subEl.textContent = subTexto;
+      subEl.style.color = subCor;
+      subEl.style.display = subTexto ? '' : 'none';
+    }
+
+    hint.textContent='toque para esconder';
+    qWordShown=true;
+    setTimeout(()=>{
+      if(qWordShown){
+        el.className='word-hidden'; el.textContent='● ● ●';
+        el.style.fontSize='';
+        if(subEl){ subEl.textContent=''; subEl.style.display='none'; }
+        hint.textContent='toque aqui para revelar'; qWordShown=false;
+      }
+    },4000);
+  } else {
+    el.className='word-hidden'; el.textContent='● ● ●';
+    el.style.fontSize='';
+    if(subEl){ subEl.textContent=''; subEl.style.display='none'; }
+    hint.textContent='toque aqui para revelar'; qWordShown=false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  VOTE GRID
+// ══════════════════════════════════════════════════════
+function renderVoteGrid(gridId){
+  // Usa snapshot para manter jogadores mesmo que alguém tenha saído
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const totalVotos=Object.keys(_votos).length;
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const grid=$(gridId);
+  grid.innerHTML='';
+  ativos.forEach(j=>{
+    const jaVotou=!!_votos[idKey(j.id)];
+    const nome=j.nome||'(sem nome)';
+    const qtd=contagem[j.id]||0;
+    const pct=totalVotos>0?Math.round(qtd/totalVotos*100):0;
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const rankStyle=getPrestigeStyle(pts);
+    const row=document.createElement('div');
+    row.className='vote-row'+(meuVoto===j.id?' voted-by-me':'')+(j.online===false?' offline':'');
+    row.onclick=()=>{ SFX.voto(); votar(j.id,j.nome); };
+    const offlineBadge=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
+    const votantes = Object.entries(_votos)
+  .filter(([,v]) => v.votadoId === j.id)
+  .map(([k]) => {
+    const uid = keyToId(k);
+    return Object.values(fonteJogadores).find(x => x.id === uid) || null;
+  })
+  .filter(Boolean);
+
+const BASE_SIZE = 30;
+const MIN_OVERLAP = 2;
+const MAX_OVERLAP = 14;
+const overlap = votantes.length <= 4
+  ? MIN_OVERLAP
+  : Math.min(MAX_OVERLAP, MIN_OVERLAP + (votantes.length - 4) * 3);
+
+const miniFotos = votantes.map((vt, i) => {
+  const right = i * (BASE_SIZE - overlap);
+  return `<img src="${avatarImg(vt.avatarUrl)}" alt=""
+    onerror="this.src='${AVATAR_PLACEHOLDER}'"
+    style="position:absolute;bottom:4px;right:${right}px;
+    width:${BASE_SIZE}px;height:${BASE_SIZE}px;
+    object-fit:cover;image-rendering:pixelated;
+    border:1px solid rgba(0,0,0,.6);
+    border-radius:2px;z-index:${10+i};">`;
+}).reverse().join('');
+
+const miniFotosWrap = votantes.length
+  ? `<div style="position:absolute;bottom:0;right:0;
+      height:100%;pointer-events:none;z-index:2;
+      width:${Math.max(BASE_SIZE, BASE_SIZE + (votantes.length-1)*(BASE_SIZE-overlap))}px;">
+      ${miniFotos}
+    </div>`
+  : '';
+    row.innerHTML=`
+  <img class="vote-row-rankbg" src="${rankStyle.img}" alt="">
+  <div style="position:relative;z-index:1;flex-shrink:0;width:22px;display:flex;align-items:center;justify-content:center;">
+    ${jaVotou
+      ? '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4CAF50" stroke-width="2"/><polyline points="4,10 8,14 16,6" fill="none" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 20 20"><rect x="1" y="1" width="18" height="18" rx="2" fill="none" stroke="#4A4A6A" stroke-width="2"/></svg>'
+    }
+  </div>
+  <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+    onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
+  <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px;">
+    <div style="font-size:1.1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
+    <div style="font-size:.85rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
+    <div style="height:3px;background:rgba(255,255,255,.08);overflow:hidden;width:100%;max-width:120px">
+      <div style="height:100%;background:${rankStyle.color};width:${pct}%;transition:width .35s ease;opacity:.8"></div>
+    </div>
+  </div>
+  ${miniFotosWrap}`;
+ grid.appendChild(row);  // ← linha que estava faltando
+  });  // fecha ativos.forEach
+
+  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
+  if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
+
+}  // fecha renderVoteGrid
+
+
+// ══════════════════════════════════════════════════════
+//  RESULTADO
+// ══════════════════════════════════════════════════════
+function renderResultado(){
+  if(document.querySelector('.screen.active')?.id!=='s-resultado') showScreen('s-resultado');
+  if(!_info.impostorId) return;
+
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const assignments=_assignments||{};
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  // Calcula resultado da votação para exibir cenário
+  // Usa snapshot.role como fallback, já que roles/ é removido do Firebase após revelar
+  const rolesEfetivos = Object.keys(_roles).length ? _roles : Object.fromEntries(
+    Object.entries(_snapshot).map(([k,v])=>[k, v.role||'normal'])
+  );
+  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos, rolesEfetivos, _info.poltergeistId||'');
+
+  const list=$('res-list');
+  list.innerHTML='';
+
+  const resTitulo = $('res-titulo');
+if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + (_info.palavra||'—') + '</span>';
+
+  // ── Poltergeist em destaque (laranja) antes do impostor, se ele venceu
+  const poltergeistId=_info.poltergeistId||'';
+  if(poltergeistId && !impostorPegou && poltergeistVenceu){
+    const polt=ativos.find(j=>j.id===poltergeistId);
+    if(polt){
+      const poltPts=cenarioPoltergeist?.pts||0;
+      const poltPtsClass=poltPts>0?'pts-pos':poltPts<0?'pts-neg':'pts-zero';
+      const poltPtsLabel=poltPts>0?`+${poltPts}`:String(poltPts);
+      const poltCard=document.createElement('div');
+      poltCard.className='res-impostor-card';
+      poltCard.style.borderColor='#FF9800';
+      const poltStyle=getPrestigeStyle(polt.placarTotal||0);
+      poltCard.innerHTML=`
+        <img class="res-rank-bg" src="${poltStyle.img}" alt="">
+        <span class="imp-badge" style="position:relative;z-index:1;background:#FF9800">👻 Poltergeist</span>
+        <img class="res-impostor-avatar" src="${avatarImg(polt.avatarUrl)}" alt=""
+          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1;border-color:#FF9800">
+        <div class="res-impostor-name" style="position:relative;z-index:1;color:#FF9800">${polt.nome||'(sem nome)'}${polt.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,152,0,.8)">(você)</small>':''}</div>
+        <span class="pts-badge ${poltPtsClass}" style="position:relative;z-index:1">${poltPtsLabel}pt</span>`;
+      list.appendChild(poltCard);
+    }
+  }
+
+  // ── Impostor em destaque no topo
+  const imp=ativos.find(j=>j.id===_info.impostorId);
+  if(imp){
+    const impPts=cenarioImpostor.pts;
+    const impPtsClass=impPts>0?'pts-pos':impPts<0?'pts-neg':'pts-zero';
+    const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
+    const impCard=document.createElement('div');
+    impCard.className='res-impostor-card';
+    const impStyle=getPrestigeStyle(imp.placarTotal||0);
+    impCard.innerHTML=`
+      <img class="res-rank-bg" src="${impStyle.img}" alt="">
+      <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
+      <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+      <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
+    list.appendChild(impCard);
+  }
+
+  // ── Demais jogadores em grid de tiles
+  const outros=ativos.filter(j=>j.id!==_info.impostorId);
+  if(outros.length){
+    const grid=document.createElement('div');
+    grid.className='res-players-grid';
+    outros.forEach(j=>{
+      const pts=(cenarioJogadores[j.id]||{pts:0}).pts;
+      const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
+      const ptsLabel=pts>0?`+${pts}`:String(pts);
+      const isMe=j.id===ME.uid;
+      const tileStyle=getPrestigeStyle(j.placarTotal||0);
+      const papel=rolesEfetivos[idKey(j.id)];
+      const papelLabel = papel==='poltergeist' ? '👻' : papel==='lunatico' ? '🌀' : '';
+      const tile=document.createElement('div');
+      tile.className='res-player-tile';
+      tile.innerHTML=`
+        <img class="res-rank-bg" src="${tileStyle.img}" alt="">
+        <img src="${avatarImg(j.avatarUrl)}" alt=""
+          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
+        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${papelLabel?papelLabel+' ':''}${j.nome||'(sem nome)'}</div>
+        <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
+      grid.appendChild(tile);
+    });
+    list.appendChild(grid);
+  }
+
+  renderHistorico();
+  renderPlacar();
+  $('btn-nova').style.display=ME.uid===_info.host?'':'none';
+
+  // Som e vibração de resultado — apenas uma vez por rodada
+  if(!resultadoSomTocado){
+    resultadoSomTocado=true;
+    vibrar(VIBRA.revelar);
+    const euSouImpostor=ME.uid===_info.impostorId;
+    if(euSouImpostor){
+      impostorPegou ? SFX.derrota() : SFX.vitoria();
+    } else {
+      const meuVotoObj=_votos[idKey(ME.uid)];
+      meuVotoObj?.votadoId===_info.impostorId ? SFX.vitoria() : SFX.derrota();
+    }
+  }
+}
+
+function renderHistorico(){
+  const rodadas=Object.values(_historico).sort((a,b)=>b.rodada-a.rodada);
+  const container=$('hist-list');
+  container.innerHTML='';
+  if(!rodadas.length){
+    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Nenhuma rodada ainda</div>';
+    return;
+  }
+  rodadas.forEach(r=>{
+    const div=document.createElement('div');
+    div.className='hist-item'+(r.impostorPegou?' win':' lose');
+    div.innerHTML=`
+      <div class="hist-rodada">Rodada ${r.rodada}</div>
+      <div class="hist-palavra">${r.palavra} <span style="color:var(--sub);font-weight:400;font-size:.75rem">· ${r.categoria}</span></div>
+      <div class="hist-detalhe">Impostor: ${r.impostorNome} · ${r.impostorPegou?'✓ pego':'✗ escapou'}</div>`;
+    container.appendChild(div);
+  });
+}
+
+async function renderPlacar(){
+  // Na tela de resultado, usa o snapshot congelado do início da rodada para
+  // evitar que o reset de placar do novaRodada() corrompra visualmente os valores.
+  // O snapshot carrega o placar que o host já atualizou (após revelarImpostor).
+  // Fora da tela de resultado, usa _jogadores normalmente.
+  const fonteJogadores = (document.querySelector('.screen.active')?.id==='s-resultado' && Object.keys(_snapshot).length>0)
+    ? _snapshot : _jogadores;
+  const listaBase=Object.values(fonteJogadores).filter(j=>!j.espectador);
+  // Carrega placarTotal de cada jogador para mostrar prestígio real
+  await Promise.all(listaBase.map(async j=>{
+    if(j.placarTotal==null){
+      try{ j.placarTotal=(await get(`users/${j.id}/placarTotal`))||0; }catch(_){ j.placarTotal=0; }
+    }
+  }));
+  const lista=listaBase.sort((a,b)=>(b.placar||0)-(a.placar||0));
+  const container=$('placar-list');
+  container.innerHTML='';
+  if(!lista.length){
+    container.innerHTML='<div style="color:var(--sub);font-size:.78rem;text-align:center">Sem pontos ainda</div>';
+    return;
+  }
+  lista.forEach((j,i)=>{
+    const div=document.createElement('div');
+    div.className='placar-row';
+    const pts=j.placarTotal||0;
+    const avStyle=avatarTierStyle(pts);
+    const voceLabel=j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':'';
+    div.innerHTML=`
+      <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
+      <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
+        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
+      <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts)}${voceLabel}</span>
+      ${rankBoxHTML(pts)}
+      <span class="placar-pts">${j.placar||0}pt</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  SORTEAR
+// ══════════════════════════════════════════════════════
+async function sortearAssignments(){
+  const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
+  if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
+
+  const poltergeistAtivo = !!_config.poltergeistAtivo;
+  const lunaticoAtivo    = !!_config.lunaticoAtivo;
+
+  const catsTodas=await carregarPalavras();
+  const selecionadas = Array.isArray(_config.categorias) ? _config.categorias.filter(c=>catsTodas[c]) : [];
+  // Se nenhuma categoria foi selecionada (ou config vazia/desatualizada), usa todas como fallback
+  const catNames = selecionadas.length ? selecionadas : Object.keys(catsTodas);
+  const cat=catNames[Math.floor(Math.random()*catNames.length)];
+  const words=catsTodas[cat];
+  const palavra=words[Math.floor(Math.random()*words.length)];
+
+  // Sorteia impostor primeiro
+  const impostorIdx=Math.floor(Math.random()*ativos.length);
+  const impostorJ=ativos[impostorIdx];
+
+  // Candidatos restantes (todos exceto o impostor)
+  let restantes=ativos.filter((j,i)=>i!==impostorIdx);
+
+  // Sorteia poltergeist entre os restantes, se ativo e jogadores suficientes
+  let poltergeistJ=null;
+  if(poltergeistAtivo && ativos.length>=4 && restantes.length>0){
+    const idx=Math.floor(Math.random()*restantes.length);
+    poltergeistJ=restantes[idx];
+    restantes=restantes.filter((j,i)=>i!==idx);
+  }
+
+  // Sorteia lunático entre os restantes, se ativo e jogadores suficientes
+  let lunaticoJ=null;
+  let palavraLunatico=null;
+  if(lunaticoAtivo && ativos.length>=4 && restantes.length>0){
+    const idx=Math.floor(Math.random()*restantes.length);
+    lunaticoJ=restantes[idx];
+    restantes=restantes.filter((j,i)=>i!==idx);
+    // palavra diferente, mesma categoria
+    const outrasPalavras=words.filter(w=>w!==palavra);
+    palavraLunatico = outrasPalavras.length
+      ? outrasPalavras[Math.floor(Math.random()*outrasPalavras.length)]
+      : palavra;
+  }
+
+  const assignments={};
+  const roles={};
+  ativos.forEach(j=>{
+    const key=idKey(j.id);
+    if(j.id===impostorJ.id){
+      assignments[key]='IMPOSTOR';
+      roles[key]='impostor';
+    } else if(poltergeistJ && j.id===poltergeistJ.id){
+      assignments[key]=palavra;
+      roles[key]='poltergeist';
+    } else if(lunaticoJ && j.id===lunaticoJ.id){
+      assignments[key]=palavraLunatico;
+      roles[key]='lunatico';
+    } else {
+      assignments[key]=palavra;
+      roles[key]='normal';
+    }
+  });
+
+  // Snapshot dos jogadores neste momento
+  const snapshot={};
+  ativos.forEach(j=>{
+    const key=idKey(j.id);
+    snapshot[key]={...j, role:roles[key]};
+  });
+
+  await del(`salas/${SALA}/votos`);
+  await set(`salas/${SALA}/assignments`, assignments);
+  await set(`salas/${SALA}/snapshot`, snapshot);
+  await set(`salas/${SALA}/roles`, roles);
+
+  const timerMinutos=Number(_config.timerMinutos)||0;
+  if(timerMinutos>0){
+    // fimTs gravado como ServerValue.TIMESTAMP + duração — elimina dependência do relógio local do host
+    await db.ref(`salas/${SALA}/timer`).set({
+      ativo: true,
+      fimTs: firebase.database.ServerValue.TIMESTAMP,
+      duracaoMs: timerMinutos * 60000
+    });
+    // Após gravar, lemos o fimTs real do servidor e corrigimos
+    const snap = await db.ref(`salas/${SALA}/timer/fimTs`).get();
+    const tsReal = snap.val();
+    await db.ref(`salas/${SALA}/timer/fimTs`).set(tsReal + timerMinutos * 60000);
+  } else {
+    await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  }
+
+  _assignments=assignments;
+  _snapshot=snapshot;
+  _roles=roles;
+
+  return {cat, palavra, impostorJ, poltergeistJ, lunaticoJ};
+}
+
+async function sortear(){
+  $('btn-sortear').disabled=true;
+  clearErr('st-lobby');
+  try{
+    if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
+    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
+
+    await upd(`salas/${SALA}/info`,{
+      fase:'questioning', categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      poltergeistId:   poltergeistJ?.id   || '',
+      poltergeistNome: poltergeistJ?.nome || '',
+      lunaticoId:      lunaticoJ?.id      || '',
+      lunaticoNome:    lunaticoJ?.nome    || '',
+      votacaoAberta:false,
+      rodada:(_info.rodada||0)+1
+    });
+  }catch(e){
+    setErr('st-lobby',e.message);
+    $('btn-sortear').disabled=false;
+  }
+}
+
+// Gera uma nova palavra/impostor sem voltar ao lobby e sem alterar pontos ou contagem de rodada.
+async function reiniciarJogo(){
+  if(_info.host!==ME.uid) return;
+  const btn=$('btn-reiniciar-q');
+  btn.disabled=true;
+  try{
+    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
+    await upd(`salas/${SALA}/info`,{
+      categoria:cat, palavra,
+      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
+      poltergeistId:   poltergeistJ?.id   || '',
+      poltergeistNome: poltergeistJ?.nome || '',
+      lunaticoId:      lunaticoJ?.id      || '',
+      lunaticoNome:    lunaticoJ?.nome    || '',
+      votacaoAberta:false
+    });
+  }catch(e){
+    alert(e.message);
+  }
+  btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════════════
+//  MENU DE CONFIGURAÇÕES DA SALA
+// ══════════════════════════════════════════════════════
+function abrirConfig(){
+  if(_info?.host !== ME.uid) return;
+  $('toggle-poltergeist').checked = !!_config.poltergeistAtivo;
+  $('toggle-lunatico').checked    = !!_config.lunaticoAtivo;
+  renderTimerSlider();
+  renderCatSelect();
+  $('config-overlay').style.display = 'flex';
+}
+
+function fecharConfig(e){
+  if(e && e.target !== $('config-overlay')) return;
+  $('config-overlay').style.display = 'none';
+}
+
+async function salvarConfig(){
+  if(_info?.host !== ME.uid) return;
+  const novoConfig = {
+    poltergeistAtivo: $('toggle-poltergeist').checked,
+    lunaticoAtivo:    $('toggle-lunatico').checked,
+    timerMinutos:     Number(_config.timerMinutos)||0,
+    categorias:       Array.isArray(_config.categorias) ? _config.categorias : [],
+  };
+  await set(`salas/${SALA}/config`, novoConfig);
+}
+
+// ── Slider de quadradinhos do cronômetro (1 a 10 min, 0 = desativado) ──
+function renderTimerSlider(){
+  const row=$('timer-slider-row');
+  if(!row) return;
+  row.innerHTML='';
+  const valor=Number(_config.timerMinutos)||0;
+  for(let i=1;i<=10;i++){
+    const sq=document.createElement('div');
+    sq.className='timer-sq'+(i<=valor?' on':'');
+    sq.title=`${i} min`;
+    sq.onclick=()=>selecionarTimer(i);
+    row.appendChild(sq);
+  }
+  atualizarTimerLabel();
+}
+
+function selecionarTimer(minutos){
+  if(_info?.host !== ME.uid) return;
+  const atual=Number(_config.timerMinutos)||0;
+  // clicar no quadrado que já é o valor atual desativa o cronômetro
+  _config.timerMinutos = (atual===minutos) ? 0 : minutos;
+  renderTimerSlider();
+  salvarConfig();
+}
+
+function atualizarTimerLabel(){
+  const label=$('timer-value-label');
+  if(!label) return;
+  const valor=Number(_config.timerMinutos)||0;
+  label.textContent = valor>0 ? `${valor} min` : 'Desativado';
+}
+
+// ── Seleção de categorias ──
+async function renderCatSelect(){
+  const list=$('cat-select-list');
+  if(!list) return;
+  list.innerHTML='<div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">carregando categorias…</div>';
+  let cats={};
+  try{ cats=await carregarPalavras(); }catch(_){ cats={}; }
+  const nomes=Object.keys(cats);
+  if(!nomes.length){
+    list.innerHTML='<div style="color:var(--sub);font-size:.8rem;text-align:center;padding:8px">nenhuma categoria encontrada</div>';
+    return;
+  }
+  // Se a config ainda não tem categorias (sala nova ou nunca configurada), todas começam marcadas
+  if(!Array.isArray(_config.categorias) || !_config.categorias.length){
+    _config.categorias=[...nomes];
+  }
+  list.innerHTML='';
+  nomes.forEach(nome=>{
+    const marcado=_config.categorias.includes(nome);
+    const row=document.createElement('label');
+    row.className='cat-select-row';
+    row.innerHTML=`<input type="checkbox" ${marcado?'checked':''}> <span>${nome}</span>`;
+    row.querySelector('input').onchange=(e)=>toggleCategoria(nome, e.target.checked);
+    list.appendChild(row);
+  });
+}
+
+function toggleCategoria(nome, marcado){
+  if(_info?.host !== ME.uid) return;
+  const set_=new Set(_config.categorias||[]);
+  if(marcado) set_.add(nome); else set_.delete(nome);
+  // Nunca permite ficar com zero categorias selecionadas — pelo menos uma precisa estar ativa
+  if(set_.size===0){
+    renderCatSelect(); // reverte visualmente
+    return;
+  }
+  _config.categorias=[...set_];
+  salvarConfig();
+}
+
+function selecionarTodasCategorias(marcarTodas){
+  if(_info?.host !== ME.uid) return;
+  if(!palavrasCache){
+    carregarPalavras().then(cats=>{
+      _config.categorias = marcarTodas ? Object.keys(cats) : [Object.keys(cats)[0]];
+      renderCatSelect();
+      salvarConfig();
+    });
+    return;
+  }
+  const nomes=Object.keys(palavrasCache);
+  // Não permite desmarcar todas — "desmarcar todas" deixa só a primeira categoria marcada
+  _config.categorias = marcarTodas ? [...nomes] : [nomes[0]];
+  renderCatSelect();
+  salvarConfig();
+}
+
+// Volta todos ao lobby sem expulsar ninguém e sem alterar pontos — mesmo efeito de novaRodada().
+async function cancelarJogo(){
+  if(_info.host!==ME.uid) return;
+  await novaRodada();
+}
+
+// ══════════════════════════════════════════════════════
+//  VOTAÇÃO
+// ══════════════════════════════════════════════════════
+
+async function votar(votadoId, votadoNome){
+  meuVoto=votadoId;
+  await set(`salas/${SALA}/votos/${idKey(ME.uid)}`,{votadoId, votadoNome, ts:Date.now()});
+}
+
+// ══════════════════════════════════════════════════════
+//  CÁLCULO DE PONTUAÇÃO (tabela dos 14 cenários)
+// ══════════════════════════════════════════════════════
+function calcularResultado(ativos, contagem, impostorId, votos, roles={}, poltergeistId=''){
+  const totalVotantes=Object.keys(votos).length;
+  const impostorVotos=contagem[impostorId]||0;
+  const maxVotos=Math.max(...ativos.map(j=>contagem[j.id]||0),0);
+
+  const impostorTemMaioria=impostorVotos>0&&impostorVotos===maxVotos;
+  const empatados=ativos.filter(j=>(contagem[j.id]||0)===maxVotos&&maxVotos>0);
+  const empate=empatados.length>1;
+  let impostorPegou=impostorTemMaioria&&!empate;
+
+  // ── Poltergeist — verifica se foi o mais votado (vence eliminado no lugar do impostor)
+  const poltergeistVotos = poltergeistId ? (contagem[poltergeistId]||0) : 0;
+  const poltergeistTemMaioria = !!poltergeistId && poltergeistVotos>0 && poltergeistVotos===maxVotos;
+  const empateComImpostor = poltergeistTemMaioria && impostorVotos===poltergeistVotos;
+  const poltergeistVenceu = poltergeistTemMaioria && !empate && !empateComImpostor;
+
+  if(poltergeistVenceu) impostorPegou=false;
+
+  // ── Impostor
+  let cenarioImpostor;
+  if(poltergeistVenceu){
+    cenarioImpostor={num:15, pts:PTS.imp_poltergeist_venceu, desc:'poltergeist foi eliminado no seu lugar'};
+  } else if(impostorPegou){
+    if(impostorVotos===totalVotantes&&totalVotantes>0)
+      cenarioImpostor={num:9,  pts:PTS.imp_pego_unanimidade, desc:'pego por unanimidade'};
+    else if(impostorVotos>totalVotantes/2)
+      cenarioImpostor={num:10, pts:PTS.imp_pego_maioria,    desc:'pego por maioria'};
+    else
+      cenarioImpostor={num:11, pts:PTS.imp_pego_minoria,    desc:'pego por minoria'};
+  } else {
+    if(impostorVotos===0)
+      cenarioImpostor={num:12, pts:PTS.imp_escapou_zerovoto, desc:'ninguém votou nele'};
+    else if(empate)
+      cenarioImpostor={num:13, pts:PTS.imp_escapou_empate,   desc:'votos empatados'};
+    else
+      cenarioImpostor={num:14, pts:PTS.imp_escapou_minoria,  desc:'minoria votou nele'};
+  }
+
+  // ── Poltergeist — pontuação própria (se o papel existir nesta rodada)
+  let cenarioPoltergeist=null;
+  if(poltergeistId){
+    cenarioPoltergeist = poltergeistVenceu
+      ? {num:16, pts:PTS.poltergeist_venceu, desc:'foi o mais votado'}
+      : (impostorPegou
+          ? {num:17, pts:PTS.poltergeist_perdeu_impegou, desc:'impostor foi pego, sobreviveu'}
+          : {num:18, pts:PTS.poltergeist_perdeu_escapou, desc:'impostor escapou, sobreviveu'});
+  }
+
+
+  // ── Jogadores
+  const cenarioJogadores={};
+  ativos.forEach(j=>{
+    if(j.id===impostorId) return;
+
+    // Poltergeist tem sua própria pontuação, calculada acima
+    if(poltergeistId && j.id===poltergeistId){
+      cenarioJogadores[j.id]=cenarioPoltergeist;
+      return;
+    }
+
+    const ehLunatico = roles[idKey(j.id)]==='lunatico';
+    const votou=votos[idKey(j.id)];
+
+    // ── Cenários especiais: poltergeist venceu (vale tanto para normais quanto lunáticos)
+    if(poltergeistVenceu){
+      if(!votou){
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:23, pts:PTS.lunatico_absteve_escapou}
+          : {num:22, pts:PTS.absteve_escapou};
+        return;
+      }
+      if(votou.votadoId===poltergeistId){
+        cenarioJogadores[j.id]={num:19, pts:PTS.votou_no_poltergeist_venceu};
+        return;
+      }
+      if(votou.votadoId===impostorId){
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:24, pts:PTS.lunatico_acertou_escapou}
+          : {num:4,  pts:PTS.acertou_escapou};
+        return;
+      }
+      cenarioJogadores[j.id]={num:20, pts:PTS.votou_no_poltergeist_perdeu};
+      return;
+    }
+
+    // ── Sem poltergeist vencedor — fluxo normal (ou poltergeist perdeu)
+    if(!votou){
+      cenarioJogadores[j.id]=ehLunatico
+        ? {num:impostorPegou?25:23, pts:impostorPegou?PTS.lunatico_absteve_impegou:PTS.lunatico_absteve_escapou}
+        : {num:impostorPegou?7:8,   pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
+      return;
+    }
+
+    // Quem votou no poltergeist mas ele não venceu
+    if(poltergeistId && votou.votadoId===poltergeistId){
+      cenarioJogadores[j.id]={num:21, pts:PTS.votou_no_poltergeist_perdeu};
+      return;
+    }
+
+    const acertou=votou.votadoId===impostorId;
+    if(acertou){
+      if(!impostorPegou){
+        cenarioJogadores[j.id]=ehLunatico
+          ? {num:24, pts:PTS.lunatico_acertou_escapou}
+          : {num:4,  pts:PTS.acertou_escapou};
+      } else {
+        const qtdAcertaram=ativos.filter(j2=>j2.id!==impostorId&&votos[idKey(j2.id)]?.votadoId===impostorId).length;
+        const qtdAtivos=ativos.filter(j2=>j2.id!==impostorId).length;
+        if(ehLunatico){
+          if(qtdAcertaram===qtdAtivos)
+            cenarioJogadores[j.id]={num:26, pts:PTS.lunatico_acertou_unanimidade};
+          else if(qtdAcertaram>qtdAtivos/2)
+            cenarioJogadores[j.id]={num:27, pts:PTS.lunatico_acertou_maioria};
+          else
+            cenarioJogadores[j.id]={num:28, pts:PTS.lunatico_acertou_minoria};
+        } else {
+          if(qtdAcertaram===qtdAtivos)
+            cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
+          else if(qtdAcertaram>qtdAtivos/2)
+            cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
+          else
+            cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
+        }
+      }
+    } else {
+      cenarioJogadores[j.id]=ehLunatico
+        ? {num:impostorPegou?29:24, pts:impostorPegou?PTS.lunatico_errou_impegou:PTS.lunatico_errou_escapou}
+        : {num:impostorPegou?5:6,   pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
+    }
+  });
+
+  return {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores};
+}
+
+// ══════════════════════════════════════════════════════
+//  REVELAR IMPOSTOR
+// ══════════════════════════════════════════════════════
+async function revelarImpostor(){
+  if(_info.host!==ME.uid) return setErr('st-questioning','Só o host pode revelar.');
+  SFX.revelar();
+
+  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
+  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
+  const contagem={};
+  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
+
+  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioJogadores} =
+    calcularResultado(ativos, contagem, _info.impostorId, _votos, _roles, _info.poltergeistId||'');
+
+  // Aplica pontos na sala (host tem permissão de escrever em salas/)
+  // O update do placar global de cada usuário em users/ é feito por cada cliente
+  // no próprio listener de fase, pois as regras do Firebase só permitem
+  // que o próprio usuário escreva em users/$uid.
+  const updates={};
+  for(const j of ativos){
+    const isImp=j.id===_info.impostorId;
+    const pts=isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]?.pts||0);
+    if(pts!==0){
+      const atualSala=(_jogadores[idKey(j.id)]?.placar||0);
+      updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
+    }
+  }
+  if(Object.keys(updates).length) await db.ref().update(updates);
+
+  // Historico
+  const rodadaKey=`r${_info.rodada||1}`;
+  await set(`salas/${SALA}/historico/${rodadaKey}`,{
+    rodada:_info.rodada||1,
+    categoria:_info.categoria,
+    palavra:_info.palavra,
+    impostorNome:_info.impostorNome,
+    impostorPegou,
+    cenarioImpostor: cenarioImpostor.num,
+    poltergeistVenceu: poltergeistVenceu || false,
+    poltergeistNome:   _info.poltergeistNome || '',
+    lunaticoNome:      _info.lunaticoNome    || '',
+    ts:Date.now()
+  });
+
+  // Para timer
+  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  await upd(`salas/${SALA}/info`,{fase:'revealed'});
+  await del(`salas/${SALA}/roles`);
+}
+
+// ══════════════════════════════════════════════════════
+//  NOVA RODADA / SAIR / KICK
+// ══════════════════════════════════════════════════════
+async function novaRodada(){
+  SFX.novaRodada();
+  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false; _roles={};
+
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await del(`salas/${SALA}/snapshot`);
+  await del(`salas/${SALA}/roles`);
+  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  await upd(`salas/${SALA}/info`,{
+    fase:'lobby', categoria:'', palavra:'',
+    impostorId:'', impostorNome:'',
+    poltergeistId:'', poltergeistNome:'',
+    lunaticoId:'', lunaticoNome:'',
+    votacaoAberta:false
+  });
+}
+
+async function kickar(playerId){
+  await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
+}
+
+async function passarHost(playerId, playerNome){
+  if(_info.host!==ME.uid) return;
+  if(playerId===ME.uid) return;
+  const alvo=_jogadores[idKey(playerId)];
+  if(!alvo){ alert('Jogador não encontrado.'); return; }
+  const confirmado=confirm(`Tornar ${playerNome||alvo.nome||'este jogador'} o novo host da sala?`);
+  if(!confirmado) return;
+  try{
+    await upd(`salas/${SALA}/info`,{host:playerId, hostNome:alvo.nome||''});
+  }catch(e){
+    alert('Não foi possível passar o host: '+e.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  MODAL DE STATS
+// ══════════════════════════════════════════════════════
+function fecharStatsModal(e){
+  if(e&&e.target!==document.getElementById('stats-modal')) return;
+  document.getElementById('stats-modal').classList.remove('open');
+}
+
+async function abrirStatsModal(uid, e){
+  if(e) e.stopPropagation();
+  const modal=document.getElementById('stats-modal');
+  const body=document.getElementById('stats-modal-body');
+  modal.classList.add('open');
+  body.innerHTML='<div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>';
+
+  let jogData=_jogadores[idKey(uid)]||_snapshot[idKey(uid)]||{};
+  const [stats,badges,badgeExibidoRaw,profRaw]=await Promise.all([
+    get(`users/${uid}/stats`).then(s=>s||{}),
+    get(`users/${uid}/badges`).then(b=>b||{}),
+    get(`users/${uid}/badgeExibido`).then(b=>b||''),
+    get(`users/${uid}`).then(p=>p||{}),
+  ]);
+  let badgeExibido=badgeExibidoRaw;
+  const avatarUrl=jogData.avatarUrl||profRaw.avatarUrl||'';
+  const nome=jogData.nome||profRaw.nome||'';
+  const placarTotal=jogData.placarTotal||profRaw.placarTotal||0;
+
+  const rankStyle=getPrestigeStyle(placarTotal);
+  document.getElementById('stats-modal-avatar').src=avatarImg(avatarUrl);
+  document.getElementById('stats-modal-name').textContent=nome||'(sem nome)';
+  document.getElementById('stats-modal-rank').textContent=`${rankStyle.title} · ${placarTotal}pt`;
+
+  const partidas=stats.partidas||0;
+  const acertos=stats.acertosTotal||0;
+  const escapadas=stats.escapadasImpostor||0;
+  const vPolt=stats.vitoriasPoltergeist||0;
+  const impostorTotal=stats.partidasImpostor||0;
+  const taxaAcerto=partidas>0?Math.round(acertos/partidas*100):0;
+
+  const statsRows=[
+    {v:partidas,  l:'Partidas'},
+    {v:impostorTotal, l:'Vezes impostor'},
+    {v:escapadas, l:'Escapadas'},
+    {v:acertos,   l:'Votações certas'},
+    {v:taxaAcerto+'%',l:'Taxa de acerto'},
+    {v:vPolt,     l:'Vitórias Poltergeist'},
+  ];
+
+  const earnedBadges=BADGES.filter(b=>badges[b.id]);
+  const notEarned=BADGES.filter(b=>!badges[b.id]);
+  const isMe=uid===ME.uid;
+
+  body.innerHTML=`
+    <div>
+      <div class="stats-section-title">Estatísticas</div>
+      <div class="stats-grid">
+        ${statsRows.map(r=>`<div class="stats-cell"><div class="stats-cell-value">${r.v}</div><div class="stats-cell-label">${r.l}</div></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="stats-section-title">Badges conquistados (${earnedBadges.length}/${BADGES.length})</div>
+      <div class="badges-grid" id="stats-earned-badges">
+        ${earnedBadges.map(b=>`
+          <div class="badge-item earned${isMe?' selectable':''}${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
+            <div class="badge-item-emoji">${b.emoji}</div>
+            <div class="badge-item-name">${b.nome}</div>
+          </div>`).join('')||'<div style="color:var(--sub);font-size:.85rem">Nenhum badge ainda</div>'}
+      </div>
+    </div>
+    ${notEarned.length?`
+    <div>
+      <div class="stats-section-title">A conquistar</div>
+      <div class="badges-grid">
+        ${notEarned.map(b=>`
+          <div class="badge-item not-earned">
+            <div class="badge-item-emoji">${b.emoji}</div>
+            <div class="badge-item-name">${b.nome}</div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}`;
+
+  if(isMe){
+    document.getElementById('stats-earned-badges')?.querySelectorAll('.badge-item.selectable').forEach(el=>{
+      el.addEventListener('click',async()=>{
+        const emoji=el.dataset.emoji;
+        const newEmoji=badgeExibido===emoji?'':emoji;
+        badgeExibido=newEmoji;
+        await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
+        if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
+        document.querySelectorAll('#stats-earned-badges .badge-item').forEach(e2=>{
+          e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!=='');
+        });
+        renderBadgeSetup(badges,newEmoji);
+      });
+    });
+  }
+}
+
+async function renderBadgeSetup(badgesParam, badgeExibidoParam){
+  const section=$('setup-badge-section');
+  const grid=$('setup-badge-grid');
+  if(!section||!grid) return;
+  let badges=badgesParam, badgeExibido=badgeExibidoParam;
+  if(!badges){
+    [badges, badgeExibido]=await Promise.all([
+      get(`users/${ME.uid}/badges`).then(b=>b||{}),
+      get(`users/${ME.uid}/badgeExibido`).then(b=>b||''),
+    ]);
+  }
+  const earned=BADGES.filter(b=>badges[b.id]);
+  if(!earned.length){ section.style.display='none'; return; }
+  section.style.display='';
+  grid.innerHTML=earned.map(b=>`
+    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}" title="${b.nome}: ${b.desc}">
+      <div class="badge-item-emoji">${b.emoji}</div>
+      <div class="badge-item-name">${b.nome}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.badge-item').forEach(el=>{
+    el.addEventListener('click',async()=>{
+      const emoji=el.dataset.emoji;
+      const newEmoji=badgeExibido===emoji?'':emoji;
+      badgeExibido=newEmoji;
+      await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
+      if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
+      grid.querySelectorAll('.badge-item').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
+    });
+  });
+}
+
+async function sairDaSala(){
+  SFX.sair();
+  // Para listeners ANTES de deletar para não disparar re-render que remove jogador do resultado
+  stopListeners();
+  if(!SALA){ mostrarSetup(); return; }
+  try{
+    await db.ref(`salas/${SALA}/jogadores/${idKey(ME.uid)}`).onDisconnect().cancel();
+    await del(`salas/${SALA}/jogadores/${idKey(ME.uid)}`);
+    if(_info&&_info.host===ME.uid){
+      const restantes=Object.values(_jogadores).filter(j=>j.id!==ME.uid);
+      if(restantes.length>0){
+        restantes.sort((a,b)=>a.ts-b.ts);
+        await upd(`salas/${SALA}/info`,{host:restantes[0].id,hostNome:restantes[0].nome});
+      } else {
+        await del(`salas/${SALA}`);
+      }
+    }
+  }catch(e){}
+
+  SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
+  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
+  _config={ poltergeistAtivo: false, lunaticoAtivo: false }; _roles={};
+  qWordShown=false;
+  localStorage.removeItem('_imp_sala');
+  $('inp-codigo').value='';
+  mostrarSetup();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', async()=>{
+  if(!DEVLOG_ENABLED) document.body.classList.add('devlog-hidden');
+  devlog(`APP INIT | session=${_DEVLOG_SESSION} | userAgent=${navigator.userAgent.slice(0,80)}`, 'auth');
+  // Registra listeners de teclado aqui — garante que o DOM existe
+  _bindInputListeners();
+
+  const params=new URLSearchParams(location.search);
+  const salaParam=params.get('sala');
+  if(salaParam) { try{ $('inp-codigo').value=salaParam.toUpperCase(); }catch(_){} }
+  await carregarPalavras();
+
+  // Fallback: se o Firebase não responder em 8s, mostra tela de login mesmo assim
+  setTimeout(()=>{
+    const loader=$('loader');
+    if(loader && !loader.classList.contains('hide')){
+      console.warn('Firebase auth timeout — exibindo tela de login como fallback.');
+      loader.classList.add('hide');
+      showScreen('s-auth');
+    }
+  }, 8000);
+  // loader esconde quando auth.onAuthStateChanged resolver
+});
+
+// Ajusta padding-top do .wrap ao tamanho real do header
+(function(){
+  function ajustarHeader(){
+    const h = document.getElementById('site-header');
+    const w = document.querySelector('.wrap');
+    if(h && w){ w.style.paddingTop = h.offsetHeight + 'px'; }
+  }
+  window.addEventListener('load', ajustarHeader);
+  window.addEventListener('resize', ajustarHeader);
+  // Tenta logo cedo também
+  document.addEventListener('DOMContentLoaded', ajustarHeader);
+})();
+
+</script>
+</body>
+</html>
