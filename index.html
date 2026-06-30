@@ -3474,11 +3474,11 @@ async function novaRodada(){
   SFX.novaRodada();
   meuVoto=null; _assignments=null; _historico={}; _snapshot={}; palavrasCache=null; resultadoSomTocado=false; _roles={};
 
-  await del(`salas/${SALA}/votos`);
-  await del(`salas/${SALA}/assignments`);
-  await del(`salas/${SALA}/snapshot`);
-  await del(`salas/${SALA}/roles`);
-  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  // IMPORTANTE: muda a fase para 'lobby' ANTES de apagar votos/assignments/snapshot/roles.
+  // Se a ordem fosse invertida (como antes), o del(votos) dispararia onVotosChanged()
+  // -> renderFase() enquanto _info.fase localmente ainda fosse 'revealed', recalculando
+  // os pontos com _votos já vazio (mas _snapshot ainda preenchido) e mostrando, por um
+  // instante, uma pontuação errada na tela de resultado antes de ir para o lobby.
   await upd(`salas/${SALA}/info`,{
     fase:'lobby', categoria:'', palavra:'',
     impostorId:'', impostorNome:'',
@@ -3486,6 +3486,12 @@ async function novaRodada(){
     lunaticoId:'', lunaticoNome:'',
     votacaoAberta:false
   });
+
+  await del(`salas/${SALA}/votos`);
+  await del(`salas/${SALA}/assignments`);
+  await del(`salas/${SALA}/snapshot`);
+  await del(`salas/${SALA}/roles`);
+  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
 }
 
 async function kickar(playerId){
