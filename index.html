@@ -570,30 +570,48 @@ input::placeholder{color:var(--muted);}
   flex-direction:column;gap:12px;padding:16px;
 }
 #avatar-crop-modal.open{display:flex;}
-.crop-viewport{
-  position:relative;width:240px;height:240px;
-  overflow:hidden;background:#111;
-  border:2px solid var(--accent);
-  cursor:grab;touch-action:none;
+.crop-stage{
+  position:relative;
+  max-width:90vw;
+  max-height:55vh;
+  background:#111;
+  touch-action:none;
+  user-select:none;
   flex-shrink:0;
 }
-.crop-viewport:active{cursor:grabbing;}
-#crop-img-preview{
-  position:absolute;
-  image-rendering:pixelated;
+#crop-img-base{
+  display:block;
+  width:100%;
+  height:100%;
   pointer-events:none;
   user-select:none;
-  transform-origin:0 0;
 }
+.crop-box{
+  position:absolute;
+  border:2px solid var(--accent);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55);
+  cursor:move;
+  touch-action:none;
+}
+.crop-handle{
+  position:absolute;
+  width:18px;height:18px;
+  background:var(--accent);
+  border:2px solid #000;
+  border-radius:50%;
+  touch-action:none;
+}
+.crop-handle::after{
+  content:'';
+  position:absolute;
+  top:-12px;left:-12px;right:-12px;bottom:-12px;
+}
+.crop-handle.tl{top:-9px;left:-9px;cursor:nwse-resize;}
+.crop-handle.tr{top:-9px;right:-9px;cursor:nesw-resize;}
+.crop-handle.bl{bottom:-9px;left:-9px;cursor:nesw-resize;}
+.crop-handle.br{bottom:-9px;right:-9px;cursor:nwse-resize;}
 .crop-controls{
   display:flex;flex-direction:column;gap:8px;width:240px;
-}
-.crop-zoom-row{
-  display:flex;align-items:center;gap:8px;
-}
-.crop-zoom-row label{font-size:.85rem;color:var(--sub);letter-spacing:1px;flex-shrink:0;}
-.crop-zoom-row input[type=range]{
-  flex:1;accent-color:var(--accent);
 }
 .crop-btn-row{display:flex;gap:8px;}
 .crop-btn-row .btn{flex:1;padding:10px;}
@@ -680,15 +698,17 @@ input::placeholder{color:var(--muted);}
 <div id="loader">carregando…</div>
 <!-- ══ AVATAR CROP MODAL ══ -->
 <div id="avatar-crop-modal">
-  <div id="crop-hint">arraste para mover · scroll/pinça para zoom</div>
-  <div class="crop-viewport" id="crop-viewport">
-    <img id="crop-img-preview" src="" alt="">
+  <div id="crop-hint">arraste os cantos para redimensionar · arraste o centro para mover</div>
+  <div class="crop-stage" id="crop-stage">
+    <img id="crop-img-base" src="" alt="" draggable="false">
+    <div class="crop-box" id="crop-box">
+      <div class="crop-handle tl" data-handle="tl"></div>
+      <div class="crop-handle tr" data-handle="tr"></div>
+      <div class="crop-handle bl" data-handle="bl"></div>
+      <div class="crop-handle br" data-handle="br"></div>
+    </div>
   </div>
   <div class="crop-controls">
-    <div class="crop-zoom-row">
-      <label>ZOOM</label>
-      <input type="range" id="crop-zoom" min="1" max="4" step="0.05" value="1">
-    </div>
     <div class="crop-btn-row">
       <button class="btn btn-secondary" onclick="cancelarCrop()">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarCrop()">Confirmar</button>
@@ -1911,43 +1931,57 @@ function comprimirBlob(blob){
   });
 }
 
-// Estado do crop
-let _cropFile=null, _cropX=0, _cropY=0, _cropZoom=1, _cropDragging=false, _cropLastTouch=null;
-let _cropDragStart={x:0,y:0,imgX:0,imgY:0};
-let _cropAnimated=false; // true = gif/webp animado, skip canvas
+// Estado do crop (seleção livre com handles)
+let _cropFile=null, _cropAnimated=false;
+let _cropImgNatural={w:0,h:0};   // dimensões reais da imagem
+let _cropStageSize={w:0,h:0};    // tamanho do stage renderizado em tela
+let _cropBox={x:0,y:0,w:0,h:0};  // retângulo de seleção em px de TELA (relativos ao stage)
+const CROP_MIN_SIZE=40;          // tamanho mínimo em px de tela
 
-function _cropClamp(){
-  const vw=240,vh=240;
-  const img=document.getElementById('crop-img-preview');
-  if(!img.naturalWidth) return;
-  const W=img.naturalWidth*_cropZoom, H=img.naturalHeight*_cropZoom;
-  _cropX=Math.min(0,Math.max(vw-W,_cropX));
-  _cropY=Math.min(0,Math.max(vh-H,_cropY));
-}
-function _cropApply(){
-  const img=document.getElementById('crop-img-preview');
-  img.style.transform=`translate(${_cropX}px,${_cropY}px) scale(${_cropZoom})`;
-  img.style.transformOrigin='0 0';
-}
+let _cropDragMode=null; // null | 'move' | 'tl' | 'tr' | 'bl' | 'br'
+let _cropDragStart={x:0,y:0,box:null};
 
-function _cropFitInitial(){
-  const img=document.getElementById('crop-img-preview');
-  if(!img.naturalWidth) return;
-  const vw=240;
-  const scale=vw/Math.min(img.naturalWidth,img.naturalHeight);
-  _cropZoom=scale;
-  document.getElementById('crop-zoom').min=scale;
-  document.getElementById('crop-zoom').value=scale;
-  _cropX=(vw-img.naturalWidth*_cropZoom)/2;
-  _cropY=(vw-img.naturalHeight*_cropZoom)/2;
-  _cropClamp(); _cropApply();
+function _cropRenderBox(){
+  const box=document.getElementById('crop-box');
+  box.style.left=_cropBox.x+'px';
+  box.style.top=_cropBox.y+'px';
+  box.style.width=_cropBox.w+'px';
+  box.style.height=_cropBox.h+'px';
 }
 
 function abrirCropModal(file, animated){
   _cropFile=file; _cropAnimated=animated;
   const url=URL.createObjectURL(file);
-  const img=document.getElementById('crop-img-preview');
-  img.onload=()=>{ _cropFitInitial(); };
+  const img=document.getElementById('crop-img-base');
+  img.onload=()=>{
+    _cropImgNatural={w:img.naturalWidth,h:img.naturalHeight};
+
+    const maxW=Math.min(window.innerWidth*0.9,400);
+    const maxH=window.innerHeight*0.55;
+    let w=_cropImgNatural.w, h=_cropImgNatural.h;
+    const ratio=Math.min(maxW/w,maxH/h,1)||1;
+    w=w*ratio; h=h*ratio;
+    // garante que caiba mesmo se a imagem for menor que o limite (escala pra cima até o limite)
+    if(w<maxW*0.5 && h<maxH*0.5){
+      const upRatio=Math.min(maxW/w,maxH/h);
+      w*=upRatio; h*=upRatio;
+    }
+    _cropStageSize={w,h};
+
+    const stage=document.getElementById('crop-stage');
+    stage.style.width=w+'px';
+    stage.style.height=h+'px';
+    img.style.width=w+'px';
+    img.style.height=h+'px';
+
+    const side=Math.min(_cropStageSize.w,_cropStageSize.h)*0.7;
+    _cropBox={
+      x:(_cropStageSize.w-side)/2,
+      y:(_cropStageSize.h-side)/2,
+      w:side,h:side
+    };
+    _cropRenderBox();
+  };
   img.src=url;
   document.getElementById('avatar-crop-modal').classList.add('open');
 }
@@ -1955,7 +1989,7 @@ function abrirCropModal(file, animated){
 function cancelarCrop(){
   document.getElementById('avatar-crop-modal').classList.remove('open');
   _cropFile=null;
-  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
+  URL.revokeObjectURL(document.getElementById('crop-img-base').src);
 }
 
 async function confirmarCrop(){
@@ -1977,18 +2011,20 @@ async function confirmarCrop(){
       ext=_cropFile.name.split('.').pop().toLowerCase()||'gif';
       contentType=_cropFile.type||'image/gif';
     } else {
-      // Estático — renderiza o crop via canvas
-      const imgEl=document.getElementById('crop-img-preview');
+      // Estático — captura a seleção livre e estica pro quadrado 128x128
+      const imgEl=document.getElementById('crop-img-base');
+      const scaleX=_cropImgNatural.w/_cropStageSize.w;
+      const scaleY=_cropImgNatural.h/_cropStageSize.h;
+
+      const sx=_cropBox.x*scaleX;
+      const sy=_cropBox.y*scaleY;
+      const sw=_cropBox.w*scaleX;
+      const sh=_cropBox.h*scaleY;
+
       const canvas=document.createElement('canvas');
-      const vw=240;
       canvas.width=128;canvas.height=128;
       const ctx=canvas.getContext('2d');
-      const scale=128/vw;
-      ctx.drawImage(imgEl,
-        -_cropX*scale,-_cropY*scale,
-        imgEl.naturalWidth*_cropZoom*scale,
-        imgEl.naturalHeight*_cropZoom*scale
-      );
+      ctx.drawImage(imgEl,sx,sy,sw,sh,0,0,128,128);
       blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('Falha canvas')),'image/jpeg',0.72));
     }
 
@@ -2015,7 +2051,7 @@ async function confirmarCrop(){
     statusEl.textContent='';
     setErr('st-nome',msg);
   }
-  URL.revokeObjectURL(document.getElementById('crop-img-preview').src);
+  URL.revokeObjectURL(document.getElementById('crop-img-base').src);
   _cropFile=null;
 }
 
@@ -2030,76 +2066,98 @@ async function uploadAvatar(input){
   abrirCropModal(file, animated);
 }
 
-// ── Eventos do crop modal ──
+// ── Eventos do crop modal (seleção livre com handles) ──
 (function(){
+  function _cropPointFromEvent(e){
+    const stage=document.getElementById('crop-stage');
+    const rect=stage.getBoundingClientRect();
+    const pt=e.touches&&e.touches.length?e.touches[0]:e;
+    return {x:pt.clientX-rect.left,y:pt.clientY-rect.top};
+  }
+
+  function _cropOnDown(mode){
+    return function(e){
+      e.preventDefault();
+      _cropDragMode=mode;
+      const p=_cropPointFromEvent(e);
+      _cropDragStart={x:p.x,y:p.y,box:{..._cropBox}};
+    };
+  }
+
+  function _cropOnMove(e){
+    if(!_cropDragMode) return;
+    e.preventDefault();
+    const p=_cropPointFromEvent(e);
+    const dx=p.x-_cropDragStart.x;
+    const dy=p.y-_cropDragStart.y;
+    const start=_cropDragStart.box;
+    const stageW=_cropStageSize.w, stageH=_cropStageSize.h;
+
+    if(_cropDragMode==='move'){
+      let x=start.x+dx, y=start.y+dy;
+      x=Math.max(0,Math.min(stageW-start.w,x));
+      y=Math.max(0,Math.min(stageH-start.h,y));
+      _cropBox.x=x; _cropBox.y=y;
+    } else if(_cropDragMode==='br'){
+      let w=start.w+dx, h=start.h+dy;
+      w=Math.max(CROP_MIN_SIZE,Math.min(w,stageW-start.x));
+      h=Math.max(CROP_MIN_SIZE,Math.min(h,stageH-start.y));
+      _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='bl'){
+      let x=start.x+dx;
+      let w=start.w-dx;
+      let h=start.h+dy;
+      x=Math.max(0,Math.min(x,start.x+start.w-CROP_MIN_SIZE));
+      w=start.x+start.w-x;
+      h=Math.max(CROP_MIN_SIZE,Math.min(h,stageH-start.y));
+      _cropBox.x=x; _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='tr'){
+      let y=start.y+dy;
+      let w=start.w+dx;
+      let h=start.h-dy;
+      y=Math.max(0,Math.min(y,start.y+start.h-CROP_MIN_SIZE));
+      h=start.y+start.h-y;
+      w=Math.max(CROP_MIN_SIZE,Math.min(w,stageW-start.x));
+      _cropBox.y=y; _cropBox.w=w; _cropBox.h=h;
+    } else if(_cropDragMode==='tl'){
+      let x=start.x+dx;
+      let y=start.y+dy;
+      x=Math.max(0,Math.min(x,start.x+start.w-CROP_MIN_SIZE));
+      y=Math.max(0,Math.min(y,start.y+start.h-CROP_MIN_SIZE));
+      const w=start.x+start.w-x;
+      const h=start.y+start.h-y;
+      _cropBox.x=x; _cropBox.y=y; _cropBox.w=w; _cropBox.h=h;
+    }
+    _cropRenderBox();
+  }
+
+  function _cropOnUp(){
+    _cropDragMode=null;
+  }
+
   function setupCrop(){
-    const vp=document.getElementById('crop-viewport');
-    const zoom=document.getElementById('crop-zoom');
-    if(!vp||!zoom) return;
+    const box=document.getElementById('crop-box');
+    if(!box) return;
 
-    zoom.addEventListener('input',()=>{
-      const prev=_cropZoom;
-      _cropZoom=parseFloat(zoom.value);
-      // mantém centro ao zoom
-      _cropX=_cropX-(_cropZoom-prev)*120;
-      _cropY=_cropY-(_cropZoom-prev)*120;
-      _cropClamp(); _cropApply();
+    box.addEventListener('mousedown',e=>{
+      if(e.target.classList.contains('crop-handle')) return;
+      _cropOnDown('move')(e);
     });
-
-    // Mouse
-    vp.addEventListener('mousedown',e=>{
-      _cropDragging=true;
-      _cropDragStart={x:e.clientX,y:e.clientY,imgX:_cropX,imgY:_cropY};
-    });
-    window.addEventListener('mousemove',e=>{
-      if(!_cropDragging) return;
-      _cropX=_cropDragStart.imgX+(e.clientX-_cropDragStart.x);
-      _cropY=_cropDragStart.imgY+(e.clientY-_cropDragStart.y);
-      _cropClamp(); _cropApply();
-    });
-    window.addEventListener('mouseup',()=>{ _cropDragging=false; });
-    vp.addEventListener('wheel',e=>{
-      e.preventDefault();
-      const delta=e.deltaY>0?-0.1:0.1;
-      const minZ=parseFloat(zoom.min)||1;
-      _cropZoom=Math.max(minZ,Math.min(4,_cropZoom+delta));
-      zoom.value=_cropZoom;
-      _cropClamp(); _cropApply();
+    box.addEventListener('touchstart',e=>{
+      if(e.target.classList.contains('crop-handle')) return;
+      _cropOnDown('move')(e);
     },{passive:false});
 
-    // Touch
-    vp.addEventListener('touchstart',e=>{
-      if(e.touches.length===1){
-        _cropDragging=true;
-        _cropDragStart={x:e.touches[0].clientX,y:e.touches[0].clientY,imgX:_cropX,imgY:_cropY};
-        _cropLastTouch=null;
-      } else if(e.touches.length===2){
-        _cropDragging=false;
-        _cropLastTouch=Math.hypot(
-          e.touches[0].clientX-e.touches[1].clientX,
-          e.touches[0].clientY-e.touches[1].clientY
-        );
-      }
-    },{passive:true});
-    vp.addEventListener('touchmove',e=>{
-      e.preventDefault();
-      if(e.touches.length===1&&_cropDragging){
-        _cropX=_cropDragStart.imgX+(e.touches[0].clientX-_cropDragStart.x);
-        _cropY=_cropDragStart.imgY+(e.touches[0].clientY-_cropDragStart.y);
-        _cropClamp(); _cropApply();
-      } else if(e.touches.length===2&&_cropLastTouch!=null){
-        const dist=Math.hypot(
-          e.touches[0].clientX-e.touches[1].clientX,
-          e.touches[0].clientY-e.touches[1].clientY
-        );
-        const minZ=parseFloat(zoom.min)||1;
-        _cropZoom=Math.max(minZ,Math.min(4,_cropZoom*(dist/_cropLastTouch)));
-        zoom.value=_cropZoom;
-        _cropLastTouch=dist;
-        _cropClamp(); _cropApply();
-      }
-    },{passive:false});
-    vp.addEventListener('touchend',()=>{ _cropDragging=false; _cropLastTouch=null; });
+    box.querySelectorAll('.crop-handle').forEach(h=>{
+      const mode=h.dataset.handle;
+      h.addEventListener('mousedown',_cropOnDown(mode));
+      h.addEventListener('touchstart',_cropOnDown(mode),{passive:false});
+    });
+
+    window.addEventListener('mousemove',_cropOnMove);
+    window.addEventListener('touchmove',_cropOnMove,{passive:false});
+    window.addEventListener('mouseup',_cropOnUp);
+    window.addEventListener('touchend',_cropOnUp);
   }
   window.addEventListener('load',setupCrop);
 })();
