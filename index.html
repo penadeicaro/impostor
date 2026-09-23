@@ -699,23 +699,31 @@ input::placeholder{color:var(--muted);}
 }
 .stats-cell-value{font-family:'VT323',monospace;font-size:var(--fs-2xl);color:var(--accent);}
 .stats-cell-label{font-size:.72rem;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
-.badges-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.badges-grid{display:flex;flex-direction:column;gap:6px;}
 .badge-item{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  width:58px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:10px;
+  width:100%;cursor:pointer;
+  background:var(--surface);
+  border:2px solid rgba(255,255,255,.1);
+  border-right-color:var(--bevel-r-soft);border-bottom-color:var(--bevel-b-soft);
+  padding:8px 10px;
+  transition:border-color .15s,background .15s;
 }
 .badge-item-emoji{
-  font-size:1.6rem;padding:8px;
+  font-size:1.5rem;padding:6px;flex-shrink:0;
   border:2px solid rgba(255,255,255,.1);
-  background:var(--surface);
-  transition:border-color .15s,background .15s;
+  background:rgba(0,0,0,.2);
   line-height:1;
 }
+.badge-item-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.badge-item.earned{border-color:rgba(232,255,71,.35);}
 .badge-item.earned .badge-item-emoji{border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.07);}
-.badge-item.not-earned .badge-item-emoji{filter:grayscale(1);opacity:.35;}
-.badge-item-name{font-size:.65rem;color:var(--sub);text-align:center;letter-spacing:.5px;line-height:1.2;}
-.badge-item.selectable .badge-item-emoji:hover{border-color:var(--accent);background:rgba(232,255,71,.15);}
-.badge-item.selected .badge-item-emoji{border-color:var(--accent);background:rgba(232,255,71,.2);box-shadow:0 0 0 2px rgba(232,255,71,.3);}
+.badge-item.not-earned .badge-item-emoji{filter:grayscale(1);opacity:.5;}
+.badge-item.not-earned{opacity:.55;}
+.badge-item-name{font-size:.85rem;color:var(--text);letter-spacing:.5px;line-height:1.2;}
+.badge-item-desc{font-size:.72rem;color:var(--sub);letter-spacing:.3px;line-height:1.3;}
+.badge-item.selectable:hover{border-color:var(--accent);background:rgba(232,255,71,.1);}
+.badge-item.selected{border-color:var(--accent);background:rgba(232,255,71,.15);box-shadow:0 0 0 2px rgba(232,255,71,.3);}
 
 /* ── Seção de badge no setup ── */
 .setup-badge-section{
@@ -3601,7 +3609,10 @@ async function abrirStatsModal(uid, e){
         ${earnedBadges.map(b=>`
           <div class="badge-item earned${isMe?' selectable':''}${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
             <div class="badge-item-emoji">${b.emoji}</div>
-            <div class="badge-item-name">${b.nome}</div>
+            <div class="badge-item-text">
+              <div class="badge-item-name">${b.nome}</div>
+              <div class="badge-item-desc">${b.desc}</div>
+            </div>
           </div>`).join('')||'<div style="color:var(--sub);font-size:.85rem">Nenhum badge ainda</div>'}
       </div>
     </div>
@@ -3612,7 +3623,10 @@ async function abrirStatsModal(uid, e){
         ${notEarned.map(b=>`
           <div class="badge-item not-earned">
             <div class="badge-item-emoji">${b.emoji}</div>
-            <div class="badge-item-name">${b.nome}</div>
+            <div class="badge-item-text">
+              <div class="badge-item-name">${b.nome}</div>
+              <div class="badge-item-desc">${b.desc}</div>
+            </div>
           </div>`).join('')}
       </div>
     </div>`:''}`;
@@ -3649,9 +3663,12 @@ async function renderBadgeSetup(badgesParam, badgeExibidoParam){
   if(!earned.length){ section.style.display='none'; return; }
   section.style.display='';
   grid.innerHTML=earned.map(b=>`
-    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}" title="${b.nome}: ${b.desc}">
+    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
       <div class="badge-item-emoji">${b.emoji}</div>
-      <div class="badge-item-name">${b.nome}</div>
+      <div class="badge-item-text">
+        <div class="badge-item-name">${b.nome}</div>
+        <div class="badge-item-desc">${b.desc}</div>
+      </div>
     </div>`).join('');
   grid.querySelectorAll('.badge-item').forEach(el=>{
     el.addEventListener('click',async()=>{
