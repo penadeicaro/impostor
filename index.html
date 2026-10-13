@@ -173,14 +173,13 @@ input::placeholder{color:var(--muted);}
 .chip-name{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:5px;color:#fff!important;}
 .chip-rank{display:flex;align-items:center;gap:5px;color:#fff!important;font-size:.85rem;}
-.badges-right{position:relative;z-index:1;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.badges-right{position:relative;z-index:1;display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto;}
 @keyframes slideIn{from{opacity:0;transform:translateY(5px);}}
 .badge{display:inline-block;padding:2px 8px;font-size:.85rem;
   letter-spacing:1px;text-transform:uppercase;}
 .badge-host{background:rgba(232,255,71,.14);color:var(--accent);}
 .badge-you{background:rgba(255,255,255,.07);color:var(--sub);}
 .badge-spec{background:rgba(79,195,247,.14);color:var(--blue);}
-.badges-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
 .kick-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   font-size:.75rem;padding:2px 5px;transition:color .2s;}
 .kick-btn:hover{color:var(--red);}
@@ -416,8 +415,6 @@ input::placeholder{color:var(--muted);}
 .player-chip .host-btn:hover{color:#E8FF47!important;}
 
 /* ── Offline status ── */
-.player-chip.offline{opacity:.4;filter:grayscale(1);}
-.vote-row.offline{opacity:.4;filter:grayscale(1);}
 .offline-label{font-family:'VT323',monospace;font-size:.8rem;color:#FF9800;
   letter-spacing:1px;display:inline-flex;align-items:center;gap:4px;margin-left:4px;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -976,7 +973,7 @@ input::placeholder{color:var(--muted);}
   <!-- ══ RESULTADO ══ -->
   <div id="s-resultado" class="screen">
     <div class="screen-scroll">
-      <div class="card" "">
+      <div class="card">
         <div class="card-label" id="res-titulo">🔍 Resultado da rodada</div>
         <div id="res-list" style="display:flex;flex-direction:column;gap:9px;margin-top:6px"></div>
       </div>
@@ -1568,7 +1565,7 @@ function getPrestigeStyle(pts){
 
 // Nome sempre branco — legibilidade sobre pixel art
 function nomeHTML(nome, pts){
-  return `<span style="color:#fff;font-weight:500">${nome}</span>`;
+  return `<span style="color:#fff;font-weight:500">${esc(nome)}</span>`;
 }
 
 // Rank title — branco dentro do chip (CSS cuida), colorido fora
@@ -1657,7 +1654,8 @@ function switchAuthTab(tab){
   clearErr('st-auth');
 }
 
-function avatarImg(url){ return url||AVATAR_PLACEHOLDER; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function avatarImg(url){ return /^https:\/\/[^\s"'<>]+$/.test(url||'') ? url : AVATAR_PLACEHOLDER; }
 
 // ══════════════════════════════════════════════════════
 //  FIREBASE HELPERS
@@ -1731,9 +1729,6 @@ async function carregarPalavras(){
 // ══════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-//  AUTH
-// ══════════════════════════════════════════════════════
 // Debounce para ignorar null temporário ao voltar do background
 let _authNullTimer = null;
 
@@ -1753,7 +1748,7 @@ auth.onAuthStateChanged(async user=>{
       } else {
         devlog('perfil já em cache, pulando reload','info');
       }
-      devlogStartRemoteListener();
+      if(DEVLOG_ENABLED) devlogStartRemoteListener();
       mostrarSetup();
     }catch(e){
       devlog(`ERRO ao carregar perfil: ${e.message}`, 'err');
@@ -2103,6 +2098,7 @@ async function uploadAvatar(input){
   const ext=file.name.split('.').pop().toLowerCase();
   const animated=ext==='gif'||(ext==='webp'&&await isAnimatedWebP(file));
   if(animated&&file.size>2*1024*1024) return setErr('st-nome','GIF/WebP animado: máx 2MB.');
+  if(animated){ _cropFile=file; _cropAnimated=true; return confirmarCrop(); }
   abrirCropModal(file, animated);
 }
 
@@ -2585,14 +2581,14 @@ function renderLobby(){
     // Badge emoji exibido
     const badgeEmoji=j.badgeExibido?`<span class="chip-badge-emoji" onclick="abrirStatsModal('${j.id}',event)">${j.badgeExibido}</span>`:'';
     if(_info.host===ME.uid&&j.id!==ME.uid){
-      badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}','${(j.nome||'').replace(/'/g,"\\'")}')" title="Passar host para ${nome}">👑</button>`;
+      badgesInner+=`<button class="host-btn" onclick="passarHost('${j.id}')" title="Passar host para ${esc(nome)}">👑</button>`;
       badgesInner+=`<button class="kick-btn" onclick="kickar('${j.id}')" title="Remover">✕</button>`;
     }
     const hostCrown=j.id===_info.host?' 👑':'';
     const offlineLabel=j.online===false?'<span class="offline-label"><span class="offline-spinner"></span>offline</span>':'';
     chip.innerHTML=`
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:36px;height:36px;${avStyle}">
+        onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="width:36px;height:36px;${avStyle}">
       <div class="chip-info">
         <div class="chip-name">${nomeHTML(nome, pts)}${hostCrown}${offlineLabel}</div>
         <div class="chip-rank">${rankBoxHTML(pts)}</div>
@@ -2828,7 +2824,7 @@ const overlap = votantes.length <= 4
 const miniFotos = votantes.map((vt, i) => {
   const right = i * (BASE_SIZE - overlap);
   return `<img src="${avatarImg(vt.avatarUrl)}" alt=""
-    onerror="this.src='${AVATAR_PLACEHOLDER}'"
+    onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER"
     style="position:absolute;bottom:4px;right:${right}px;
     width:${BASE_SIZE}px;height:${BASE_SIZE}px;
     object-fit:cover;image-rendering:pixelated;
@@ -2852,7 +2848,7 @@ const miniFotosWrap = votantes.length
     }
   </div>
   <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-    onerror="this.src='${AVATAR_PLACEHOLDER}'" style="${avStyle}">
+    onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="${avStyle}">
   <div style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px;">
     <div style="font-size:1.1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)">${nomeHTML(nome,pts)}${j.id===ME.uid?' <small style="color:var(--sub)">(você)</small>':''}${offlineBadge}</div>
     <div style="font-size:.85rem;color:${rankStyle.color};text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.5px;text-transform:uppercase">${rankStyle.title} · ${pts}pt</div>
@@ -2861,10 +2857,10 @@ const miniFotosWrap = votantes.length
     </div>
   </div>
   ${miniFotosWrap}`;
- grid.appendChild(row);  // ← linha que estava faltando
+ grid.appendChild(row);
   });  // fecha ativos.forEach
 
-  const statusEl=$(gridId==='q-vote-grid'?'q-vote-status':'vote-status-txt');
+  const statusEl=$('q-vote-status');
   if(statusEl) statusEl.textContent=`${totalVotos} de ${ativos.length} votos`;
 
 }  // fecha renderVoteGrid
@@ -2895,7 +2891,7 @@ function renderResultado(){
   list.innerHTML='';
 
   const resTitulo = $('res-titulo');
-if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + (_info.palavra||'—') + '</span>';
+if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + esc(_info.palavra||'—') + '</span>';
 
   // ── Poltergeist em destaque (laranja) antes do impostor, se ele venceu
   const poltergeistId=_info.poltergeistId||'';
@@ -2913,8 +2909,8 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
         <img class="res-rank-bg" src="${poltStyle.img}" alt="">
         <span class="imp-badge" style="position:relative;z-index:1;background:#FF9800">👻 Poltergeist</span>
         <img class="res-impostor-avatar" src="${avatarImg(polt.avatarUrl)}" alt=""
-          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1;border-color:#FF9800">
-        <div class="res-impostor-name" style="position:relative;z-index:1;color:#FF9800">${polt.nome||'(sem nome)'}${polt.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,152,0,.8)">(você)</small>':''}</div>
+          onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="position:relative;z-index:1;border-color:#FF9800">
+        <div class="res-impostor-name" style="position:relative;z-index:1;color:#FF9800">${esc(polt.nome||'(sem nome)')}${polt.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,152,0,.8)">(você)</small>':''}</div>
         <span class="pts-badge ${poltPtsClass}" style="position:relative;z-index:1">${poltPtsLabel}pt</span>`;
       list.appendChild(poltCard);
     }
@@ -2933,8 +2929,8 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
       <img class="res-rank-bg" src="${impStyle.img}" alt="">
       <span class="imp-badge" style="position:relative;z-index:1">Impostor</span>
       <img class="res-impostor-avatar" src="${avatarImg(imp.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-      <div class="res-impostor-name" style="position:relative;z-index:1">${imp.nome||'(sem nome)'}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
+        onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="position:relative;z-index:1">
+      <div class="res-impostor-name" style="position:relative;z-index:1">${esc(imp.nome||'(sem nome)')}${imp.id===ME.uid?' <small style="font-size:.7rem;color:rgba(255,71,87,.7)">(você)</small>':''}</div>
       <span class="pts-badge ${impPtsClass}" style="position:relative;z-index:1">${impPtsLabel}pt</span>`;
     list.appendChild(impCard);
   }
@@ -2957,8 +2953,8 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
       tile.innerHTML=`
         <img class="res-rank-bg" src="${tileStyle.img}" alt="">
         <img src="${avatarImg(j.avatarUrl)}" alt=""
-          onerror="this.src='${AVATAR_PLACEHOLDER}'" style="position:relative;z-index:1">
-        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${papelLabel?papelLabel+' ':''}${j.nome||'(sem nome)'}</div>
+          onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="position:relative;z-index:1">
+        <div class="res-player-name${isMe?' is-me':''}" style="position:relative;z-index:1">${papelLabel?papelLabel+' ':''}${esc(j.nome||'(sem nome)')}</div>
         <span class="pts-badge ${ptsClass}" style="position:relative;z-index:1">${ptsLabel}pt</span>`;
       grid.appendChild(tile);
     });
@@ -2996,8 +2992,8 @@ function renderHistorico(){
     div.className='hist-item'+(r.impostorPegou?' win':' lose');
     div.innerHTML=`
       <div class="hist-rodada">Rodada ${r.rodada}</div>
-      <div class="hist-palavra">${r.palavra} <span style="color:var(--sub);font-weight:400;font-size:.75rem">· ${r.categoria}</span></div>
-      <div class="hist-detalhe">Impostor: ${r.impostorNome} · ${r.impostorPegou?'✓ pego':'✗ escapou'}</div>`;
+      <div class="hist-palavra">${esc(r.palavra)} <span style="color:var(--sub);font-weight:400;font-size:.75rem">· ${esc(r.categoria)}</span></div>
+      <div class="hist-detalhe">Impostor: ${esc(r.impostorNome)} · ${r.impostorPegou?'✓ pego':'✗ escapou'}</div>`;
     container.appendChild(div);
   });
 }
@@ -3032,7 +3028,7 @@ async function renderPlacar(){
     div.innerHTML=`
       <span class="placar-rank${i===0?' gold':''}">${i+1}</span>
       <img class="avatar" src="${avatarImg(j.avatarUrl)}" alt=""
-        onerror="this.src='${AVATAR_PLACEHOLDER}'" style="width:28px;height:28px;${avStyle}">
+        onerror="this.onerror=null;this.src=AVATAR_PLACEHOLDER" style="width:28px;height:28px;${avStyle}">
       <span class="placar-nome" style="flex:1">${nomeHTML(j.nome||'(sem nome)', pts)}${voceLabel}</span>
       ${rankBoxHTML(pts)}
       <span class="placar-pts">${j.placar||0}pt</span>`;
@@ -3040,7 +3036,6 @@ async function renderPlacar(){
   });
 }
 
-// ══════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════
 //  SORTEAR
 // ══════════════════════════════════════════════════════
@@ -3264,7 +3259,7 @@ async function renderCatSelect(){
     const marcado=_config.categorias.includes(nome);
     const row=document.createElement('label');
     row.className='cat-select-row';
-    row.innerHTML=`<input type="checkbox" ${marcado?'checked':''}> <span>${nome}</span>`;
+    row.innerHTML=`<input type="checkbox" ${marcado?'checked':''}> <span>${esc(nome)}</span>`;
     row.querySelector('input').onchange=(e)=>toggleCategoria(nome, e.target.checked);
     list.appendChild(row);
   });
@@ -3456,7 +3451,7 @@ function calcularResultado(ativos, contagem, impostorId, votos, roles={}, polter
 //  REVELAR IMPOSTOR
 // ══════════════════════════════════════════════════════
 async function revelarImpostor(){
-  if(_info.host!==ME.uid) return setErr('st-questioning','Só o host pode revelar.');
+  if(_info.host!==ME.uid) return alert('Só o host pode revelar.');
   SFX.revelar();
 
   const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
@@ -3530,12 +3525,12 @@ async function kickar(playerId){
   await del(`salas/${SALA}/jogadores/${idKey(playerId)}`);
 }
 
-async function passarHost(playerId, playerNome){
+async function passarHost(playerId){
   if(_info.host!==ME.uid) return;
   if(playerId===ME.uid) return;
   const alvo=_jogadores[idKey(playerId)];
   if(!alvo){ alert('Jogador não encontrado.'); return; }
-  const confirmado=confirm(`Tornar ${playerNome||alvo.nome||'este jogador'} o novo host da sala?`);
+  const confirmado=confirm(`Tornar ${alvo.nome||'este jogador'} o novo host da sala?`);
   if(!confirmado) return;
   try{
     await upd(`salas/${SALA}/info`,{host:playerId, hostNome:alvo.nome||''});
