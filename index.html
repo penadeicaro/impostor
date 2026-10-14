@@ -1016,6 +1016,7 @@ input::placeholder{color:var(--muted);}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════════
@@ -1034,6 +1035,9 @@ firebase.initializeApp(firebaseConfig);
 const auth    = firebase.auth();
 const db      = firebase.database();
 const storage = firebase.storage();
+const functions = firebase.functions();
+// Sorteio, apuração e nova rodada rodam no servidor (Cloud Functions).
+const chamar = (nome,dados) => functions.httpsCallable(nome)(dados).then(r=>r.data);
 
 // ══════════════════════════════════════════════════════
 //  DEVLOG SWITCH — mude para true para ativar
@@ -1324,7 +1328,9 @@ let connectedListener = null; // listener de presença — gerenciado separadame
 let _info      = null;
 let _jogadores = {};
 let _votos     = {};
-let _assignments = null;
+let _privado = null;     // { palavra, papel } — só o próprio jogador consegue ler (salas/$S/privado/$uid)
+let _resultado = null;   // resultado apurado pelo servidor
+let _chaveSorteio = '';
 let _snapshot  = {};   // snapshot dos jogadores no início da rodada
 let _historico = {};
 let resultadoSomTocado = false; // evita som duplicado na tela de resultado
@@ -1333,60 +1339,6 @@ let _timer     = { ativo:false, fimTs:0 };  // estado local do cronômetro (espe
 let _timerInterval = null;
 let _timerRevelarDisparado = false; // evita o host disparar revelarImpostor() mais de uma vez
 let _ultimoTickVibrado = null;      // evita vibrar repetidamente no mesmo segundo
-let _roles     = {};   // idKey(uid) → 'normal' | 'impostor' | 'poltergeist' | 'lunatico'
-
-// ══════════════════════════════════════════════════════
-//  PONTUAÇÃO — edite aqui para ajustar os valores
-// ══════════════════════════════════════════════════════
-const PTS = {
-  // ── JOGADORES NORMAIS — impostor pego ──────────────────
-  acertou_unanimidade:             2,   // votou no impostor + todos acertaram
-  acertou_maioria:                 3,   // votou no impostor + maioria acertou
-  acertou_minoria:                 4,   // votou no impostor + poucos acertaram
-  errou_impegou:                  -1,   // votou em outro, mas impostor foi pego
-  absteve_impegou:                 2,   // não votou, impostor foi pego
-
-  // ── JOGADORES NORMAIS — impostor escapou ───────────────
-  acertou_escapou:                 0,   // votou no impostor, mas ele escapou
-  errou_escapou:                  -2,   // votou em outro e impostor escapou
-  absteve_escapou:                -3,   // não votou e impostor escapou
-
-  // ── IMPOSTOR — pego ────────────────────────────────────
-  imp_pego_unanimidade:           -3,   // pego por unanimidade
-  imp_pego_maioria:               -2,   // pego por maioria
-  imp_pego_minoria:               -1,   // pego por minoria
-
-  // ── IMPOSTOR — escapou ─────────────────────────────────
-  imp_escapou_zerovoto:            6,   // ninguém votou nele
-  imp_escapou_minoria:             4,   // minoria votou nele mas escapou
-  imp_escapou_empate:              2,   // empate nos votos, escapou
-
-  // ── IMPOSTOR — poltergeist venceu no lugar dele ────────
-  imp_poltergeist_venceu:          0,   // poltergeist foi eliminado no lugar dele
-
-  // ── POLTERGEIST — venceu (foi o mais votado) ───────────
-  poltergeist_venceu:              5,   // objetivo cumprido
-
-  // ── POLTERGEIST — não venceu ───────────────────────────
-  poltergeist_perdeu_impegou:      0,   // impostor foi pego, poltergeist sobreviveu
-  poltergeist_perdeu_escapou:      0,   // impostor escapou, poltergeist sobreviveu
-
-  // ── JOGADORES — votaram no poltergeist ─────────────────
-  votou_no_poltergeist_venceu:    -2,   // poltergeist venceu e você contribuiu
-  votou_no_poltergeist_perdeu:    -1,   // votou no poltergeist mas ele não venceu
-
-  // ── LUNÁTICO — impostor pego ───────────────────────────
-  lunatico_acertou_unanimidade:    2,
-  lunatico_acertou_maioria:        3,
-  lunatico_acertou_minoria:        4,
-  lunatico_errou_impegou:         -1,
-  lunatico_absteve_impegou:        2,
-
-  // ── LUNÁTICO — impostor escapou ────────────────────────
-  lunatico_acertou_escapou:        0,
-  lunatico_errou_escapou:         -2,
-  lunatico_absteve_escapou:       -3,
-};
 
 // ══════════════════════════════════════════════════════
 //  BADGES — definição e lógica
@@ -1414,129 +1366,6 @@ const BADGES = [
 // Retorna a definição do badge por id
 function getBadge(id){ return BADGES.find(b=>b.id===id)||null; }
 
-// Avalia quais badges ganhar/perder após uma rodada revelada
-// eu: objeto do jogador atual, resultado: {cenarioImpostor, cenarioPoltergeist, cenarioJogadores, impostorPegou, poltergeistVenceu}
-// votos: _votos, roles: roles efetivos, ativosIds: array de ids ativos
-// stats: objeto atual de stats (antes de atualizar)
-// ativosAtual: objeto { id: badge } dos badges ativos
-async function avaliarBadges(eu, resultado, votos, roles, ativos, statsAntes, badgesAtivos){
-  const uid=eu.id;
-  const isImp=uid===_info.impostorId;
-  const isPolt=roles[idKey(uid)]==='poltergeist';
-  const isLun=roles[idKey(uid)]==='lunatico';
-  const meuVotoObj=votos[idKey(uid)];
-  const votouEm=meuVotoObj?.votadoId||null;
-  const impostorId=_info.impostorId;
-  const {impostorPegou,poltergeistVenceu}=resultado;
-
-  const contagem={};
-  Object.values(votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-
-  const maxVotos=Math.max(0,...Object.values(contagem));
-  const maisVotados=Object.keys(contagem).filter(id=>contagem[id]===maxVotos);
-
-  const ganhou=[];
-  const perdeu=[];
-
-  function marcar(id, ativo){
-    if(ativo){ if(!badgesAtivos[id]) ganhou.push(id); }
-    else      { if(badgesAtivos[id]) perdeu.push(id); }
-  }
-
-  // ── Permanentes (só ganham, nunca perdem)
-  if(statsAntes.partidas===0) ganhou.push('estreante'); // 1ª partida (stats ainda não incrementada)
-  if(isImp && statsAntes.partidasImpostor===0 && !badgesAtivos['novato_suspeito']) ganhou.push('novato_suspeito');
-  if(isPolt && poltergeistVenceu && !badgesAtivos['assombracao']) ganhou.push('assombracao');
-  if(isLun && maisVotados.includes(uid) && !badgesAtivos['confusao_mental']) ganhou.push('confusao_mental');
-  if(!isImp && maisVotados.includes(uid) && maxVotos>0 && !badgesAtivos['bode_expiatorio']) ganhou.push('bode_expiatorio');
-  if(votouEm===uid && !badgesAtivos['palhaco']) ganhou.push('palhaco');
-  if(statsAntes.partidas+1>=50  && !badgesAtivos['veterano'])  ganhou.push('veterano');
-  if(statsAntes.partidas+1>=200 && !badgesAtivos['lendario'])  ganhou.push('lendario');
-
-  // ── Fantasma (perde se pego com unanimidade)
-  if(isImp){
-    const qtdVotosNele=contagem[uid]||0;
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if(!impostorPegou && qtdVotosNele===0) marcar('fantasma',true);
-    else if(impostorPegou && qtdVotosNele===qtdAtivos) marcar('fantasma',false);
-  }
-
-  // ── Escapista / Intocável (sequência de escapadas)
-  if(isImp){
-    const seq=(statsAntes.sequenciaEscapadas||0)+(impostorPegou?0:1);
-    if(!impostorPegou){
-      if(seq>=3) marcar('escapista',true);
-      if(seq>=5) marcar('intocavel',true);
-    } else {
-      marcar('escapista',false);
-      marcar('intocavel',false);
-    }
-  }
-
-  // ── Ilusionista (escapou com voto unânime em outra pessoa)
-  if(isImp && !impostorPegou){
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if(qtdAtivos>0 && maisVotados.length===1 && maisVotados[0]!==uid && contagem[maisVotados[0]]===qtdAtivos){
-      marcar('ilusionista',true);
-    }
-  } else if(isImp && impostorPegou){
-    const qtdAtivos=ativos.filter(j=>j.id!==uid).length;
-    if((contagem[uid]||0)===qtdAtivos) marcar('ilusionista',false);
-  }
-
-  // ── Olho de Águia (acertos seguidos votando no impostor)
-  if(!isImp && !isPolt){
-    const acertou=votouEm===impostorId;
-    const seq=(statsAntes.sequenciaAcertos||0)+(acertou?1:0);
-    const erros=(statsAntes.errosSequencia||0)+(acertou?0:1);
-    if(acertou && seq>=5) marcar('olho_de_aguia',true);
-    if(!acertou && erros>=3) marcar('olho_de_aguia',false);
-  }
-
-  // ── Farejador (unanimidade no impostor)
-  if(!isImp && !isPolt && votouEm===impostorId){
-    const qtdAtivos=ativos.filter(j=>j.id!==impostorId&&!j.espectador).length;
-    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
-    if(qtdAcertaram===qtdAtivos) marcar('farejador',true);
-  } else if(!isImp && votouEm!==impostorId){
-    const erros=(statsAntes.errosSequencia||0)+1;
-    if(erros>=3) marcar('farejador',false);
-  }
-
-  // ── Abstenção Lucrativa
-  if(!isImp && !votouEm && impostorPegou){
-    marcar('abstencao_lucrativa',true);
-  } else if(!isImp && votouEm===impostorId){
-    // único a acertar = perde o badge
-    const qtdAcertaram=ativos.filter(j=>j.id!==impostorId&&votos[idKey(j.id)]?.votadoId===impostorId).length;
-    if(qtdAcertaram===1) marcar('abstencao_lucrativa',false);
-  }
-
-  // ── Caçador Veterano (20 acertos totais)
-  if(!isImp && votouEm===impostorId){
-    if((statsAntes.acertosTotal||0)+1>=20) marcar('cacador_veterano',true);
-    const erros=statsAntes.errosSequencia||0;
-    if(erros>=3) marcar('cacador_veterano',false);
-  } else if(!isImp && votouEm && votouEm!==impostorId){
-    if((statsAntes.errosSequencia||0)+1>=3) marcar('cacador_veterano',false);
-  }
-
-  // ── Mestre do Caos (poltergeist 5x seguidas)
-  if(isPolt){
-    const seq=(statsAntes.sequenciaVitoriasPoltergeist||0)+(poltergeistVenceu?1:0);
-    const perda=(statsAntes.sequenciaPerdasPoltergeist||0)+(poltergeistVenceu?0:1);
-    if(poltergeistVenceu && seq>=5) marcar('mestre_do_caos',true);
-    if(!poltergeistVenceu && perda>=3) marcar('mestre_do_caos',false);
-  }
-
-  // Monta update Firebase
-  const updates={};
-  ganhou.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=true; });
-  perdeu.forEach(id=>{ updates[`users/${uid}/badges/${id}`]=false; });
-  if(Object.keys(updates).length) await db.ref().update(updates);
-
-  return {ganhou, perdeu};
-}
 // Thresholds: mais difícil subir, fácil cair. Mínimo sempre 0.
 const PRESTIGE_TIERS = [
   {min:0,   max:29,  tier:1, title:'Zumbi',      img:'zumbi.png',      color:'#f0ff00'},
@@ -1655,6 +1484,14 @@ function switchAuthTab(tab){
 }
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function msgErro(e){ return (e&&e.message)||'Erro inesperado.'; }
+// Jogadores da rodada: lista do snapshot (quem começou a rodada) com dados ao vivo por cima.
+function participantes(){
+  if(!Object.keys(_snapshot).length) return Object.values(_jogadores).filter(j=>!j.espectador);
+  return Object.entries(_snapshot)
+    .map(([k,j])=>({...j,...(_jogadores[k]||{}),id:j.id||keyToId(k)}))
+    .filter(j=>!j.espectador);
+}
 function avatarImg(url){ return /^https:\/\/[^\s"'<>]+$/.test(url||'') ? url : AVATAR_PLACEHOLDER; }
 
 // ══════════════════════════════════════════════════════
@@ -1787,14 +1624,14 @@ async function carregarPerfil(uid){
     if(i<2) await new Promise(r=>setTimeout(r, 800));
   }
 
-  const nomeFirebase = ME.displayName || ME.email?.split('@')[0] || '';
+  const nomeFirebase = (ME.displayName || ME.email?.split('@')[0] || '').slice(0,20);
   devlog(`nomeFirebase="${nomeFirebase}" | prof=${prof?JSON.stringify({nome:prof.nome,placarTotal:prof.placarTotal}):'null'}`, 'info');
 
   if(!prof){
     if(!nomeFirebase){ devlog('sem nome e sem perfil — throw Sem conexão', 'err'); throw new Error('Sem conexão para carregar perfil'); }
     devlog(`criando perfil novo nome="${nomeFirebase}"`, 'warn');
-    prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', placarTotal:0, criadoEm:Date.now() };
-    await set(`users/${uid}`, prof);
+    prof = { nome:nomeFirebase, avatarUrl:ME.photoURL||'', criadoEm:Date.now() };
+    await upd(`users/${uid}`, prof);
   } else if(!prof.nome && nomeFirebase){
     devlog(`perfil com nome vazio — reparando para "${nomeFirebase}"`, 'warn');
     prof.nome = nomeFirebase;
@@ -1828,9 +1665,7 @@ async function cadastrar(){
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,senha);
     await cred.user.updateProfile({displayName:nome});
-    await set(`users/${cred.user.uid}`,{
-      nome, avatarUrl:'', placarTotal:0, criadoEm:Date.now()
-    });
+    await upd(`users/${cred.user.uid}`,{ nome:nome.slice(0,20), avatarUrl:'', criadoEm:Date.now() });
   }catch(e){
     setErr('st-auth', traduzirErroAuth(e.code));
   }
@@ -2223,7 +2058,7 @@ async function rejoinSala(){
 }
 
 async function entrarOuCriar(){
-  const raw=$('inp-codigo').value.trim().toUpperCase();
+  const raw=$('inp-codigo').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   clearErr('st-setup');
   const nome = ME_PROFILE?.nome || ME.displayName || ME.email.split('@')[0];
   devlog(`entrarOuCriar: codigo="${raw}" nome="${nome}"`, nome?'info':'err');
@@ -2246,12 +2081,9 @@ async function criarSala(nome, codCustom){
     while(snap){cod=gerarCodigo();snap=await get(`salas/${cod}/info`);}
   }
   const uid=ME.uid;
-  await set(`salas/${cod}/info`,{
+  await upd(`salas/${cod}/info`,{
     fase:'lobby', host:uid, hostNome:nome,
-    nomeSala:'Sala de '+nome, categoria:'', palavra:'',
-    impostorId:'', impostorNome:'',
-    votacaoAberta:false, criadoEm:Date.now(), rodada:0,
-    timerTs:0, timerAtivo:false
+    nomeSala:'Sala de '+nome, criadoEm:Date.now(), rodada:0
   });
   await set(`salas/${cod}/config`, { poltergeistAtivo: false, lunaticoAtivo: false });
   await _gravarJogador(cod, uid, nome);
@@ -2273,15 +2105,19 @@ async function entrarSala(nome, cod){
 
 async function _gravarJogador(cod, uid, nome){
   devlog(`_gravarJogador cod=${cod} uid=${uid.slice(0,6)} nome="${nome}"`, nome?'info':'err');
-  const placarExistente=(await get(`users/${uid}/placarTotal`))||0;
-  const badgeExibido=(await get(`users/${uid}/badgeExibido`))||'';
+  const [placarExistente,badgeExibido,existente]=await Promise.all([
+    get(`users/${uid}/placarTotal`),
+    get(`users/${uid}/badgeExibido`),
+    get(`salas/${cod}/jogadores/${idKey(uid)}`)
+  ]);
+  // Preserva placar da sala e ordem ao reentrar (antes, reconectar zerava o placar da sala).
   await set(`salas/${cod}/jogadores/${idKey(uid)}`,{
     id:uid, nome,
     avatarUrl: ME_PROFILE?.avatarUrl||ME.photoURL||'',
-    ts:Date.now(),
-    placar:0,
-    placarTotal:placarExistente,
-    badgeExibido,
+    ts:existente?.ts||Date.now(),
+    placar:existente?.placar||0,
+    placarTotal:placarExistente||0,
+    badgeExibido:badgeExibido||'',
     online:true
   });
 }
@@ -2321,7 +2157,10 @@ function iniciarListeners(){
   listen('jogadores', `salas/${SALA}/jogadores`, onJogadoresChanged);
   listen('votos',     `salas/${SALA}/votos`,     onVotosChanged);
   listen('config',    `salas/${SALA}/config`,    onConfigChanged);
-  listen('roles',     `salas/${SALA}/roles`,     onRolesChanged);
+  listen('privado',   `salas/${SALA}/privado/${idKey(ME.uid)}`, onPrivadoChanged);
+  listen('snapshot',  `salas/${SALA}/snapshot`,  onSnapshotChanged);
+  listen('resultado', `salas/${SALA}/resultado`, onResultadoChanged);
+  listen('historico', `salas/${SALA}/historico`, onHistoricoChanged);
   listen('timer',     `salas/${SALA}/timer`,     onTimerChanged);
   iniciarListenerPlacarTotal();
   showScreen('s-lobby');
@@ -2337,12 +2176,13 @@ function onConfigChanged(config){
 function onTimerChanged(timer){
   _timer = timer || { ativo:false, fimTs:0 };
   _timerRevelarDisparado=false;
+  _ultimoTickVibrado=null;
   iniciarLoopTimer();
 }
 
-function onRolesChanged(roles){
-  _roles = roles || {};
-}
+function onPrivadoChanged(p){ _privado=p||null; renderFase(); }
+function onSnapshotChanged(sn){ _snapshot=sn||{}; renderFase(); }
+function onResultadoChanged(r){ _resultado=r||null; if(_info?.fase==='revealed') renderResultado(); }
 
 // ── Listener em tempo real do próprio placarTotal (atualiza setup screen)
 let _meuPlacarListener = null;
@@ -2397,118 +2237,9 @@ function onInfoChanged(info){
   const fase=info.fase;
   devlog(`onInfoChanged: fase ${prev?.fase||'?'} → ${fase} | host=${info.host?.slice(0,6)}`, 'info');
 
-  if(fase==='revealed'){
-    listen('historico',`salas/${SALA}/historico`,onHistoricoChanged);
-  }
-
-  // Cada cliente atualiza seu próprio placarTotal quando a rodada é revelada.
-  // O host não tem permissão de escrever em users/$outroUid pelas regras do Firebase,
-  // então cada jogador grava apenas seu próprio nó.
-  if(prev?.fase!=='revealed' && fase==='revealed'){
-    (async()=>{
-      try{
-        const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
-        const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
-        const eu=ativos.find(j=>j.id===ME.uid);
-        if(!eu||eu.espectador) return;
-        const contagem={};
-        Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-        const rolesEfetivos=Object.keys(_roles).length?_roles:Object.fromEntries(
-          Object.entries(_snapshot).map(([k,v])=>[k,v.role||'normal'])
-        );
-        const resultado=calcularResultado(ativos,contagem,info.impostorId,_votos,rolesEfetivos,info.poltergeistId||'');
-        const {cenarioImpostor,cenarioJogadores,impostorPegou,poltergeistVenceu}=resultado;
-        const isImp=ME.uid===info.impostorId;
-        const isPolt=rolesEfetivos[idKey(ME.uid)]==='poltergeist';
-        const pts=isImp?cenarioImpostor.pts:(cenarioJogadores[ME.uid]?.pts||0);
-
-        // ── Atualizar placarTotal
-        if(pts!==0){
-          const atualGlobal=(await get(`users/${ME.uid}/placarTotal`))||0;
-          await upd(`users/${ME.uid}`,{placarTotal:Math.max(0,atualGlobal+pts)});
-        }
-
-        // ── Carregar stats e badges atuais
-        const [statsAtual, badgesAtual]= await Promise.all([
-          get(`users/${ME.uid}/stats`).then(s=>s||{}),
-          get(`users/${ME.uid}/badges`).then(b=>b||{})
-        ]);
-
-        const meuVotoObj=_votos[idKey(ME.uid)];
-        const votouEm=meuVotoObj?.votadoId||null;
-        const acertou=votouEm===info.impostorId;
-        const votou=!!votouEm;
-
-        // ── Calcular novos stats
-        const newStats={};
-        newStats.partidas=(statsAtual.partidas||0)+1;
-        if(isImp){
-          newStats.partidasImpostor=(statsAtual.partidasImpostor||0)+1;
-          if(!impostorPegou){
-            newStats.escapadasImpostor=(statsAtual.escapadasImpostor||0)+1;
-            newStats.sequenciaEscapadas=(statsAtual.sequenciaEscapadas||0)+1;
-          } else {
-            newStats.sequenciaEscapadas=0;
-          }
-        }
-        if(!isImp && !isPolt && votou){
-          if(acertou){
-            newStats.acertosTotal=(statsAtual.acertosTotal||0)+1;
-            newStats.sequenciaAcertos=(statsAtual.sequenciaAcertos||0)+1;
-            newStats.errosSequencia=0;
-          } else {
-            newStats.errosSequencia=(statsAtual.errosSequencia||0)+1;
-            newStats.sequenciaAcertos=0;
-          }
-        }
-        if(!votou) newStats.abstencoes=(statsAtual.abstencoes||0)+1;
-        if(isPolt && poltergeistVenceu){
-          newStats.vitoriasPoltergeist=(statsAtual.vitoriasPoltergeist||0)+1;
-          newStats.sequenciaVitoriasPoltergeist=(statsAtual.sequenciaVitoriasPoltergeist||0)+1;
-          newStats.sequenciaPerdasPoltergeist=0;
-        } else if(isPolt && !poltergeistVenceu){
-          newStats.sequenciaPerdasPoltergeist=(statsAtual.sequenciaPerdasPoltergeist||0)+1;
-          newStats.sequenciaVitoriasPoltergeist=0;
-        }
-        if(votouEm===ME.uid) newStats.votoEmSiMesmo=(statsAtual.votoEmSiMesmo||0)+1;
-
-        await upd(`users/${ME.uid}/stats`, newStats);
-
-        // ── Avaliar badges (passa stats ANTES do update para cálculo de sequências)
-        await avaliarBadges(eu, resultado, _votos, rolesEfetivos, ativos, statsAtual, badgesAtual);
-
-      }catch(e){ console.warn('Erro ao atualizar stats/placar:',e); }
-    })();
-  }
-
-  // Detecta transições para tocar sons para todos
+  // Pontos, stats e badges são apurados pelo servidor (Cloud Function `revelar`).
   if(prev?.fase==='lobby' && fase==='questioning') SFX.sortear();
-
-  // Reinício de rodada: fase continua 'questioning', mas a palavra mudou — recarrega assignments/snapshot pra todos
-  if(fase==='questioning' && prev?.fase==='questioning' && prev.palavra!==info.palavra){
-    Promise.all([
-      get(`salas/${SALA}/assignments`),
-      get(`salas/${SALA}/snapshot`)
-    ]).then(([a,s])=>{
-      _assignments=a||{};
-      _snapshot=s||{};
-      renderFase();
-    });
-    return;
-  }
-
-  if(fase==='revealed' && !_assignments){
-    Promise.all([
-      get(`salas/${SALA}/assignments`),
-      get(`salas/${SALA}/snapshot`)
-    ]).then(([a,s])=>{
-      _assignments=a||{};
-      _snapshot=s||{};
-      renderFase();
-    });
-    return;
-  }
-  if(fase==='lobby'){ _assignments=null; meuVoto=null; myWord=''; _snapshot={}; _qtdVotosAnterior=0; _votosCarregadoUmaVez=false; }
+  if(fase==='lobby'){ meuVoto=null; myWord=''; resultadoSomTocado=false; _qtdVotosAnterior=0; _votosCarregadoUmaVez=false; }
   renderFase();
 }
 
@@ -2525,10 +2256,7 @@ function onJogadoresChanged(jogadores){
   if(cur>prev) SFX.join();
   // Inicia listener de placarTotal para cada jogador (sem duplicar)
   Object.values(_jogadores).forEach(j=>{ if(j.id) sincronizarPlacarTotalJogador(j.id); });
-  // Não re-renderiza a tela de resultado por mudanças em jogadores —
-  // evita que o reset de placar do novaRodada() corrompra visualmente os scores.
-  // renderResultado() já foi chamada por onInfoChanged ao entrar na fase 'revealed'.
-  if(_info?.fase !== 'revealed') renderFase();
+  renderFase();
 }
 
 let _qtdVotosAnterior = 0;
@@ -2677,14 +2405,15 @@ function tickTimer(){
   }
 
   if(restanteSeg<=0){
-    clearInterval(_timerInterval); _timerInterval=null;
     el.classList.remove('urgente');
     el.textContent='⏱️ 0:00';
-    vibrar(VIBRA.timerFim);
-    // Só o host dispara a revelação automática, evitando corrida entre clientes
-    if(_info?.host===ME.uid && !_timerRevelarDisparado && _info?.fase==='questioning'){
+    if(_ultimoTickVibrado!==0){ _ultimoTickVibrado=0; vibrar(VIBRA.timerFim); }
+    // Host revela ao zerar; qualquer outro jogador assume se o host não revelou em 5s
+    // (aba em segundo plano, queda de rede). O servidor garante uma única apuração.
+    const souHost=_info?.host===ME.uid;
+    if(!_timerRevelarDisparado && _info?.fase==='questioning' && (souHost || serverNow()-_timer.fimTs>=5000)){
       _timerRevelarDisparado=true;
-      revelarImpostor();
+      revelarImpostor(true);
     }
   }
 }
@@ -2694,17 +2423,19 @@ function tickTimer(){
 // ══════════════════════════════════════════════════════
 let qWordShown = false;
 
-async function renderQuestioning(){
+function renderQuestioning(){
   const entrandoNaTela=document.querySelector('.screen.active')?.id!=='s-questioning';
-  if(!_assignments) _assignments=await get(`salas/${SALA}/assignments`)||{};
-  const novaPalavra=_assignments[idKey(ME.uid)]||'';
-  if(entrandoNaTela || novaPalavra!==myWord){
+  const novaPalavra=_privado?.palavra||'';
+  const chave=(_info.sorteio||0)+'|'+novaPalavra+'|'+(_privado?.papel||'');
+  if(entrandoNaTela || chave!==_chaveSorteio){
+    _chaveSorteio=chave;
     qWordShown=false;
     myWord=novaPalavra;
     $('q-word-cat').textContent=_info.categoria||'—';
     const el=$('q-word-el');
-    el.className='word-hidden'; el.textContent='● ● ●';
+    el.className='word-hidden'; el.textContent='● ● ●'; el.style.fontSize='';
     $('q-word-hint').textContent='toque aqui para revelar';
+    const subEl=$('q-word-sub'); if(subEl){ subEl.textContent=''; subEl.style.display='none'; }
   }
   if(entrandoNaTela){
     showScreen('s-questioning');
@@ -2717,10 +2448,7 @@ async function renderQuestioning(){
 
   renderVoteGrid('q-vote-grid');
   const qVoteStatus=$('q-vote-status');
-  if(qVoteStatus){
-    const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
-    qVoteStatus.textContent=`${Object.keys(_votos).length} de ${ativos.length} votos`;
-  }
+  if(qVoteStatus) qVoteStatus.textContent=`${Object.keys(_votos).length} de ${participantes().length} votos`;
 }
 
 function fitWordFont(el, text){
@@ -2739,7 +2467,7 @@ function toggleWordQ(){
 
   if(!qWordShown){
     SFX.palavra();
-    const meuPapel = _roles[idKey(ME.uid)] || 'normal';
+    const meuPapel = _privado?.papel || 'normal';
     let texto, subTexto='', subCor='';
 
     if(meuPapel==='impostor'){
@@ -2785,9 +2513,7 @@ function toggleWordQ(){
 //  VOTE GRID
 // ══════════════════════════════════════════════════════
 function renderVoteGrid(gridId){
-  // Usa snapshot para manter jogadores mesmo que alguém tenha saído
-  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
-  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
+  const ativos=participantes().sort((a,b)=>a.ts-b.ts);
   const totalVotos=Object.keys(_votos).length;
   const contagem={};
   Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
@@ -2810,7 +2536,7 @@ function renderVoteGrid(gridId){
   .filter(([,v]) => v.votadoId === j.id)
   .map(([k]) => {
     const uid = keyToId(k);
-    return Object.values(fonteJogadores).find(x => x.id === uid) || null;
+    return ativos.find(x => x.id === uid) || null;
   })
   .filter(Boolean);
 
@@ -2871,34 +2597,27 @@ const miniFotosWrap = votantes.length
 // ══════════════════════════════════════════════════════
 function renderResultado(){
   if(document.querySelector('.screen.active')?.id!=='s-resultado') showScreen('s-resultado');
-  if(!_info.impostorId) return;
+  const R=_resultado;
+  if(!R){ $('res-list').innerHTML=''; return; }
 
-  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
-  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador).sort((a,b)=>a.ts-b.ts);
-  const assignments=_assignments||{};
-  const contagem={};
-  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-
-  // Calcula resultado da votação para exibir cenário
-  // Usa snapshot.role como fallback, já que roles/ é removido do Firebase após revelar
-  const rolesEfetivos = Object.keys(_roles).length ? _roles : Object.fromEntries(
-    Object.entries(_snapshot).map(([k,v])=>[k, v.role||'normal'])
-  );
-  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos, rolesEfetivos, _info.poltergeistId||'');
+  const ativos=participantes().sort((a,b)=>a.ts-b.ts);
+  const pontos=R.pontos||{};
+  const ptsDe=id=>pontos[idKey(id)]?.pts||0;
+  const papelDe=id=>pontos[idKey(id)]?.papel||'normal';
+  const impostorPegou=R.impostorPegou, poltergeistVenceu=R.poltergeistVenceu;
 
   const list=$('res-list');
   list.innerHTML='';
 
   const resTitulo = $('res-titulo');
-if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + esc(_info.palavra||'—') + '</span>';
+if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--accent);font-family:\'VT323\',monospace;font-size:1.1em;letter-spacing:2px">' + esc(R.palavra||'—') + '</span>';
 
   // ── Poltergeist em destaque (laranja) antes do impostor, se ele venceu
-  const poltergeistId=_info.poltergeistId||'';
+  const poltergeistId=R.poltergeistId||'';
   if(poltergeistId && !impostorPegou && poltergeistVenceu){
     const polt=ativos.find(j=>j.id===poltergeistId);
     if(polt){
-      const poltPts=cenarioPoltergeist?.pts||0;
+      const poltPts=ptsDe(poltergeistId);
       const poltPtsClass=poltPts>0?'pts-pos':poltPts<0?'pts-neg':'pts-zero';
       const poltPtsLabel=poltPts>0?`+${poltPts}`:String(poltPts);
       const poltCard=document.createElement('div');
@@ -2917,9 +2636,9 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
   }
 
   // ── Impostor em destaque no topo
-  const imp=ativos.find(j=>j.id===_info.impostorId);
+  const imp=ativos.find(j=>j.id===R.impostorId);
   if(imp){
-    const impPts=cenarioImpostor.pts;
+    const impPts=ptsDe(R.impostorId);
     const impPtsClass=impPts>0?'pts-pos':impPts<0?'pts-neg':'pts-zero';
     const impPtsLabel=impPts>0?`+${impPts}`:String(impPts);
     const impCard=document.createElement('div');
@@ -2936,17 +2655,17 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
   }
 
   // ── Demais jogadores em grid de tiles
-  const outros=ativos.filter(j=>j.id!==_info.impostorId);
+  const outros=ativos.filter(j=>j.id!==R.impostorId);
   if(outros.length){
     const grid=document.createElement('div');
     grid.className='res-players-grid';
     outros.forEach(j=>{
-      const pts=(cenarioJogadores[j.id]||{pts:0}).pts;
+      const pts=ptsDe(j.id);
       const ptsClass=pts>0?'pts-pos':pts<0?'pts-neg':'pts-zero';
       const ptsLabel=pts>0?`+${pts}`:String(pts);
       const isMe=j.id===ME.uid;
       const tileStyle=getPrestigeStyle(j.placarTotal||0);
-      const papel=rolesEfetivos[idKey(j.id)];
+      const papel=papelDe(j.id);
       const papelLabel = papel==='poltergeist' ? '👻' : papel==='lunatico' ? '🌀' : '';
       const tile=document.createElement('div');
       tile.className='res-player-tile';
@@ -2969,12 +2688,12 @@ if(resTitulo) resTitulo.innerHTML = 'A palavra era: <span style="color:var(--acc
   if(!resultadoSomTocado){
     resultadoSomTocado=true;
     vibrar(VIBRA.revelar);
-    const euSouImpostor=ME.uid===_info.impostorId;
+    const euSouImpostor=ME.uid===R.impostorId;
     if(euSouImpostor){
       impostorPegou ? SFX.derrota() : SFX.vitoria();
     } else {
       const meuVotoObj=_votos[idKey(ME.uid)];
-      meuVotoObj?.votadoId===_info.impostorId ? SFX.vitoria() : SFX.derrota();
+      meuVotoObj?.votadoId===R.impostorId ? SFX.vitoria() : SFX.derrota();
     }
   }
 }
@@ -2999,13 +2718,7 @@ function renderHistorico(){
 }
 
 async function renderPlacar(){
-  // Na tela de resultado, usa o snapshot congelado do início da rodada para
-  // evitar que o reset de placar do novaRodada() corrompra visualmente os valores.
-  // O snapshot carrega o placar que o host já atualizou (após revelarImpostor).
-  // Fora da tela de resultado, usa _jogadores normalmente.
-  const fonteJogadores = (document.querySelector('.screen.active')?.id==='s-resultado' && Object.keys(_snapshot).length>0)
-    ? _snapshot : _jogadores;
-  const listaBase=Object.values(fonteJogadores).filter(j=>!j.espectador);
+  const listaBase=participantes();
   // Carrega placarTotal de cada jogador para mostrar prestígio real
   await Promise.all(listaBase.map(async j=>{
     if(j.placarTotal==null){
@@ -3039,142 +2752,27 @@ async function renderPlacar(){
 // ══════════════════════════════════════════════════════
 //  SORTEAR
 // ══════════════════════════════════════════════════════
-async function sortearAssignments(){
-  const ativos=Object.values(_jogadores).filter(j=>!j.espectador);
-  if(ativos.length<2) throw new Error('Precisa de pelo menos 2 jogadores ativos.');
-
-  const poltergeistAtivo = !!_config.poltergeistAtivo;
-  const lunaticoAtivo    = !!_config.lunaticoAtivo;
-
-  const catsTodas=await carregarPalavras();
-  const selecionadas = Array.isArray(_config.categorias) ? _config.categorias.filter(c=>catsTodas[c]) : [];
-  // Se nenhuma categoria foi selecionada (ou config vazia/desatualizada), usa todas como fallback
-  const catNames = selecionadas.length ? selecionadas : Object.keys(catsTodas);
-  const cat=catNames[Math.floor(Math.random()*catNames.length)];
-  const words=catsTodas[cat];
-  const palavra=words[Math.floor(Math.random()*words.length)];
-
-  // Sorteia impostor primeiro
-  const impostorIdx=Math.floor(Math.random()*ativos.length);
-  const impostorJ=ativos[impostorIdx];
-
-  // Candidatos restantes (todos exceto o impostor)
-  let restantes=ativos.filter((j,i)=>i!==impostorIdx);
-
-  // Sorteia poltergeist entre os restantes, se ativo e jogadores suficientes
-  let poltergeistJ=null;
-  if(poltergeistAtivo && ativos.length>=4 && restantes.length>0){
-    const idx=Math.floor(Math.random()*restantes.length);
-    poltergeistJ=restantes[idx];
-    restantes=restantes.filter((j,i)=>i!==idx);
-  }
-
-  // Sorteia lunático entre os restantes, se ativo e jogadores suficientes
-  let lunaticoJ=null;
-  let palavraLunatico=null;
-  if(lunaticoAtivo && ativos.length>=4 && restantes.length>0){
-    const idx=Math.floor(Math.random()*restantes.length);
-    lunaticoJ=restantes[idx];
-    restantes=restantes.filter((j,i)=>i!==idx);
-    // palavra diferente, mesma categoria
-    const outrasPalavras=words.filter(w=>w!==palavra);
-    palavraLunatico = outrasPalavras.length
-      ? outrasPalavras[Math.floor(Math.random()*outrasPalavras.length)]
-      : palavra;
-  }
-
-  const assignments={};
-  const roles={};
-  ativos.forEach(j=>{
-    const key=idKey(j.id);
-    if(j.id===impostorJ.id){
-      assignments[key]='IMPOSTOR';
-      roles[key]='impostor';
-    } else if(poltergeistJ && j.id===poltergeistJ.id){
-      assignments[key]=palavra;
-      roles[key]='poltergeist';
-    } else if(lunaticoJ && j.id===lunaticoJ.id){
-      assignments[key]=palavraLunatico;
-      roles[key]='lunatico';
-    } else {
-      assignments[key]=palavra;
-      roles[key]='normal';
-    }
-  });
-
-  // Snapshot dos jogadores neste momento
-  const snapshot={};
-  ativos.forEach(j=>{
-    const key=idKey(j.id);
-    snapshot[key]={...j, role:roles[key]};
-  });
-
-  const timerMinutos=Number(_config.timerMinutos)||0;
-  const timerData = timerMinutos>0
-    ? { ativo:true, fimTs: serverNow() + timerMinutos*60000, duracaoMs: timerMinutos*60000 }
-    : { ativo:false, fimTs:0 };
-
-  // Todas as escritas independentes (não dependem uma da outra) em uma única
-  // chamada multi-path, em vez de 4-5 round-trips sequenciais ao Firebase.
-  // fimTs usa serverNow() (offset já sincronizado em background) em vez de
-  // gravar ServerValue.TIMESTAMP e ler de volta — elimina 2 round-trips extras.
-  await db.ref().update({
-    [`salas/${SALA}/votos`]: null,
-    [`salas/${SALA}/assignments`]: assignments,
-    [`salas/${SALA}/snapshot`]: snapshot,
-    [`salas/${SALA}/roles`]: roles,
-    [`salas/${SALA}/timer`]: timerData,
-  });
-
-  _assignments=assignments;
-  _snapshot=snapshot;
-  _roles=roles;
-
-  return {cat, palavra, impostorJ, poltergeistJ, lunaticoJ};
-}
-
+// Palavra, impostor e papéis são sorteados no servidor (Cloud Function `sortear`):
+// o cliente nunca recebe a identidade do impostor antes da revelação.
 async function sortear(){
   $('btn-sortear').disabled=true;
   clearErr('st-lobby');
   try{
     if(_info.host!==ME.uid) throw new Error('Só o host pode sortear.');
-    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
-
-    await upd(`salas/${SALA}/info`,{
-      fase:'questioning', categoria:cat, palavra,
-      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
-      poltergeistId:   poltergeistJ?.id   || '',
-      poltergeistNome: poltergeistJ?.nome || '',
-      lunaticoId:      lunaticoJ?.id      || '',
-      lunaticoNome:    lunaticoJ?.nome    || '',
-      votacaoAberta:false,
-      rodada:(_info.rodada||0)+1
-    });
+    await chamar('sortear',{sala:SALA});
   }catch(e){
-    setErr('st-lobby',e.message);
+    setErr('st-lobby',msgErro(e));
     $('btn-sortear').disabled=false;
   }
 }
 
-// Gera uma nova palavra/impostor sem voltar ao lobby e sem alterar pontos ou contagem de rodada.
+// Gera nova palavra/impostor sem voltar ao lobby e sem alterar pontos ou contagem de rodada.
 async function reiniciarJogo(){
   if(_info.host!==ME.uid) return;
   const btn=$('btn-reiniciar-q');
   btn.disabled=true;
-  try{
-    const {cat,palavra,impostorJ,poltergeistJ,lunaticoJ}=await sortearAssignments();
-    await upd(`salas/${SALA}/info`,{
-      categoria:cat, palavra,
-      impostorId:impostorJ.id, impostorNome:impostorJ.nome,
-      poltergeistId:   poltergeistJ?.id   || '',
-      poltergeistNome: poltergeistJ?.nome || '',
-      lunaticoId:      lunaticoJ?.id      || '',
-      lunaticoNome:    lunaticoJ?.nome    || '',
-      votacaoAberta:false
-    });
-  }catch(e){
-    alert(e.message);
-  }
+  try{ await chamar('sortear',{sala:SALA,reiniciar:true}); }
+  catch(e){ alert(msgErro(e)); }
   btn.disabled=false;
 }
 
@@ -3306,192 +2904,21 @@ async function cancelarJogo(){
 // ══════════════════════════════════════════════════════
 
 async function votar(votadoId, votadoNome){
+  const anterior=meuVoto;
   meuVoto=votadoId;
-  await set(`salas/${SALA}/votos/${idKey(ME.uid)}`,{votadoId, votadoNome, ts:Date.now()});
-}
-
-// ══════════════════════════════════════════════════════
-//  CÁLCULO DE PONTUAÇÃO (tabela dos 14 cenários)
-// ══════════════════════════════════════════════════════
-function calcularResultado(ativos, contagem, impostorId, votos, roles={}, poltergeistId=''){
-  const totalVotantes=Object.keys(votos).length;
-  const impostorVotos=contagem[impostorId]||0;
-  const maxVotos=Math.max(...ativos.map(j=>contagem[j.id]||0),0);
-
-  const impostorTemMaioria=impostorVotos>0&&impostorVotos===maxVotos;
-  const empatados=ativos.filter(j=>(contagem[j.id]||0)===maxVotos&&maxVotos>0);
-  const empate=empatados.length>1;
-  let impostorPegou=impostorTemMaioria&&!empate;
-
-  // ── Poltergeist — verifica se foi o mais votado (vence eliminado no lugar do impostor)
-  const poltergeistVotos = poltergeistId ? (contagem[poltergeistId]||0) : 0;
-  const poltergeistTemMaioria = !!poltergeistId && poltergeistVotos>0 && poltergeistVotos===maxVotos;
-  const empateComImpostor = poltergeistTemMaioria && impostorVotos===poltergeistVotos;
-  const poltergeistVenceu = poltergeistTemMaioria && !empate && !empateComImpostor;
-
-  if(poltergeistVenceu) impostorPegou=false;
-
-  // ── Impostor
-  let cenarioImpostor;
-  if(poltergeistVenceu){
-    cenarioImpostor={num:15, pts:PTS.imp_poltergeist_venceu, desc:'poltergeist foi eliminado no seu lugar'};
-  } else if(impostorPegou){
-    if(impostorVotos===totalVotantes&&totalVotantes>0)
-      cenarioImpostor={num:9,  pts:PTS.imp_pego_unanimidade, desc:'pego por unanimidade'};
-    else if(impostorVotos>totalVotantes/2)
-      cenarioImpostor={num:10, pts:PTS.imp_pego_maioria,    desc:'pego por maioria'};
-    else
-      cenarioImpostor={num:11, pts:PTS.imp_pego_minoria,    desc:'pego por minoria'};
-  } else {
-    if(impostorVotos===0)
-      cenarioImpostor={num:12, pts:PTS.imp_escapou_zerovoto, desc:'ninguém votou nele'};
-    else if(empate)
-      cenarioImpostor={num:13, pts:PTS.imp_escapou_empate,   desc:'votos empatados'};
-    else
-      cenarioImpostor={num:14, pts:PTS.imp_escapou_minoria,  desc:'minoria votou nele'};
-  }
-
-  // ── Poltergeist — pontuação própria (se o papel existir nesta rodada)
-  let cenarioPoltergeist=null;
-  if(poltergeistId){
-    cenarioPoltergeist = poltergeistVenceu
-      ? {num:16, pts:PTS.poltergeist_venceu, desc:'foi o mais votado'}
-      : (impostorPegou
-          ? {num:17, pts:PTS.poltergeist_perdeu_impegou, desc:'impostor foi pego, sobreviveu'}
-          : {num:18, pts:PTS.poltergeist_perdeu_escapou, desc:'impostor escapou, sobreviveu'});
-  }
-
-
-  // ── Jogadores
-  const cenarioJogadores={};
-  ativos.forEach(j=>{
-    if(j.id===impostorId) return;
-
-    // Poltergeist tem sua própria pontuação, calculada acima
-    if(poltergeistId && j.id===poltergeistId){
-      cenarioJogadores[j.id]=cenarioPoltergeist;
-      return;
-    }
-
-    const ehLunatico = roles[idKey(j.id)]==='lunatico';
-    const votou=votos[idKey(j.id)];
-
-    // ── Cenários especiais: poltergeist venceu (vale tanto para normais quanto lunáticos)
-    if(poltergeistVenceu){
-      if(!votou){
-        cenarioJogadores[j.id]=ehLunatico
-          ? {num:23, pts:PTS.lunatico_absteve_escapou}
-          : {num:22, pts:PTS.absteve_escapou};
-        return;
-      }
-      if(votou.votadoId===poltergeistId){
-        cenarioJogadores[j.id]={num:19, pts:PTS.votou_no_poltergeist_venceu};
-        return;
-      }
-      if(votou.votadoId===impostorId){
-        cenarioJogadores[j.id]=ehLunatico
-          ? {num:24, pts:PTS.lunatico_acertou_escapou}
-          : {num:4,  pts:PTS.acertou_escapou};
-        return;
-      }
-      cenarioJogadores[j.id]={num:20, pts:PTS.votou_no_poltergeist_perdeu};
-      return;
-    }
-
-    // ── Sem poltergeist vencedor — fluxo normal (ou poltergeist perdeu)
-    if(!votou){
-      cenarioJogadores[j.id]=ehLunatico
-        ? {num:impostorPegou?25:23, pts:impostorPegou?PTS.lunatico_absteve_impegou:PTS.lunatico_absteve_escapou}
-        : {num:impostorPegou?7:8,   pts:impostorPegou?PTS.absteve_impegou:PTS.absteve_escapou};
-      return;
-    }
-
-    // Quem votou no poltergeist mas ele não venceu
-    if(poltergeistId && votou.votadoId===poltergeistId){
-      cenarioJogadores[j.id]={num:21, pts:PTS.votou_no_poltergeist_perdeu};
-      return;
-    }
-
-    const acertou=votou.votadoId===impostorId;
-    if(acertou){
-      if(!impostorPegou){
-        cenarioJogadores[j.id]=ehLunatico
-          ? {num:24, pts:PTS.lunatico_acertou_escapou}
-          : {num:4,  pts:PTS.acertou_escapou};
-      } else {
-        const qtdAcertaram=ativos.filter(j2=>j2.id!==impostorId&&votos[idKey(j2.id)]?.votadoId===impostorId).length;
-        const qtdAtivos=ativos.filter(j2=>j2.id!==impostorId).length;
-        if(ehLunatico){
-          if(qtdAcertaram===qtdAtivos)
-            cenarioJogadores[j.id]={num:26, pts:PTS.lunatico_acertou_unanimidade};
-          else if(qtdAcertaram>qtdAtivos/2)
-            cenarioJogadores[j.id]={num:27, pts:PTS.lunatico_acertou_maioria};
-          else
-            cenarioJogadores[j.id]={num:28, pts:PTS.lunatico_acertou_minoria};
-        } else {
-          if(qtdAcertaram===qtdAtivos)
-            cenarioJogadores[j.id]={num:1, pts:PTS.acertou_unanimidade};
-          else if(qtdAcertaram>qtdAtivos/2)
-            cenarioJogadores[j.id]={num:2, pts:PTS.acertou_maioria};
-          else
-            cenarioJogadores[j.id]={num:3, pts:PTS.acertou_minoria};
-        }
-      }
-    } else {
-      cenarioJogadores[j.id]=ehLunatico
-        ? {num:impostorPegou?29:24, pts:impostorPegou?PTS.lunatico_errou_impegou:PTS.lunatico_errou_escapou}
-        : {num:impostorPegou?5:6,   pts:impostorPegou?PTS.errou_impegou:PTS.errou_escapou};
-    }
-  });
-
-  return {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioPoltergeist, cenarioJogadores};
+  try{ await set(`salas/${SALA}/votos/${idKey(ME.uid)}`,{votadoId, votadoNome, ts:Date.now()}); }
+  catch(e){ meuVoto=anterior; console.warn('Voto recusado:',e.message); }
 }
 
 // ══════════════════════════════════════════════════════
 //  REVELAR IMPOSTOR
 // ══════════════════════════════════════════════════════
-async function revelarImpostor(){
-  if(_info.host!==ME.uid) return alert('Só o host pode revelar.');
+async function revelarImpostor(auto){
+  if(!SALA) return;
+  if(!auto && _info.host!==ME.uid) return alert('Só o host pode revelar.');
   SFX.revelar();
-
-  const fonteJogadores=Object.keys(_snapshot).length>0?_snapshot:_jogadores;
-  const ativos=Object.values(fonteJogadores).filter(j=>!j.espectador);
-  const contagem={};
-  Object.values(_votos).forEach(v=>{contagem[v.votadoId]=(contagem[v.votadoId]||0)+1;});
-
-  const {impostorPegou, poltergeistVenceu, cenarioImpostor, cenarioJogadores} =
-    calcularResultado(ativos, contagem, _info.impostorId, _votos, _roles, _info.poltergeistId||'');
-
-  // Placar, histórico, parada do timer e mudança de fase combinados numa única
-  // escrita multi-path, em vez de 4 round-trips sequenciais ao Firebase antes
-  // da tela do host mudar.
-  const rodadaKey=`r${_info.rodada||1}`;
-  const updates={
-    [`salas/${SALA}/historico/${rodadaKey}`]: {
-      rodada:_info.rodada||1,
-      categoria:_info.categoria,
-      palavra:_info.palavra,
-      impostorNome:_info.impostorNome,
-      impostorPegou,
-      cenarioImpostor: cenarioImpostor.num,
-      poltergeistVenceu: poltergeistVenceu || false,
-      poltergeistNome:   _info.poltergeistNome || '',
-      lunaticoNome:      _info.lunaticoNome    || '',
-      ts:Date.now()
-    },
-    [`salas/${SALA}/timer`]: {ativo:false, fimTs:0},
-    [`salas/${SALA}/info/fase`]: 'revealed',
-    [`salas/${SALA}/roles`]: null,
-  };
-  for(const j of ativos){
-    const isImp=j.id===_info.impostorId;
-    const pts=isImp ? cenarioImpostor.pts : (cenarioJogadores[j.id]?.pts||0);
-    if(pts!==0){
-      const atualSala=(_jogadores[idKey(j.id)]?.placar||0);
-      updates[`salas/${SALA}/jogadores/${idKey(j.id)}/placar`]=Math.max(0, atualSala+pts);
-    }
-  }
-  await db.ref().update(updates);
+  try{ await chamar('revelar',{sala:SALA}); }
+  catch(e){ if(auto) console.warn('Revelação automática falhou:',e.message); else alert(msgErro(e)); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -3499,26 +2926,9 @@ async function revelarImpostor(){
 // ══════════════════════════════════════════════════════
 async function novaRodada(){
   SFX.novaRodada();
-  meuVoto=null; _assignments=null; _historico={}; _snapshot={}; resultadoSomTocado=false; _roles={};
-
-  // IMPORTANTE: muda a fase para 'lobby' ANTES de apagar votos/assignments/snapshot/roles.
-  // Se a ordem fosse invertida (como antes), o del(votos) dispararia onVotosChanged()
-  // -> renderFase() enquanto _info.fase localmente ainda fosse 'revealed', recalculando
-  // os pontos com _votos já vazio (mas _snapshot ainda preenchido) e mostrando, por um
-  // instante, uma pontuação errada na tela de resultado antes de ir para o lobby.
-  await upd(`salas/${SALA}/info`,{
-    fase:'lobby', categoria:'', palavra:'',
-    impostorId:'', impostorNome:'',
-    poltergeistId:'', poltergeistNome:'',
-    lunaticoId:'', lunaticoNome:'',
-    votacaoAberta:false
-  });
-
-  await del(`salas/${SALA}/votos`);
-  await del(`salas/${SALA}/assignments`);
-  await del(`salas/${SALA}/snapshot`);
-  await del(`salas/${SALA}/roles`);
-  await set(`salas/${SALA}/timer`,{ativo:false, fimTs:0});
+  try{ await chamar('novaRodada',{sala:SALA}); }
+  catch(e){ alert(msgErro(e)); return; }
+  meuVoto=null; _privado=null; _resultado=null; resultadoSomTocado=false;
 }
 
 async function kickar(playerId){
@@ -3697,8 +3107,8 @@ async function sairDaSala(){
   }catch(e){}
 
   SALA=''; myWord=''; meuVoto=null; resultadoSomTocado=false;
-  _info=null; _jogadores={}; _votos={}; _assignments=null; _snapshot={}; _historico={};
-  _config={ poltergeistAtivo: false, lunaticoAtivo: false }; _roles={};
+  _info=null; _jogadores={}; _votos={}; _privado=null; _resultado=null; _snapshot={}; _historico={};
+  _config={ poltergeistAtivo: false, lunaticoAtivo: false };
   qWordShown=false;
   localStorage.removeItem('_imp_sala');
   $('inp-codigo').value='';
