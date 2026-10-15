@@ -729,6 +729,19 @@ input::placeholder{color:var(--muted);}
   border-right-color:var(--bevel-r);border-bottom-color:var(--bevel-b);
   padding:var(--sp-3);
 }
+
+/* ── Botão + popup de badges ── */
+.badge-open-btn{display:flex;align-items:center;gap:10px;text-align:left;}
+.badge-open-emoji{font-size:1.4rem;line-height:1;}
+.badge-open-label{flex:1;}
+.badge-open-count{font-family:'VT323',monospace;color:var(--accent);font-size:1.1rem;}
+#badges-modal{background:rgba(0,0,0,.88);z-index:var(--z-modal-high);display:none;align-items:center;padding:16px;}
+#badges-modal.open{display:flex;}
+.badges-box{max-height:82vh;display:flex;flex-direction:column;overflow:hidden;}
+.badges-progress{height:4px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.badges-progress-fill{height:100%;width:0;background:var(--accent);transition:width .3s;}
+.badges-hint{font-size:.8rem;color:var(--sub);letter-spacing:.3px;}
+.badge-item.not-earned{cursor:default;}
 </style>
 </head>
 <body>
@@ -766,6 +779,24 @@ input::placeholder{color:var(--muted);}
     </div>
     <div class="stats-body" id="stats-modal-body">
       <div style="color:var(--sub);text-align:center;padding:24px 0">carregando…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BADGES MODAL ══ -->
+<div id="badges-modal" class="modal-overlay" onclick="fecharBadgesModal(event)">
+  <div class="badges-box modal-box" onclick="event.stopPropagation()">
+    <div class="stats-header">
+      <div class="stats-header-info">
+        <div class="stats-header-name">Badges</div>
+        <div class="stats-header-rank" id="badges-modal-counter">0 de 0 desbloqueados</div>
+      </div>
+      <button class="stats-close" onclick="fecharBadgesModal()">✕</button>
+    </div>
+    <div class="badges-progress"><div class="badges-progress-fill" id="badges-modal-progress"></div></div>
+    <div class="stats-body">
+      <div class="badges-hint">toque em um badge conquistado para exibi-lo no chip</div>
+      <div class="badges-grid" id="setup-badge-grid"></div>
     </div>
   </div>
 </div>
@@ -894,8 +925,11 @@ input::placeholder{color:var(--muted);}
     <div id="setup-rank-card"></div>
     <!-- Badge exibido -->
     <div class="setup-badge-section" id="setup-badge-section" style="display:none">
-      <div class="stats-section-title" style="margin-bottom:10px">Badge exibido no chip</div>
-      <div class="badges-grid" id="setup-badge-grid"></div>
+      <button class="btn btn-secondary badge-open-btn" onclick="abrirBadgesModal()">
+        <span class="badge-open-emoji" id="setup-badge-current">🏅</span>
+        <span class="badge-open-label">Badges</span>
+        <span class="badge-open-count" id="setup-badge-count">0/0</span>
+      </button>
     </div>
     <!-- Sala -->
     <div class="card">
@@ -3053,10 +3087,11 @@ async function abrirStatsModal(uid, e){
   }
 }
 
+let _badgeSetup={badges:{},exibido:''};
+
 async function renderBadgeSetup(badgesParam, badgeExibidoParam){
   const section=$('setup-badge-section');
-  const grid=$('setup-badge-grid');
-  if(!section||!grid) return;
+  if(!section) return;
   let badges=badgesParam, badgeExibido=badgeExibidoParam;
   if(!badges){
     [badges, badgeExibido]=await Promise.all([
@@ -3064,28 +3099,56 @@ async function renderBadgeSetup(badgesParam, badgeExibidoParam){
       get(`users/${ME.uid}/badgeExibido`).then(b=>b||''),
     ]);
   }
-  const earned=BADGES.filter(b=>badges[b.id]);
-  if(!earned.length){ section.style.display='none'; return; }
+  _badgeSetup={badges,exibido:badgeExibido||''};
   section.style.display='';
-  grid.innerHTML=earned.map(b=>`
-    <div class="badge-item selectable${badgeExibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
+  const total=BADGES.length;
+  const got=BADGES.filter(b=>badges[b.id]).length;
+  $('setup-badge-count').textContent=`${got}/${total}`;
+  $('setup-badge-current').textContent=_badgeSetup.exibido||'🏅';
+  renderBadgesModal();
+}
+
+function renderBadgesModal(){
+  const grid=$('setup-badge-grid');
+  if(!grid) return;
+  const {badges,exibido}=_badgeSetup;
+  const earned=BADGES.filter(b=>badges[b.id]);
+  const locked=BADGES.filter(b=>!badges[b.id]);
+  $('badges-modal-counter').textContent=`${earned.length} de ${BADGES.length} desbloqueados`;
+  $('badges-modal-progress').style.width=(BADGES.length?earned.length/BADGES.length*100:0)+'%';
+  const item=(b,ok)=>`
+    <div class="badge-item ${ok?'earned selectable':'not-earned'}${ok&&exibido===b.emoji?' selected':''}" data-id="${b.id}" data-emoji="${b.emoji}">
       <div class="badge-item-emoji">${b.emoji}</div>
       <div class="badge-item-text">
         <div class="badge-item-name">${b.nome}</div>
         <div class="badge-item-desc">${b.desc}</div>
       </div>
-    </div>`).join('');
-  grid.querySelectorAll('.badge-item').forEach(el=>{
+    </div>`;
+  grid.innerHTML=earned.map(b=>item(b,true)).join('')+locked.map(b=>item(b,false)).join('');
+  grid.querySelectorAll('.badge-item.selectable').forEach(el=>{
     el.addEventListener('click',async()=>{
       const emoji=el.dataset.emoji;
-      const newEmoji=badgeExibido===emoji?'':emoji;
-      badgeExibido=newEmoji;
+      const newEmoji=_badgeSetup.exibido===emoji?'':emoji;
+      _badgeSetup.exibido=newEmoji;
       await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
       if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
-      grid.querySelectorAll('.badge-item').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
+      grid.querySelectorAll('.badge-item.selectable').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
+      $('setup-badge-current').textContent=newEmoji||'🏅';
     });
   });
 }
+
+function abrirBadgesModal(){
+  renderBadgesModal();
+  $('badges-modal').classList.add('open');
+}
+function fecharBadgesModal(e){
+  if(e&&e.target!==$('badges-modal')) return;
+  $('badges-modal').classList.remove('open');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') $('badges-modal')?.classList.remove('open');
+});
 
 async function sairDaSala(){
   SFX.sair();
