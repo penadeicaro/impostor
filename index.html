@@ -926,8 +926,13 @@ input::placeholder{color:var(--muted);}
     <!-- Badge exibido -->
     <div class="setup-badge-section" id="setup-badge-section" style="display:none">
       <button class="btn btn-secondary badge-open-btn" onclick="abrirBadgesModal()">
-        <span class="badge-open-emoji" id="setup-badge-current">🏅</span>
-        <span class="badge-open-label">Badges</span>
+        <div style="display:flex;align-items:center;gap:10px;flex:1;">
+          <span class="badge-open-emoji" id="setup-badge-current">🏅</span>
+          <div style="flex:1;min-width:0;">
+            <div class="badge-open-name" id="setup-badge-current-name" style="font-size:0.95rem;line-height:1.2;">Nenhum badge</div>
+            <div class="badge-open-desc" id="setup-badge-current-desc" style="font-size:0.75rem;color:var(--sub);line-height:1.2;"></div>
+          </div>
+        </div>
         <span class="badge-open-count" id="setup-badge-count">0/0</span>
       </button>
     </div>
@@ -3104,7 +3109,20 @@ async function renderBadgeSetup(badgesParam, badgeExibidoParam){
   const total=BADGES.length;
   const got=BADGES.filter(b=>badges[b.id]).length;
   $('setup-badge-count').textContent=`${got}/${total}`;
-  $('setup-badge-current').textContent=_badgeSetup.exibido||'🏅';
+  
+  // Atualiza emoji, nome e desc do badge exibido
+  if(badgeExibido){
+    const badgeDef=BADGES.find(b=>b.emoji===badgeExibido);
+    if(badgeDef){
+      $('setup-badge-current').textContent=badgeDef.emoji;
+      $('setup-badge-current-name').textContent=badgeDef.nome;
+      $('setup-badge-current-desc').textContent=badgeDef.desc;
+    }
+  }else{
+    $('setup-badge-current').textContent='🏅';
+    $('setup-badge-current-name').textContent='Nenhum badge';
+    $('setup-badge-current-desc').textContent='';
+  }
   renderBadgesModal();
 }
 
@@ -3133,7 +3151,17 @@ function renderBadgesModal(){
       await upd(`users/${ME.uid}`,{badgeExibido:newEmoji});
       if(SALA) await upd(`salas/${SALA}/jogadores/${idKey(ME.uid)}`,{badgeExibido:newEmoji});
       grid.querySelectorAll('.badge-item.selectable').forEach(e2=>e2.classList.toggle('selected',e2.dataset.emoji===newEmoji&&newEmoji!==''));
-      $('setup-badge-current').textContent=newEmoji||'🏅';
+      // Atualiza botão também
+      if(newEmoji){
+        const badgeDef=BADGES.find(b=>b.emoji===newEmoji);
+        $('setup-badge-current').textContent=badgeDef.emoji;
+        $('setup-badge-current-name').textContent=badgeDef.nome;
+        $('setup-badge-current-desc').textContent=badgeDef.desc;
+      }else{
+        $('setup-badge-current').textContent='🏅';
+        $('setup-badge-current-name').textContent='Nenhum badge';
+        $('setup-badge-current-desc').textContent='';
+      }
     });
   });
 }
